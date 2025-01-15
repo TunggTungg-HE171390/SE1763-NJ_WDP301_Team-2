@@ -1,8 +1,17 @@
 # SE1763-NJ_WDP301_Team-2
 I. Introduce:
 The proposed platform, Tâm Giao, is designed to be an innovative and accessible mental health care system catering to individuals across all age groups. The platform aims to bridge the gap between patients and professional psychologists through comprehensive online services, offering both convenience and quality care.
+* Clone repository:
+    git clone https://github.com/TunggTungg-HE171390/SE1763-NJ_WDP301_Team-2.git
 
-II. Structure Project:
+II. Technologies:
+- Platform: MERN
++ Front-end: React, CSS, Bootstrap
++ Back-end: ExpressJS
++ Database: MongoDB, firebase
++ Enviroment: NodeJS
+
+III. Structure Project:
    Project:
     |
     |_ _ Front-end
@@ -20,9 +29,8 @@ II. Structure Project:
     + Entity Diagram: 
 - MongoDB: 
 
-III. Install guide:
+IV. Install guide:
 - Front-end:
- 
 
 - Back-end:
     npm init
@@ -30,7 +38,7 @@ III. Install guide:
     package.json:   --> "start": "nodemon server"
     <RUN>: npm start
 
-IV. Contributors:
+V. Contributors:
 - Leader (BA): Nguyễn Thuỳ Linh - HE173256 - linhnkhe173256@fpt.edu.vn
 - Developer: Tạ Xuân Tùng - HE171390 - tungtxhe171390@fpt.edu.vn
 - Developer: Bùi Hải Nam - HE176453 - nambhhe176453@fpt.edu.vn
