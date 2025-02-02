@@ -20,7 +20,7 @@ const CommentSchema = new Schema(
     { _id: false } // Prevent creating an ID for the comment subdocument
 );
 
-// Main Post schema
+// Main BlogPost schema
 const BlogPostSchema = new Schema(
     {
         title: {
