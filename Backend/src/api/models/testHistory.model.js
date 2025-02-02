@@ -80,7 +80,7 @@ const TestHistorySchema = new Schema(
     }
 );
 
-// Create the Result model
+// Create the TestHistory model
 const TestHistory = mongoose.model("TestHistory", TestHistorySchema);
 
 export default TestHistory;

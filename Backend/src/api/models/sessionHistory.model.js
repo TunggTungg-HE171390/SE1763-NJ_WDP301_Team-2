@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-// AppointmentOutcome schema
+// SessionHistory schema
 const SessionHistorySchema = new Schema(
     {
         patientId: {
@@ -32,7 +32,7 @@ const SessionHistorySchema = new Schema(
     }
 );
 
-// Create the AppointmentOutcome model
+// Create the SessionHistory model
 const SessionHistory = mongoose.model("SessionHistory", SessionHistorySchema);
 
 export default SessionHistory;

@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-// Psychologist Availability schema
+// Availability schema
 const AvailabilitySchema = new Schema(
     {
         psychologistId: {
@@ -30,7 +30,7 @@ const AvailabilitySchema = new Schema(
     }
 );
 
-// Create the PsychologistAvailability model
+// Create the Availability model
 const Availability = mongoose.model("Availability", AvailabilitySchema);
 
 export default Availability;
