@@ -42,15 +42,15 @@ const UserSchema = new Schema(
         gender: {
             type: String,
             enum: ["Male", "Female"],
-            // required: true,
+            required: true,
         },
         address: {
             type: String,
-            // required: true,
+            required: true,
         },
         dob: {
             type: Date,
-            // required: true,
+            required: true,
         },
         profileImg: {
             type: String,
