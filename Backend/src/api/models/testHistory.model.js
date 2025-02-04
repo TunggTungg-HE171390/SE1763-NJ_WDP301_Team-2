@@ -3,12 +3,8 @@ import mongoose, { Schema } from "mongoose";
 // Answer selection schema for the question
 const SelectedAnswerSchema = new Schema(
     {
-        content: {
+        answer: {
             type: String,
-            required: true,
-        },
-        level: {
-            type: Number,
             required: true,
         },
     },

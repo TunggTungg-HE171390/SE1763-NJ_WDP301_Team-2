@@ -3,6 +3,7 @@ import app from "./app.js";
 import os from "os";
 import instanceMongoDb from "./api/database/connect.mongodb.js";
 import AvailabilityController from "./api/controllers/availability.controller.js";
+import UserController from "./api/controllers/user.controller.js";
 
 // Tải biến môi trường từ .env file
 dotenv.config();
@@ -19,7 +20,7 @@ const startServer = async () => {
     });
 
     try {
-        await AvailabilityController.createPsychologistAvailability();
+        // await UserController.createValidUser();
     } catch (error) {
         console.error("Failed to create psychologist availability:", error);
     }
