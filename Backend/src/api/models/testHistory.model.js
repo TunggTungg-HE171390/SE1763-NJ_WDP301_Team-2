@@ -7,10 +7,6 @@ const SelectedAnswerSchema = new Schema(
             type: String,
             required: true,
         },
-        pointReceived: {
-            type: Number,
-            // required: true,
-        },
     },
     { _id: false } // Prevent creating an ID for the selected answer subdocument
 );

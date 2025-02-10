@@ -20,8 +20,7 @@ const startServer = async () => {
     });
 
     try {
-        await AvailabilityController.createPsychologistAvailability();
-        // await UserController.findAllUsers();
+        // await UserController.createValidUser();
     } catch (error) {
         console.error("Failed to create psychologist availability:", error);
     }
