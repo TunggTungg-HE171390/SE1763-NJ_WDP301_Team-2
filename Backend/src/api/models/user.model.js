@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { type } from "os";
 
 // Medical profile schema for patients
 const MedicalProfileSchema = new Schema(
@@ -36,6 +37,10 @@ const UserSchema = new Schema(
             required: true,
         },
         password: {
+            type: String,
+            required: true,
+        },
+        phone: {
             type: String,
             required: true,
         },
