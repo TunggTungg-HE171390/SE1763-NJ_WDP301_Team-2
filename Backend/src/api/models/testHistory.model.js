@@ -3,13 +3,13 @@ import mongoose, { Schema } from "mongoose";
 // Answer selection schema for the question
 const SelectedAnswerSchema = new Schema(
     {
-        content: {
+        answer: {
             type: String,
             required: true,
         },
-        level: {
+        pointReceived: {
             type: Number,
-            required: true,
+            // required: true,
         },
     },
     { _id: false } // Prevent creating an ID for the selected answer subdocument
@@ -23,10 +23,10 @@ const QuestionSchema = new Schema(
             ref: "Question", // Referring to the Question collection
             required: true,
         },
-        content: {
-            type: String,
-            required: true,
-        },
+        // content: {
+        //     type: String,
+        //     required: true,
+        // },
         selectedAnswer: SelectedAnswerSchema, // Embedding the SelectedAnswerSchema
     },
     { _id: false } // Prevent creating an ID for the question subdocument

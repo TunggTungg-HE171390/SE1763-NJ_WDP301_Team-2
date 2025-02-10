@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { type } from "os";
 
 // Medical profile schema for patients
 const MedicalProfileSchema = new Schema(
@@ -67,6 +68,7 @@ const UserSchema = new Schema(
             required: true,
         },
         patient: {
+            type: Object,
             medicalProfile: MedicalProfileSchema,
             validate: {
                 validator: function (value) {
@@ -77,6 +79,7 @@ const UserSchema = new Schema(
             },
         },
         psychologist: {
+            type: Object,
             psychologistProfile: PsychologistProfileSchema,
             validate: {
                 validator: function (value) {
