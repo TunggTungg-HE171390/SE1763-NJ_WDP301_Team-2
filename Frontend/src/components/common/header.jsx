@@ -43,7 +43,7 @@ ListItem.propTypes = {
 
 export function Header() {
     return (
-        <NavigationMenu className="fixed top-0 left-0 w-full h-[75px] bg-white shadow-md z-50 flex items-stretch px-6 ">
+        <NavigationMenu className="fixed top-[32px] left-0 w-full h-[75px] bg-white shadow-md z-50 flex items-stretch px-6">
             <NavigationMenuList>
                 <NavigationMenuItem className="flex items-center">
                     <div className="flex items-center justify-center h-full">
