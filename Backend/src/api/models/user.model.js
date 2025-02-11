@@ -69,7 +69,7 @@ const UserSchema = new Schema(
         },
         role: {
             type: String,
-            enum: ["admin", "manager", "patient", "psychologist"],
+            enum: ["user", "admin", "staff", "patient", "psychologist"],
             required: true,
         },
         patient: {
@@ -100,7 +100,7 @@ const UserSchema = new Schema(
     }
 );
 
-// Add validation hook to enforce structure 
+// Add validation hook to enforce structure
 UserSchema.pre("save", function (next) {
     if (this.role === "patient" && !this.patient) {
         return next(new Error("A patient must have a medical profile."));
