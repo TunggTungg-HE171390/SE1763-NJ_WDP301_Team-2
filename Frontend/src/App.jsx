@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
+import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
 import TopBar from "./components/common/topbar";
 import Header from "./components/common/header";
@@ -21,6 +22,7 @@ function Layout() {
                 </Helmet>
                 <TopBar />
                 {!hideHeaderFooter && <Header />}
+                <Toaster />
                 <div>
                     <Routes>
                         <Route path="/" element={<Homepage />} />

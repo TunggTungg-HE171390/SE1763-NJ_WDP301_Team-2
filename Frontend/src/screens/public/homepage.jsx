@@ -6,7 +6,7 @@ function Homepage() {
             <Helmet>
                 <title>Home</title>
             </Helmet>
-            <h1 className="my-[400px]">Home Page</h1>
+            <h1 className="my-[600px]">Home Page</h1>
         </>
     );
 }

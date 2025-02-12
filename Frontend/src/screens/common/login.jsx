@@ -1,18 +1,8 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Helmet } from "react-helmet-async";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormLabel, FormItem, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/toaster";
+import LoginForm from "./components/login-form";
+import ToastReceiver from "@/components/common/toast/toast-receiver";
 
-const FormSchema = z.object({
-    email: z.string().email({ message: "Invalid email address" }),
-    password: z.string(),
-});
 const images = [
     "https://marinwellnesscounseling.com/wp-content/uploads/2021/03/pexels-polina-zimmerman-3958461-scaled-1.jpeg",
     "https://media.istockphoto.com/id/1405778999/photo/psychologist-working-with-teenage-boy-at-office.jpg?s=612x612&w=0&k=20&c=X0QbEXz_IwYOFTViKIbWYuAn4ZCNsyQ4PFK0hIRlp3Q=",
@@ -33,37 +23,18 @@ const Login = () => {
                     return images[(currentIndex + 1) % images.length]; // Loop through images
                 });
                 setFade(false); // Reset fade after image change
-            }, 500); // 1-second fade duration
+            }, 500); // 0.5-second fade duration
         }, 5000); // Change every 5 seconds
 
         return () => clearInterval(interval); // Cleanup interval on unmount
     }, []);
-
-    const form = useForm({
-        resolver: zodResolver(FormSchema),
-        defaultValues: {
-            email: "",
-            password: "",
-        },
-    });
-
-    function onSubmit(data) {
-        const { toast } = Toaster();
-        toast({
-            title: "RLogin",
-            description: (
-                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-                </pre>
-            ),
-        });
-    }
 
     return (
         <>
             <Helmet>
                 <title>Login</title>
             </Helmet>
+            <ToastReceiver />
             <div className="min-h-screen w-full fixed inset-0 flex items-center justify-center bg-cover bg-center">
                 <div
                     className={`absolute inset-0 transition-opacity duration-1000 ${
@@ -78,55 +49,7 @@ const Login = () => {
                 {/* Background Overlay for Readability */}
                 <div className="absolute inset-0 bg-white opacity-20"></div>
 
-                <Card className="w-[400px] shadow-lg relative z-10 bg-white bg-opacity-95 backdrop-blur-md p-6 rounded-lg">
-                    <CardHeader className="text-center">
-                        <CardTitle className="text-4xl">Login</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-start">
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="email"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Email or Phone Number</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Ex: abc@gmail.com" {...field} className="italic" />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="password"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Password</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Password" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <Button type="submit" className="w-full bg-[#4262FF]">
-                                    Login
-                                </Button>
-
-                                <div className="text-center text-sm">
-                                    Doesn&apos;t have an account?{" "}
-                                    <a href="/signup" className="text-blue-600 hover:underline">
-                                        Register Now
-                                    </a>
-                                </div>
-                            </form>
-                        </Form>
-                    </CardContent>
-                </Card>
+                <LoginForm />
             </div>
         </>
     );
