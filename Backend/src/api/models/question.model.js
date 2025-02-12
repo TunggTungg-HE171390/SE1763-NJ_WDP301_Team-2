@@ -40,6 +40,6 @@ const QuestionSchema = new Schema(
 );
 
 // Create the Question model
-const Question = mongoose.model("Question", QuestionSchema);
+const Question = mongoose.model("questions", QuestionSchema);
 
 export default Question;

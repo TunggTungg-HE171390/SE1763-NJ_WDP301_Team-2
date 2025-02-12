@@ -51,7 +51,7 @@ export function Header() {
                             <img
                                 src={TeamLogo}
                                 alt="Team Logo"
-                                className="w-[61px] h-[58px] py-1 ml-[15px] mr-[25px]"
+                                className="w-[51px] h-[48px] py-1 ml-[20px] mr-[25px]"
                             />
                         </Link>
                     </div>

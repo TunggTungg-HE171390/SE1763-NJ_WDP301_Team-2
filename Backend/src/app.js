@@ -4,7 +4,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import { handleBadRequest, handleNotFound, handleServerErrors, logRequestTime } from "./api/middlewares/index.js";
-// import router from "./api/routes/index.js";
+import router from "./api/routes/index.js";
 import cors from "cors";
 
 const app = express();
@@ -40,6 +40,7 @@ app.set("json replacer", (key, value) => {
 const allowedOrigins = [
     "http://localhost:8081",
     "http://localhost:3000", // Thêm cổng 3000
+    "http://localhost:5173",
 ];
 
 app.use(
@@ -56,7 +57,7 @@ app.use(
     })
 );
 
-// app.use("/api", router);
+app.use("/api", router);
 
 // Sử dụng các middleware xử lý lỗi
 app.use(handleBadRequest);
