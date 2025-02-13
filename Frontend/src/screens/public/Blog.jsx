@@ -84,7 +84,7 @@
           {error && <p className="text-danger">{error}</p>}
           <div className="row g-4 mb-4">
   {loading ? (
-    <p>Loading...</p>
+    <p>Loading....</p>
   ) : (
     filteredArticles.map((article, index) => (
       <div className="col-md-6" key={index}>
