@@ -1,3 +1,4 @@
+
 import BlogPost from "../models/blogPost.model.js";  // Import BlogPost model
 import { body, validationResult } from "express-validator";
 
@@ -84,3 +85,4 @@ const updateBlogPost = [
 ];
 
 export default { createBlogPost, updateBlogPost }; 
+
