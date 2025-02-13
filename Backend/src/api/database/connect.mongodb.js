@@ -6,8 +6,6 @@ dotenv.config();
 
 const connectString = process.env.DB_URI;
 
-const dbName = connectString.split("/").pop().split("?")[0];
-
 class Database {
     constructor() {
         this.connect();
@@ -18,7 +16,7 @@ class Database {
         mongoose
             .connect(connectString, { maxPoolSize: 50 })
             .then(() => {
-                console.log(`Connected to MongoDB Database: ${dbName}`);
+                console.log(`Connected to MongoDB Database`);
             })
             .catch((err) => {
                 console.log("❌ Error Connect: ", err);
