@@ -29,8 +29,8 @@ const UserSchema = new Schema(
     {
         email: {
             type: String,
-            required: true,
             unique: true,
+            sparse: true,
         },
         fullName: {
             type: String,
@@ -42,20 +42,21 @@ const UserSchema = new Schema(
         },
         phone: {
             type: String,
-            required: true,
+            unique: true,
+            sparse: true,
         },
         gender: {
             type: String,
             enum: ["Male", "Female"],
-            required: true,
+            required: false,
         },
         address: {
             type: String,
-            required: true,
+            required: false,
         },
         dob: {
             type: Date,
-            required: true,
+            required: false,
         },
         profileImg: {
             type: String,
@@ -68,8 +69,30 @@ const UserSchema = new Schema(
         },
         role: {
             type: String,
-            enum: ["admin", "manager", "patient", "psychologist"],
+            enum: ["user", "admin", "staff", "patient", "psychologist"],
+            default: "user",
             required: true,
+        },
+        isEmailVerified: {
+            type: Boolean,
+            default: false, // New users are not verified by default
+        },
+        isPhoneVerified: {
+            type: Boolean,
+            default: false, // New users are not verified by default
+        },
+        emailVerificationCode: {
+            type: String,
+            required: false,
+        },
+        phoneVerificationCode: {
+            type: String,
+            required: false,
+        },
+        verificationExpires: {
+            type: Date,
+            default: () => new Date(Date.now() + 15 * 60 * 1000), // Set expiration time (10 minutes)
+            index: { expires: "15m" }, // TTL index to auto-delete expired data
         },
         patient: {
             type: new Schema(
@@ -99,7 +122,7 @@ const UserSchema = new Schema(
     }
 );
 
-// 🔥 Add validation hook to enforce structure 🔥
+// Add validation hook to enforce structure
 UserSchema.pre("save", function (next) {
     if (this.role === "patient" && !this.patient) {
         return next(new Error("A patient must have a medical profile."));
@@ -116,7 +139,15 @@ UserSchema.pre("save", function (next) {
     next();
 });
 
+UserSchema.pre("save", function (next) {
+    if (this.verificationExpires && this.verificationExpires < new Date()) {
+        this.emailVerificationCode = undefined; // Remove expired code
+        this.phoneVerificationCode = undefined;
+    }
+    next();
+});
+
 // Create the User model
-const User = mongoose.model("User", UserSchema);
+const User = mongoose.model("users", UserSchema);
 
 export default User;

@@ -33,6 +33,6 @@ const SessionHistorySchema = new Schema(
 );
 
 // Create the SessionHistory model
-const SessionHistory = mongoose.model("SessionHistory", SessionHistorySchema);
+const SessionHistory = mongoose.model("sessionhistories", SessionHistorySchema);
 
 export default SessionHistory;

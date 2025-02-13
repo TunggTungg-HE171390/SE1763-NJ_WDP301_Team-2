@@ -43,7 +43,7 @@ ListItem.propTypes = {
 
 export function Header() {
     return (
-        <NavigationMenu className="fixed top-0 left-0 w-full h-[75px] bg-white shadow-md z-50 flex items-stretch px-6 ">
+        <NavigationMenu className="w-full absolute top-[26px] left-0 h-[75px] bg-white shadow-md z-50 flex items-stretch px-6">
             <NavigationMenuList>
                 <NavigationMenuItem className="flex items-center">
                     <div className="flex items-center justify-center h-full">
@@ -51,7 +51,7 @@ export function Header() {
                             <img
                                 src={TeamLogo}
                                 alt="Team Logo"
-                                className="w-[61px] h-[58px] py-1 ml-[15px] mr-[25px]"
+                                className="w-[51px] h-[48px] py-1 ml-[20px] mr-[25px]"
                             />
                         </Link>
                     </div>
@@ -79,25 +79,6 @@ export function Header() {
                                 View list of our best psychologist
                             </ListItem>
                         </ul>
-                        {/* nested nav */}
-                        {/* <NavigationMenuLink asChild>
-                            <NavigationMenu className="flex flex-col top-0 place-content-start content-start">
-                                <NavigationMenuList className="relative">
-                                    <NavigationMenuItem>
-                                        <NavigationMenuTrigger icon="left">shadcn</NavigationMenuTrigger>
-                                        <NavigationMenuContent className="relative">
-                                            <NavigationMenuItem>
-                                                <NavigationMenuList>
-                                                    <NavigationMenuItem>
-                                                        <NavigationMenuLink>Link 2</NavigationMenuLink>
-                                                    </NavigationMenuItem>
-                                                </NavigationMenuList>
-                                            </NavigationMenuItem>
-                                        </NavigationMenuContent>
-                                    </NavigationMenuItem>
-                                </NavigationMenuList>
-                            </NavigationMenu>
-                        </NavigationMenuLink> */}
                     </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>

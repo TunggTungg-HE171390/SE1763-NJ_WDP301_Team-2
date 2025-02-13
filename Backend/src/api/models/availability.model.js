@@ -31,6 +31,6 @@ const AvailabilitySchema = new Schema(
 );
 
 // Create the Availability model
-const Availability = mongoose.model("Availability", AvailabilitySchema);
+const Availability = mongoose.model("availabilities", AvailabilitySchema);
 
 export default Availability;
