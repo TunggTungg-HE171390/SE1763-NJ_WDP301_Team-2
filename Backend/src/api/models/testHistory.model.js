@@ -77,6 +77,6 @@ const TestHistorySchema = new Schema(
 );
 
 // Create the TestHistory model
-const TestHistory = mongoose.model("TestHistory", TestHistorySchema);
+const TestHistory = mongoose.model("testhistories", TestHistorySchema);
 
 export default TestHistory;

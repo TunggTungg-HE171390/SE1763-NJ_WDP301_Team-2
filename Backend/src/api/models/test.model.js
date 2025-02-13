@@ -43,6 +43,6 @@ const TestSchema = new Schema(
 );
 
 // Create the Test model
-const Test = mongoose.model("Test", TestSchema);
+const Test = mongoose.model("tests", TestSchema);
 
 export default Test;
