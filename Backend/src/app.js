@@ -7,6 +7,8 @@ import { handleBadRequest, handleNotFound, handleServerErrors, logRequestTime } 
 import router from "./api/routes/index.js";
 import cors from "cors";
 
+
+
 const app = express();
 dotenv.config();
 
