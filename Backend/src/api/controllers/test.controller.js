@@ -38,5 +38,5 @@ const createTest = async (req, res) => {
 
 export default { 
     findTestsById,
-    createTest
+    createTest,
 };

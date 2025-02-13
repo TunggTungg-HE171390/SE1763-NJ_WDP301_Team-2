@@ -6,17 +6,17 @@ const SessionHistorySchema = new Schema(
         patientId: {
             type: Schema.Types.ObjectId,
             required: true,
-            ref: "User", // Assuming "User" is the model for patients
+            ref: "users", // Assuming "User" is the model for patients
         },
         psychologistId: {
             type: Schema.Types.ObjectId,
             required: true,
-            ref: "User", // Assuming "User" is the model for psychologists
+            ref: "users", // Assuming "User" is the model for psychologists
         },
         appointmentId: {
             type: Schema.Types.ObjectId,
             required: true,
-            ref: "Appointment", // Assuming "Appointment" is the model for appointments
+            ref: "appointments", // Assuming "Appointment" is the model for appointments
         },
         note: {
             type: String,
@@ -33,6 +33,6 @@ const SessionHistorySchema = new Schema(
 );
 
 // Create the SessionHistory model
-const SessionHistory = mongoose.model("SessionHistory", SessionHistorySchema);
+const SessionHistory = mongoose.model("sessionhistories", SessionHistorySchema);
 
 export default SessionHistory;

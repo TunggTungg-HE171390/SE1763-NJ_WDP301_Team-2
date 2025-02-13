@@ -16,7 +16,7 @@ const QuestionSchema = new Schema(
     {
         questionId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Question", // Referring to the Question collection
+            ref: "questions", // Referring to the Question collection
             required: true,
         },
         // content: {
@@ -52,12 +52,12 @@ const TestHistorySchema = new Schema(
     {
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Referring to the User collection
+            ref: "users", // Referring to the User collection
             required: true,
         },
         testId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Test", // Referring to the Test collection
+            ref: "tests", // Referring to the Test collection
             required: true,
         },
         score: {
@@ -77,6 +77,6 @@ const TestHistorySchema = new Schema(
 );
 
 // Create the TestHistory model
-const TestHistory = mongoose.model("TestHistory", TestHistorySchema);
+const TestHistory = mongoose.model("testhistories", TestHistorySchema);
 
 export default TestHistory;

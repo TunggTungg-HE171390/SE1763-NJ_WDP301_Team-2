@@ -5,7 +5,7 @@ const CommentSchema = new Schema(
     {
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Referring to the User collection
+            ref: "users", // Referring to the User collection
             required: true,
         },
         content: {
@@ -29,7 +29,7 @@ const BlogPostSchema = new Schema(
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Referring to the User collection
+            ref: "users", // Referring to the User collection
             required: true,
         },
         image: {
@@ -53,6 +53,6 @@ const BlogPostSchema = new Schema(
 );
 
 // Create the Post model
-const BlogPost = mongoose.model("BlogPost", BlogPostSchema);
+const BlogPost = mongoose.model("blogposts", BlogPostSchema);
 
 export default BlogPost;

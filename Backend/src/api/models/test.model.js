@@ -28,7 +28,7 @@ const TestSchema = new Schema(
         },
         category: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Category", // Referring to the Category collection
+            ref: "categories", // Referring to the Category collection
             required: true,
         },
         description: {
@@ -43,6 +43,6 @@ const TestSchema = new Schema(
 );
 
 // Create the Test model
-const Test = mongoose.model("Test", TestSchema);
+const Test = mongoose.model("tests", TestSchema);
 
 export default Test;

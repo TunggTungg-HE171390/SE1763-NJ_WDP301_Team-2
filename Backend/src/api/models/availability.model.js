@@ -6,7 +6,7 @@ const AvailabilitySchema = new Schema(
         psychologistId: {
             type: Schema.Types.ObjectId,
             required: true,
-            ref: "User", // Assuming "User" model for psychologists
+            ref: "users", // Assuming "User" model for psychologists
         },
         date: {
             type: Date,
@@ -31,6 +31,6 @@ const AvailabilitySchema = new Schema(
 );
 
 // Create the Availability model
-const Availability = mongoose.model("Availability", AvailabilitySchema);
+const Availability = mongoose.model("availabilities", AvailabilitySchema);
 
 export default Availability;
