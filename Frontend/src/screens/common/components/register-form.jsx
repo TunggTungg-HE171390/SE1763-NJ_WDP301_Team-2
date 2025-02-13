@@ -55,7 +55,7 @@ const RegisterForm = () => {
 
     const onSubmit = async (data) => {
         try {
-            await API.registerUser({
+            API.registerUser({
                 contact: data.contact,
                 name: data.name,
                 password: data.password,
@@ -64,19 +64,20 @@ const RegisterForm = () => {
             // Store the toast message in session storage
             setToast({
                 title: "Success!",
-                description: "Account created successfully!",
+                description: "Verification Code Sent!",
                 actionText: "Close",
                 titleColor: "text-green-600",
                 className: "text-start",
             });
 
-            navigate("/login"); // Redirect to login page
+            navigate("/verify", { state: { contact: data.contact } });
+            // navigate("/login");
         } catch (error) {
             toast({
                 variant: "destructive",
                 title: "Uh oh! Something went wrong.",
                 description: error.response?.data?.message || "There was a problem with your request.",
-                actionText: "Try Again",
+                action: "Try Again",
             });
         }
     };
