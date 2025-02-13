@@ -102,4 +102,4 @@ const updateBlogPost = [
 ];
 
 export default { createBlogPost, updateBlogPost }; 
->>>>>>> 23584c1e17b284fe8ea189bb94f60beb0f92a13d
+
