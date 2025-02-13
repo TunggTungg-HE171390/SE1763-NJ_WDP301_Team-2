@@ -8,7 +8,7 @@ import TestController from "./test.controller.js";
 import TestHistoryController from "./testHistory.controller.js";
 import UserController from "./user.controller.js";
 
-export default {
+export {
     AppointmentController,
     AvailabilityController,
     BlogPostController,
@@ -19,3 +19,6 @@ export default {
     TestHistoryController,
     UserController,
 };
+
+
+
