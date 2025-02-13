@@ -4,8 +4,10 @@ import morgan from "morgan";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import { handleBadRequest, handleNotFound, handleServerErrors, logRequestTime } from "./api/middlewares/index.js";
-// import router from "./api/routes/index.js";
+import router from "./api/routes/index.js";
 import cors from "cors";
+
+
 
 const app = express();
 dotenv.config();
@@ -56,7 +58,7 @@ app.use(
     })
 );
 
-// app.use("/api", router);
+app.use("/api", router);
 
 // Sử dụng các middleware xử lý lỗi
 app.use(handleBadRequest);
