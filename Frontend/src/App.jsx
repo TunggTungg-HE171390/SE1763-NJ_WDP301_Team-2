@@ -1,10 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import { Toaster } from "@/components/ui/toaster";
+// import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
-import TopBar from "./components/common/topbar";
-import Header from "./components/common/header";
-import Footer from "./components/common/footer";
+// import TopBar from "./components/common/topbar";
+// import Header from "./components/common/header";
+// import Footer from "./components/common/footer";
 
 import Homepage from "./screens/public/homepage";
 import Login from "./screens/common/login";

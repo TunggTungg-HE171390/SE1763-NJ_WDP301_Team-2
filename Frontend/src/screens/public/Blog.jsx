@@ -4,7 +4,6 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 
@@ -13,6 +12,7 @@ export default function BlogScreen() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(4);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,15 +34,14 @@ export default function BlogScreen() {
   const filteredArticles = articles.filter((article) =>
     article.title.toLowerCase().includes(search.toLowerCase())
   );
+  
   const handleCardClick = (article) => {
-    console.log(article); // Kiểm tra dữ liệu bài viết
     navigate(`/blogdetail/${article._id}`, { state: { article } });
   };
-  
 
   return (
     <div className="min-vh-100 d-flex flex-column">
-      <div className="container max-w-6xl mx-auto px-4 py-6 flex-grow">
+      <div className="container max-w-4xl mx-auto px-4 py-6 flex-grow">
         <div className="w-full h-64 mb-8 rounded-lg overflow-hidden">
           <img
             src="https://media.vneconomy.vn/w800/images/upload/2024/05/11/kham-chua-benh.png"
@@ -64,36 +63,31 @@ export default function BlogScreen() {
           {loading ? (
             <p>Loading....</p>
           ) : (
-            filteredArticles.map((article, index) => (
+            filteredArticles.slice(0, visibleCount).map((article, index) => (
               <div className="col-md-6" key={index}>
-                <Card className="overflow-hidden cursor-pointer" onClick={() => handleCardClick(article)}>
-                  <div className="d-flex align-items-center">
-                    <div className="w-40 h-32 flex-shrink-0">
-                      <img src={article.image} alt={article.title} className="w-full h-full object-cover rounded" />
-                    </div>
-                    <CardContent className="flex-grow p-3">
-                      <h3 className="fw-bold mb-2">{article.title}</h3>
-                      <p className="text-muted small mb-2">{article.content}</p>
-                      <p className="text-muted text-truncate">{article.description}</p>
-                    </CardContent>
+                <Card className="overflow-hidden cursor-pointer d-flex flex-row p-3" style={{ maxWidth: "100%", height: "120px" }} onClick={() => handleCardClick(article)}>
+                  <div className="w-25 h-100 flex-shrink-0">
+                    <img src={article.image} alt={article.title} className="w-full h-full object-cover rounded" />
                   </div>
+                  <CardContent className="flex-grow p-3 d-flex flex-column justify-content-center">
+                    <h3 className="fw-bold mb-1 fs-6">{article.title}</h3>
+                    <p className="text-muted small mb-0">
+                      {article.content.length > 100 ? `${article.content.substring(0, 100)}...` : article.content}
+                    </p>
+                  </CardContent>
                 </Card>
               </div>
             ))
           )}
         </div>
 
-        <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
-          {["WorkLifeBalance", "WorkProductivity", "WorkLife"].map((tag, index) => (
-            <Badge key={index} variant="secondary" className="rounded-pill cursor-pointer bg-light">
-              #{tag}
-            </Badge>
-          ))}
-        </div>
+        {visibleCount < filteredArticles.length && (
+          <div className="d-flex justify-content-center">
+            <button className="btn btn-primary px-8" onClick={() => setVisibleCount(visibleCount + 4)}>See more</button>
+          </div>
+        )}
 
-        <div className="d-flex justify-content-center">
-          <Button className="px-8">See more</Button>
-        </div>
+
       </div>
     </div>
   );
