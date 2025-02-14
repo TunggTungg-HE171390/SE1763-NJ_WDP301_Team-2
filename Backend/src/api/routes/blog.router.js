@@ -5,6 +5,4 @@ const blogRouter = express.Router();
 
 blogRouter.get("/allblog", BlogPostController.getAllBlog);
 
-
-
 export default blogRouter;

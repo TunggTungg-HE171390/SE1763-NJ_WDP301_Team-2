@@ -11,7 +11,7 @@ import Login from "./screens/common/login";
 import SignUp from "./screens/common/register";
 import TeamLogo from "./assets/TeamLogo.svg";
 import Blog from "./screens/public/Blog";
-
+import Blogdetail from "./screens/public/Blogdetail";
 function App() {
     return (
         <HelmetProvider>
@@ -23,6 +23,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Homepage />} />
                     <Route path="/blog" element={<Blog />} />
+                    <Route path="/blogdetail/:id" element={<Blogdetail />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<SignUp />} />
                 </Routes>
