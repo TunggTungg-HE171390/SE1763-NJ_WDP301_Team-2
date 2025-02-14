@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 // import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
@@ -12,6 +12,8 @@ import SignUp from "./screens/common/register";
 import TeamLogo from "./assets/TeamLogo.svg";
 import Blog from "./screens/public/Blog";
 import Blogdetail from "./screens/public/Blogdetail";
+import Psychologistappointment from "./screens/public/Psychologistappointment";
+
 function App() {
     return (
         <HelmetProvider>
@@ -24,6 +26,7 @@ function App() {
                     <Route path="/" element={<Homepage />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/blogdetail/:id" element={<Blogdetail />} />
+                    <Route path="/psychologistappointment" element={<Psychologistappointment />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<SignUp />} />
                 </Routes>
