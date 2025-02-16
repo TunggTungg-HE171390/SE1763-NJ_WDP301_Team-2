@@ -40,12 +40,11 @@ export function CategoryDetailTest() {
         navigate(`/questions-on-test/${testId}`);
     };
 
-
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
 
             {/* Phai co role Manager */}
-            <Card className="w-[500px] p-4 border rounded-md shadow-lg hover:scale-105 hover:border-yellow-500 transition-all duration-300 ease-in-out">
+            <Card className="w-[500px] p-4 border rounded-md shadow-lg hover:scale-105 hover:border-yellow-500 transition-all duration-300 ease-in-out mb-8">
                 <CardContent className="flex-grow flex justify-center items-center h-full">
                     <div className="rounded-full bg-gray-300 w-60 h-60 flex items-center justify-center cursor-pointer hover:bg-gray-400 transition duration-300"> {/* Larger circle */}
                         <span className="text-6xl font-bold text-gray-600">+</span>
@@ -55,7 +54,7 @@ export function CategoryDetailTest() {
             {/* Phai co role Manager */}
 
             {testData.map((test) => (
-                <Card key={test.id} className="w-[500px] p-4 border rounded-md shadow-lg hover:scale-105 hover:border-yellow-500 transition-all duration-300 ease-in-out">
+                <Card key={test.id} className="w-[500px] p-4 border rounded-md shadow-lg hover:scale-105 hover:border-yellow-500 transition-all duration-300 ease-in-out mb-8">
                     <CardHeader>
                         <CardTitle className="text-2xl font-semibold text-left text-gray-800 mb-2">
                             Bài kiểm tra:

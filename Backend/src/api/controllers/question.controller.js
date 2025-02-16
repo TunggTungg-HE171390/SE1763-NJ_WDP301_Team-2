@@ -24,6 +24,7 @@ const getQuestionsOnTest = async (req, res, next) => {
       category: questions[0]?.category?.categoryName,
       questions: questions.map((q) => {
         return {
+          questionId: q._id,
           content: q.content,
           answers: q.answers,
         };
