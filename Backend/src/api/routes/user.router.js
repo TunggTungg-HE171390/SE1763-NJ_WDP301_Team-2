@@ -6,6 +6,7 @@ const userRouter = express.Router();
 
 userRouter.post("/register", UserController.registerUser);
 userRouter.post("/login", UserController.loginUser);
-userRouter.get("/verify", UserController.verifyToken);
+userRouter.post("/verify-otp", UserController.verifyOTP);
+userRouter.post("/resend-otp", UserController.resendOTP);
 
 export default userRouter;

@@ -11,3 +11,13 @@
     display: flex;
     flex-direction: column;
 }
+
+.custom-quill .ql-container {
+    height: 300px !important; /* Kiểm soát chiều cao toàn bộ khung nhập */
+    border-radius: 5px; /* Bo góc nhẹ */
+}
+
+.custom-quill .ql-editor {
+    min-height: 250px !important; /* Kiểm soát vùng nhập nội dung */
+    overflow-y: auto; /* Cho phép cuộn khi nhập nhiều nội dung */
+}

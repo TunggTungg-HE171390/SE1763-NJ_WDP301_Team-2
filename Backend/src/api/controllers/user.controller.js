@@ -69,7 +69,7 @@ export const registerUser = async (req, res) => {
                 .catch((error) => console.error("Failed to send SMS:", error));
         }
 
-        
+        res.status(200).json({ message: "Success" });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
@@ -78,15 +78,28 @@ export const registerUser = async (req, res) => {
 // User login
 export const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { contact, password } = req.body;
 
-        // Check if user exists
-        const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ message: "Invalid email or password" });
+        // Determine if contact is an email or phone number
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
+        const isPhone = /^\+?[1-9]\d{1,14}$/.test(contact);
+
+        if (!isEmail && !isPhone) {
+            return res.status(400).json({ message: "Invalid email or phone number format" });
+        }
+
+        // Find user by email or phone
+        const user = await User.findOne(isEmail ? { email: contact } : { phone: contact });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid email/phone or password" });
+        }
 
         // Compare password
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid email/phone or password" });
+        }
 
         // Generate JWT
         const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "7d" });
@@ -99,26 +112,89 @@ export const loginUser = async (req, res) => {
 };
 
 // Verify User (Persistent Login)
-export const verifyToken = async (req, res) => {
+export const verifyOTP = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
+        const { contact, otp } = req.body;
 
-        if (!token) return res.status(401).json({ message: "Unauthorized" });
+        const user = await User.findOne({
+            $or: [{ email: contact }, { phone: contact }],
+        });
 
-        const decoded = jwt.verify(token, SECRET_KEY);
-        const user = await User.findById(decoded.id).select("-password");
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
 
-        if (!user) return res.status(404).json({ message: "User not found" });
+        // Check if the OTP matches
+        const isEmail = user.email === contact;
+        const storedOTP = isEmail ? user.emailVerificationCode : user.phoneVerificationCode;
 
-        res.json({ user });
+        if (!storedOTP || storedOTP !== otp) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+
+        // Update verification status and clear OTP
+        if (isEmail) {
+            user.isEmailVerified = true;
+            user.emailVerificationCode = null;
+        } else {
+            user.isPhoneVerified = true;
+            user.phoneVerificationCode = null;
+        }
+
+        await user.save();
+        res.status(200).json({ message: "Verification successful" });
     } catch (error) {
-        res.status(401).json({ message: "Invalid token" });
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+export const resendOTP = async (req, res) => {
+    try {
+        const { contact } = req.body;
+
+        if (!contact) {
+            return res.status(400).json({ message: "Contact (email or phone) is required" });
+        }
+
+        // Find the user by email or phone
+        const user = await User.findOne({ $or: [{ email: contact }, { phone: contact }] });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Generate a new OTP
+        const newOTP = generateVerificationCode();
+        const expirationTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiry
+
+        if (user.email === contact) {
+            user.emailVerificationCode = newOTP;
+        } else if (user.phone === contact) {
+            user.phoneVerificationCode = newOTP;
+        }
+
+        user.verificationExpires = expirationTime;
+        await user.save();
+
+        // Send OTP via email or SMS
+        if (user.email === contact) {
+            await sendVerificationEmail(contact, newOTP);
+        } else if (user.phone === contact) {
+            await sendVerificationSMS(contact, newOTP);
+        }
+
+        return res.status(200).json({ message: "OTP resent successfully" });
+    } catch (error) {
+        console.error("Error resending OTP: ", error);
+        res.status(500).json({ message: "Server error" });
     }
 };
 
 export default {
     registerUser,
     loginUser,
-    verifyToken,
+    verifyOTP,
+    resendOTP,
     findAllUsers,
 };
