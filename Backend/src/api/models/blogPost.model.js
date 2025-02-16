@@ -5,8 +5,8 @@ const CommentSchema = new Schema(
     {
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Referring to the User collection
-            // required: true,
+            ref: "users", // Referring to the User collection
+            required: true,
         },
         content: {
             type: String,
@@ -29,8 +29,8 @@ const BlogPostSchema = new Schema(
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Referring to the User collection
-            // required: true,
+            ref: "users", // Referring to the User collection
+            required: true,
         },
         image: {
             type: String,

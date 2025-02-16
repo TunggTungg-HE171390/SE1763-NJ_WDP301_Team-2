@@ -16,13 +16,13 @@ const QuestionSchema = new Schema(
     {
         questionId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Question", // Referring to the Question collection
+            ref: "questions", // Referring to the Question collection
             required: true,
         },
-        content: {
-            type: String,
-            required: true,
-        },
+        // content: {
+        //     type: String,
+        //     required: true,
+        // },
         selectedAnswer: SelectedAnswerSchema, // Embedding the SelectedAnswerSchema
     },
     { _id: false } // Prevent creating an ID for the question subdocument
@@ -52,12 +52,12 @@ const TestHistorySchema = new Schema(
     {
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "User", // Referring to the User collection
+            ref: "users", // Referring to the User collection
             required: true,
         },
         testId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Test", // Referring to the Test collection
+            ref: "tests", // Referring to the Test collection
             required: true,
         },
         score: {

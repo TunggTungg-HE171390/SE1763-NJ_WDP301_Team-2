@@ -20,7 +20,7 @@ const QuestionSchema = new Schema(
     {
         testId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Test", // Referring to the Test collection
+            ref: "tests", // Referring to the Test collection
             required: true,
         },
         content: {
@@ -29,7 +29,7 @@ const QuestionSchema = new Schema(
         },
         category: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Category", // Referring to the Category collection
+            ref: "categories", // Referring to the Category collection
             required: true,
         },
         answers: [AnswerSchema], // Embedding the AnswerSchema for storing possible answers
