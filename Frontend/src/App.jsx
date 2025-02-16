@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 import TopBar from "./components/common/topbar";
 import Header from "./components/common/header";
 import Footer from "./components/common/footer";
@@ -14,6 +16,7 @@ import { AuthProvider } from "@/components/auth/authContext";
 import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
+import CreateNewPost from './screens/staff/CreateNewBlogPost';
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -66,6 +69,7 @@ function Layout() {
                         <Route path="/login" element={<PublicRoute element={<Login />} />} />
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
+                        <Route path="/create-post" element={<CreateNewPost/>} />
                     </Routes>
                 </div>
                 {!hideHeaderFooter && <Footer />}

@@ -5,7 +5,7 @@ import { body, validationResult } from "express-validator";
 const createBlogPost = [
     // Validation rules
     body("title").isString().withMessage("Title must be a string").notEmpty().withMessage("Title is required"),
-    body("userId").isMongoId().withMessage("UserId must be a valid MongoDB ObjectId").notEmpty().withMessage("UserId is required"),
+    // body("userId").isMongoId().withMessage("UserId must be a valid MongoDB ObjectId").notEmpty().withMessage("UserId is required"),
     body("content").isString().withMessage("Content must be a string").notEmpty().withMessage("Content is required"),
     body("status").optional().isIn(["Draft", "Published"]).withMessage("Status must be either 'Draft' or 'Published'"),
 
