@@ -23,23 +23,22 @@ export function TestForm() {
   const navigate = useNavigate();
   const [questionData, setQuestionData] = useState({ testTitle: "", category: "", questions: [] });
   const [answers, setAnswers] = useState({});
-  const [testOutCome, setTestOutCome] = useState(" ");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [userInfo, setUserInfo] = useState({ name: '', mail: '' });
 
   useEffect(() => {
-    const fetchQuestionData = async () => {
-      try {
-        const response = await getQuestionByTestId(testId);
-        setQuestionData(response.data);
-        console.log("DATA", response.data);
-      } catch (error) {
-        console.error("Error fetching test data:", error);
-      }
-    };
-
     fetchQuestionData();
-  }, [testId]);
+  }, []);
+
+  const fetchQuestionData = async () => {
+    try {
+      const response = await getQuestionByTestId(testId);
+      setQuestionData(response.data);
+    } catch (error) {
+      console.error("Error fetching test data:", error);
+    }
+  };
 
   const handleAnswerChange = (questionIndex, answer) => {
     setAnswers((prevAnswers) => ({
@@ -50,30 +49,55 @@ export function TestForm() {
     console.log("Answers:", answers);
   };
 
+  // Check if all questions are answered
+  const areAllQuestionsAnswered = Object.keys(answers).length === questionData.questions?.length;
+
   const handleSubmit = async () => {
+    if (areAllQuestionsAnswered) {
+      setIsModalVisible(true);
+    } else {
+      alert("Please answer all questions.");
+    }
+  };
+
+  const handleFinalSubmit = async () => {
     try {
+      console.log("helllo")
       setLoading(true);
 
       const answersArray = Object.keys(answers).map((questionIndex) => {
         const question = questionData.questions[questionIndex];
         return {
           questionId: question.questionId,
+          questionContent: question.content,
           selectedAnswer: answers[questionIndex],
         };
       });
 
       console.log("Answers array:", answersArray);
 
+      const question = answersArray.map((q) => q.questionContent);
+
+      console.log("Questions:", question);
+
+
       const userId = "67a0374b7ad0db88c8b251c0";
-      const userEmail = "tunggtungg2202@gmail.com"; 
-      console.log("Sending data to backend:", { userId, testId, answersArray });
+      console.log("Sending data to backend:", { userId, testId, userInfo, answersArray });
 
-      const response = await submitTest(userId, testId, answersArray, userEmail);
-
-      console.log("Test submitted successfully:", response);
-      setTestOutCome(response.result);
-      setLoading(false);
-      setIsModalVisible(true);
+      submitTest(userId, testId, answersArray, userInfo)  // Trả về promise
+      .then(response => {
+        console.log("API Response:", response);
+        const testOutCome = response.result;
+        console.log("testOutCome updated:", testOutCome);
+        setLoading(false);
+        setIsModalVisible(false);
+        navigate('/test-outcome', { state: { testOutCome, answersArray } });
+      })
+      
+      .catch(error => {
+        console.error("Lỗi khi gửi bài kiểm tra:", error);
+        setLoading(false);
+      });
     } catch (error) {
       console.error("Error submitting test:", error);
       setLoading(false);
@@ -115,43 +139,49 @@ export function TestForm() {
         </CardContent>
 
         <CardFooter className="justify-between space-x-2">
-          <Button variant="ghost" onClick={() => navigate("/")}>Cancel</Button>
+          <Button style={{ marginLeft: "10px", color: "red" }} variant="ghost" onClick={() => navigate("/")}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading}>{loading ? "Submitting..." : "Submit"}</Button>
         </CardFooter>
       </Card>
 
       <Modal show={isModalVisible} onHide={() => setIsModalVisible(false)}>
-  <Modal.Header closeButton>
-    <Modal.Title>Nhận thêm lời khuyên từ chuyên gia sau khi làm bài test</Modal.Title>
-  </Modal.Header>
-  <Modal.Body>
-    <p style={{ fontWeight: "bold" }}>{testOutCome}</p>
-    <label>Lưu ý:
-      <ul>
-        <li>- Kết quả và lời khuyên từ chuyên gia tâm lý sẽ được gửi về mail, vui lòng nhập tên và email chính xác để nhận được thông tin.</li>
-        <li>- Sau khi ẩn "Xác nhận", bạn sẽ xem được kết quả bài test</li>
-      </ul>
-    </label>
-    <Form>
-      <Form.Group className="mb-3" controlId="formBasicEmail">
-        <Form.Label>Họ và tên của bạn (*)</Form.Label>
-        <Form.Control type="text" placeholder="Vui lòng nhập họ tên của bạn" />
-      </Form.Group>
+        <Modal.Header closeButton>
+          <Modal.Title>Nhận thêm lời khuyên từ chuyên gia sau khi làm bài test</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p style={{ fontWeight: "bold" }}>HelloHello</p>
+          <label>Lưu ý:
+            <ul>
+              <li>- Kết quả và lời khuyên từ chuyên gia tâm lý sẽ được gửi về mail, vui lòng nhập tên và email chính xác để nhận được thông tin.</li>
+              <li>- Sau khi ẩn "Xác nhận", bạn sẽ xem được kết quả bài test</li>
+            </ul>
+          </label>
+          <Form>
+            <Form.Group className="mb-3" controlId="formBasicEmail">
+              <Form.Label>Họ và tên của bạn (*)</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Vui lòng nhập họ tên của bạn"
+                onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
+              />
+            </Form.Group>
 
-      <Form.Group className="mb-3" controlId="formBasicPassword">
-        <Form.Label>E-mail/Số điện thoại (*)</Form.Label>
-        <Form.Control type="text" placeholder="Vui lòng nhập email/số điện thoại" />
-      </Form.Group>
-      <Button variant="secondary" onClick={() => setIsModalVisible(false)}>
-      Đăng ký
-    </Button>
-      <Button variant="secondary" onClick={() => setIsModalVisible(false)}>
-      Đóng
-    </Button>
-    </Form>
-  </Modal.Body>
+            <Form.Group className="mb-3" controlId="formBasicPassword">
+              <Form.Label>E-mail/Số điện thoại (*)</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Vui lòng nhập email/số điện thoại"
+                onChange={(e) => setUserInfo({ ...userInfo, mail: e.target.value })}
+              />
+            </Form.Group>
 
-</Modal>
+          </Form>
+          <Button onClick={handleFinalSubmit} >Xác nhận</Button>
+          <Button style={{ marginLeft: "10px", color: "red" }} variant="danger" onClick={() => setIsModalVisible(false)}>
+            Đóng
+          </Button>
+        </Modal.Body>
+      </Modal>
 
       {/* Hiển thị spinner khi loading */}
       {loading && (

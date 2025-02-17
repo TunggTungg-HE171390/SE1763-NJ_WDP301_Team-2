@@ -29,4 +29,4 @@ Cảm ơn bạn đã lựa chọn sử dụng dịch vụ booking của SlayMe, 
   MESSAGE_ERROR: "ERROR: Unknown action code.",
 };
 
-module.exports = messages;
+export default messages;

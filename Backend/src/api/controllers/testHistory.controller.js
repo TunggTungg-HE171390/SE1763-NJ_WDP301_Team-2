@@ -2,7 +2,9 @@ import Tests from "../models/test.model.js";
 import TestHistory from "../models/testHistory.model.js";
 import Question from "../models/question.model.js";
 // import sendEmail from "../services/mailService.service.js";
-// const actions = require('../actions/requestController.action.js');
+import {MailService} from "../services/index.js";
+// const MailService = require("../services/index");
+import actions from '../actions/requestController.action.js';
 
 const getUserAnswerForQuestion = async (req, res, next) => {
   try {
@@ -47,7 +49,7 @@ const getUserAnswerForQuestion = async (req, res, next) => {
 const submitTest = async (req, res, next) => {
   try {
     const { userId, testId } = req.params;
-    const { answers, userEmail } = req.body;
+    const { answers, userInfo } = req.body;
 
     const test = await Tests.findById(testId);
     console.log("Ten bai kiem tra", test.title);
@@ -75,21 +77,24 @@ const submitTest = async (req, res, next) => {
 
     savedTestHistory.score = totalScore;
 
-    // if(userEmail){
+    if (userInfo) {
       const commentAi = await commentAI(answers, testName);
       savedTestHistory.commentAI = commentAi;
-      // await MailService.sendEmail(userEmail, savedTestHistory.userId.fullName, commentAi, actions.SUBMIT_TEST);
-    // }
+      console.log("Chuẩn bị gửi mail");
+      const mailService = MailService();
+      await mailService.sendEmail(userInfo.mail, userInfo.name, commentAi, actions.SUBMIT_TEST);
+      console.log("Gui mail thanh cong");
+    }
 
-    await savedTestHistory.save();
+    // await savedTestHistory.save();
 
-    res.json({  
+    res.json({
       userName: savedTestHistory.userId.fullName,
       testTitle: savedTestHistory.testId.title,
       score: totalScore,
       result: resultText,
       questions: savedTestHistory.questions,
-      commentAI: commentAi,
+     commentAI: savedTestHistory.commentAI,
     });
 
   } catch (error) {

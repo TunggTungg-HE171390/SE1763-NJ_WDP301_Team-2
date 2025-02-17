@@ -12,7 +12,9 @@ import TeamLogo from "./assets/TeamLogo.svg";
 import CategoryTestSelected  from "./screens/public/CategoryTestSelected";
 import CategoryDetailTest from "./screens/public/CategoryDetailTest";
 import TestForm from "./screens/public/TestForm";
-import Test from "./screens/public/Test";
+import InsertQuestionOnTestScreen from "./screens/admin/InsertQuestionOnTestScreen";
+import CreateTestScreen from "./screens/admin/CreateTestScreen";
+import TestOutCome from "./screens/public/TestOutCome";
 
 function Layout() {
     const location = useLocation(); // Get the current route
@@ -35,7 +37,8 @@ function Layout() {
                         <Route path="/CategoryTestSelected" element={<CategoryTestSelected />} />
                         <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
                         <Route path="/questions-on-test/:testId" element={<TestForm />} />
-                        <Route path="/Test" element={<Test />} />
+                        <Route path="/create-test/:categoryId" element={<CreateTestScreen />} />
+                        <Route path="/test-outcome" element={<TestOutCome />} />
                     </Routes>
                 </div>
                 {/* {!hideHeaderFooter && <Footer />} */}
