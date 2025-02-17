@@ -1,130 +1,112 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Helmet, HelmetProvider } from "react-helmet-async";
-// import { Toaster } from "@/components/ui/toaster";
-import "./App.css";
-import 'bootstrap/dist/css/bootstrap.min.css';
+    import React from "react";
+    import { Navigate, Route, Router, useLocation, Routes } from "react-router-dom";
 
-import TopBar from "./components/common/topbar";
-import Header from "./components/common/header";
-import Footer from "./components/common/footer";
-import Homepage from "./screens/public/home/homepage";
-import Login from "@/screens/common/login/login";
-import SignUp from "@/screens/common/register/register";
-import Verify from "@/screens/common/verify/verify";
-import TeamLogo from "@/assets/TeamLogo.svg";
-import CategoryTestSelected  from "./screens/public/CategoryTestSelected";
-import CategoryDetailTest from "./screens/public/CategoryDetailTest";
-import TestForm from "./screens/public/TestForm";
-import Test from "./screens/public/Test";
-import ChatWidget from "@/components/public/chat/chat-widget";
-import { AuthProvider } from "@/components/auth/authContext";
-import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
-import PropTypes from "prop-types";
-import ToastReceiver from "@/components/common/toast/toast-receiver";
-import CreateNewPost from './screens/staff/CreateNewBlogPost';
+    import { Helmet, HelmetProvider } from "react-helmet-async";
+    // import { Toaster } from "@/components/ui/toaster";
+    import 'bootstrap/dist/css/bootstrap.min.css';
+    import "./App.css";
 
-// Protected route with role-based access control
-function ProtectedRoute({ element, requiredRole }) {
-    const { user } = useAuth();
+    import TeamLogo from "@/assets/TeamLogo.svg";
+    import ToastReceiver from "@/components/common/toast/toast-receiver";
+    import ChatWidget from "@/components/public/chat/chat-widget";
+    import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
+    import Login from "@/screens/common/login/login";
+    import SignUp from "@/screens/common/register/register";
+    import Verify from "@/screens/common/verify/verify";
+    import PropTypes from "prop-types";
+    import Footer from "./components/common/footer";
+    import Header from "./components/common/header";
+    import TopBar from "./components/common/topbar";
+    import CategoryDetailTest from "./screens/public/CategoryDetailTest";
+    import CategoryTestSelected from "./screens/public/CategoryTestSelected";
+    import Homepage from "./screens/public/home/homepage";
+    import Test from "./screens/public/Test";
+    import TestForm from "./screens/public/TestForm";
+    import CreateNewPost from './screens/staff/CreateNewBlogPost';
+    import Blog from "./screens/public/Blog";
+    import Blogdetail from "./screens/public/Blogdetail";
+    import Psychologistappointment from "./screens/public/Psychologistappointment";
+import { useMemo } from "react";
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
+    // Protected route with role-based access control
+    function ProtectedRoute({ element, requiredRole }) {
+        const { user } = useAuth();
+
+        if (!user) {
+            return <Navigate to="/login" replace />;
+        }
+
+        if (requiredRole && user.role !== requiredRole) {
+            return <Navigate to="/" replace />; // Redirect unauthorized users to homepage
+        }
+
+        return element;
     }
 
-    if (requiredRole && user.role !== requiredRole) {
-        return <Navigate to="/" replace />; // Redirect unauthorized users to homepage
+    // Public routes (only accessible if not logged in)
+    function PublicRoute({ element }) {
+        const { user } = useAuth();
+        return user ? <Navigate to="/" replace /> : element;
     }
 
-    return element;
-}
+    // Prop validation
+    ProtectedRoute.propTypes = {
+        element: PropTypes.node.isRequired, // Use `node` instead of `element`
+        requiredRole: PropTypes.string, // Optional role check
+    };
 
-// Public routes (only accessible if not logged in)
-function PublicRoute({ element }) {
-    const { user } = useAuth();
-    return user ? <Navigate to="/" replace /> : element;
-}
+    PublicRoute.propTypes = {
+        element: PropTypes.node.isRequired, // Fix for missing prop validation
+    };
+    // import TopBar from "./components/common/topbar";
+    // import Header from "./components/common/header";
+    // import Footer from "./components/common/footer";
 
-// Prop validation
-ProtectedRoute.propTypes = {
-    element: PropTypes.node.isRequired, // Use `node` instead of `element`
-    requiredRole: PropTypes.string, // Optional role check
-};
 
-PublicRoute.propTypes = {
-    element: PropTypes.node.isRequired, // Fix for missing prop validation
-};
-// import TopBar from "./components/common/topbar";
-// import Header from "./components/common/header";
-// import Footer from "./components/common/footer";
 
-import Homepage from "./screens/public/homepage";
-import Login from "./screens/common/login";
-import SignUp from "./screens/common/register";
-import TeamLogo from "./assets/TeamLogo.svg";
-import Blog from "./screens/public/Blog";
-import Blogdetail from "./screens/public/Blogdetail";
-import Psychologistappointment from "./screens/public/Psychologistappointment";
 
-function Layout() {
-    const location = useLocation();
-    const hideLayout = ["/login", "/signup", "/verify"].includes(location.pathname);
 
-function App() {
-    return (
-        <div className="app">
-            <HelmetProvider>
-                <Helmet>
-                    <link rel="icon" type="image/svg+xml" href={TeamLogo} />
-                </Helmet>
-                <TopBar />
-                {!hideLayout && <Header />}
-                {!hideLayout && <ChatWidget />}
-                <Toaster />
-                <ToastReceiver />
-                <div>
-                    <Routes>
-                        <Route path="/" element={<Homepage />} />
-                        <Route path="/CategoryTestSelected" element={<CategoryTestSelected />} />
-                        <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
-                        <Route path="/questions-on-test/:testId" element={<TestForm />} />
-                        <Route path="/Test" element={<Test />} />
-                        <Route path="/login" element={<PublicRoute element={<Login />} />} />
-                        <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
-                        <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
-                        <Route path="/create-post" element={<CreateNewPost/>} />
-                    </Routes>
-                </div>
-                {!hideLayout && <Footer />}
-            </HelmetProvider>
-        </div>
-    );
-}
+// import path from "path";
 
-function App() {
-    return (
-        <AuthProvider>
-            <Router>
-                <Layout />
-            </Router>
-        </AuthProvider>
-        <HelmetProvider>
-            <Helmet>ghgughbghb
-                <link rel="icon" type="image/svg+xml" href={TeamLogo} />
-            </Helmet>
-            <Router>
-           
-                <Routes>
-                    <Route path="/" element={<Homepage />} />
-                    <Route path="/blog" element={<Blog />} />
-                    <Route path="/blogdetail/:id" element={<Blogdetail />} />
-                    <Route path="/psychologistappointment" element={<Psychologistappointment />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<SignUp />} />
-                </Routes>
-            </Router>
-        </HelmetProvider>
-    );
-}
+    function App() {
+        const {pathname} = useLocation();
+        // const hideLayout = ["/login", "/signup", "/verify"].includes(location.pathname);
 
-export default App;
+        const hideLayout = useMemo(() => {
+            return ["/login", "/signup", "/verify"].includes(pathname);
+        }, [pathname])
+
+
+        return (
+            <div className="app">
+                <HelmetProvider>
+                    <Helmet>
+                        <link rel="icon" type="image/svg+xml" href={TeamLogo} />
+                    </Helmet>
+                    <TopBar />
+                    {!hideLayout && <Header />}
+                    {!hideLayout && <ChatWidget />}
+                    <ToastReceiver />
+                    <div>
+                            <Routes>
+                            <Route path="/" element={<Homepage />} />
+                            <Route path="/CategoryTestSelected" element={<CategoryTestSelected />} />
+                            <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
+                            <Route path="/questions-on-test/:testId" element={<TestForm />} />
+                            <Route path="/Test" element={<Test />} />
+                            <Route path="/login" element={<PublicRoute element={<Login />} />} />
+                            <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
+                            <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
+                            <Route path="/create-post" element={<CreateNewPost/>} />
+                        <Route path="/blog" element={<Blog />} />
+                        <Route path="/blogdetail/:id" element={<Blogdetail />} />
+                        <Route path="/psychologistappointment" element={<Psychologistappointment />} />
+                            </Routes>
+                    </div>
+                    {!hideLayout && <Footer />}
+                </HelmetProvider>
+            </div>
+        );
+    }
+
+    export default App;

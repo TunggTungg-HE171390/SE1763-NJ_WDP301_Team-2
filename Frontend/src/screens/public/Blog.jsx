@@ -17,7 +17,11 @@ export default function BlogScreen() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/blog/allblog");
+        const response = await axios.get("http://localhost:3000/api/blogs/allblog", {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
         setArticles(response.data);
       } catch (error) {
         console.error("Error fetching blog data:", error);

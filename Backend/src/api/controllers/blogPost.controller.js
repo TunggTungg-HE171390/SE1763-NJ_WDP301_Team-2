@@ -1,6 +1,19 @@
 import BlogPost from "../models/blogPost.model.js"; // Import BlogPost model
 import { body, validationResult } from "express-validator";
 
+const getAllBlog = [
+    async (req, res) => {
+        try {
+            const blogPosts = await BlogPost.find();
+            res.status(200).json(blogPosts);
+    
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+];
+
 // Controller to create a new blog post with validation
 const createBlogPost = [
     // Validation rules
@@ -91,4 +104,4 @@ const updateBlogPost = [
     },
 ];
 
-export default { createBlogPost, updateBlogPost };
+export default {getAllBlog, createBlogPost, updateBlogPost };

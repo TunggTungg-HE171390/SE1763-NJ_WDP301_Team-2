@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, HelpCircle, LogOut } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
+import {useAuth} from "../../hooks/useAuth"; // Import authentication hook
 
 function ListItem({ className, title, children, href }) {
     return (
@@ -54,7 +54,7 @@ ListItem.propTypes = {
 };
 
 export function Header() {
-    const { user } = useAuth(); // Get authentication state
+    const {user} = useAuth(); // Get authentication state
     const { logout } = useContext(AuthContext);
     const [isAuthenticated, setIsAuthenticated] = useState(!!user);
     const userName = user?.fullName;
