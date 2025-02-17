@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from "@/components/ui/input-otp";
-import TeamLogo from "../../../assets/TeamLogo.svg";
+import TeamLogo from "@/assets/TeamLogo.svg";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { setToast } from "@/components/common/toast/setToast";

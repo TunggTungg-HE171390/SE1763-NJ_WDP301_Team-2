@@ -1,11 +1,13 @@
 import User from "../models/user.model.js";
 import { generateVerificationCode } from "../utils/auth.js";
-import sendVerificationEmail from "../utils/email.js";
+import Email from "../utils/email.js";
 import { sendVerificationSMS } from "../utils/phone.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const SECRET_KEY = process.env.JWT_SECRET;
+const API_KEY = process.env.GPT_API_KEY;
+const MODEL = process.env.MODEL;
 
 const findAllUsers = async (req, res, next) => {
     try {
@@ -60,7 +62,7 @@ export const registerUser = async (req, res) => {
 
         // Send OTP via email or SMS
         if (isEmail) {
-            sendVerificationEmail(contact, verificationCode)
+            Email.sendVerificationEmail(contact, verificationCode)
                 .then(() => console.log("Email sent successfully"))
                 .catch((error) => console.error("Failed to send email:", error));
         } else if (isPhone) {
@@ -179,7 +181,7 @@ export const resendOTP = async (req, res) => {
 
         // Send OTP via email or SMS
         if (user.email === contact) {
-            await sendVerificationEmail(contact, newOTP);
+            await Email.sendVerificationEmail(contact, newOTP);
         } else if (user.phone === contact) {
             await sendVerificationSMS(contact, newOTP);
         }
@@ -191,10 +193,73 @@ export const resendOTP = async (req, res) => {
     }
 };
 
+// AI Chat Function
+export const chatWithAI = async (req, res) => {
+    try {
+        let conversationHistory = [{ role: "system", content: "You are a helpful assistant." }];
+        const { userMessage } = req.body;
+
+        if (!userMessage) {
+            return res.status(400).json({ message: "User message is required" });
+        }
+
+        // Add user message to history
+        conversationHistory.push({ role: "user", content: userMessage });
+
+        // Call AI API
+        const response = await fetch("https://api.yescale.io/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${API_KEY}`,
+            },
+            body: JSON.stringify({
+                model: MODEL,
+                messages: conversationHistory,
+                max_tokens: 1000,
+                temperature: 0.7,
+            }),
+        });
+
+        if (!response.ok) throw new Error("Error fetching response from OpenAI API");
+
+        const data = await response.json();
+        const aiMessage = data.choices[0].message.content.trim();
+
+        // Add AI response to history
+        conversationHistory.push({ role: "assistant", content: aiMessage });
+
+        res.json({ aiMessage });
+    } catch (error) {
+        console.error("Chat error: ", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const sendEmail = async (req, res) => {
+    try {
+        const { email, subject, content } = req.body;
+
+        if (!email || !content) {
+            return res.status(400).json({ message: "Email and content are required" });
+        }
+
+        // Send the email
+        await Email.sendCustomEmail(email, subject, content);
+
+        return res.status(200).json({ message: "Email sent successfully" });
+    } catch (error) {
+        console.error("Error sending email: ", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
 export default {
     registerUser,
     loginUser,
     verifyOTP,
     resendOTP,
     findAllUsers,
+    chatWithAI,
+    sendEmail,
 };

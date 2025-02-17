@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
-import TeamLogo from "../../../assets/TeamLogo.svg";
+import TeamLogo from "@/assets/TeamLogo.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { setToast } from "@/components/common/toast/setToast";
 import { FcGoogle } from "react-icons/fc";

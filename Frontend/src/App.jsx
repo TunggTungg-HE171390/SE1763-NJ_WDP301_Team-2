@@ -5,11 +5,12 @@ import "./App.css";
 import TopBar from "./components/common/topbar";
 import Header from "./components/common/header";
 import Footer from "./components/common/footer";
-import Homepage from "./screens/public/homepage";
-import Login from "./screens/common/login";
-import SignUp from "./screens/common/register";
-import Verify from "./screens/common/verify";
-import TeamLogo from "./assets/TeamLogo.svg";
+import Homepage from "./screens/public/home/homepage";
+import Login from "@/screens/common/login/login";
+import SignUp from "@/screens/common/register/register";
+import Verify from "@/screens/common/verify/verify";
+import TeamLogo from "@/assets/TeamLogo.svg";
+import ChatWidget from "@/components/public/chat/chat-widget";
 import { AuthProvider } from "@/components/auth/authContext";
 import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
@@ -48,7 +49,7 @@ PublicRoute.propTypes = {
 
 function Layout() {
     const location = useLocation();
-    const hideHeaderFooter = ["/login", "/signup", "/verify"].includes(location.pathname);
+    const hideLayout = ["/login", "/signup", "/verify"].includes(location.pathname);
 
     return (
         <div className="app">
@@ -57,7 +58,8 @@ function Layout() {
                     <link rel="icon" type="image/svg+xml" href={TeamLogo} />
                 </Helmet>
                 <TopBar />
-                {!hideHeaderFooter && <Header />}
+                {!hideLayout && <Header />}
+                {!hideLayout && <ChatWidget />}
                 <Toaster />
                 <ToastReceiver />
                 <div>
@@ -68,7 +70,7 @@ function Layout() {
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                     </Routes>
                 </div>
-                {!hideHeaderFooter && <Footer />}
+                {!hideLayout && <Footer />}
             </HelmetProvider>
         </div>
     );
