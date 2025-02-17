@@ -6,12 +6,12 @@ const AppointmentSchema = new Schema(
         patientId: {
             type: Schema.Types.ObjectId,
             required: true,
-            ref: "User", // Assuming "User" model for patients
+            ref: "users", // Assuming "User" model for patients
         },
         psychologistId: {
             type: Schema.Types.ObjectId,
             required: true,
-            ref: "User", // Assuming "User" model for psychologists
+            ref: "users", // Assuming "User" model for psychologists
         },
         scheduledTime: {
             date: {

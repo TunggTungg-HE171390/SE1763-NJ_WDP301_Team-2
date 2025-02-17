@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 import TopBar from "./components/common/topbar";
 import Header from "./components/common/header";
 import Footer from "./components/common/footer";
@@ -10,11 +12,16 @@ import Login from "@/screens/common/login/login";
 import SignUp from "@/screens/common/register/register";
 import Verify from "@/screens/common/verify/verify";
 import TeamLogo from "@/assets/TeamLogo.svg";
+import CategoryTestSelected  from "./screens/public/CategoryTestSelected";
+import CategoryDetailTest from "./screens/public/CategoryDetailTest";
+import TestForm from "./screens/public/TestForm";
+import Test from "./screens/public/Test";
 import ChatWidget from "@/components/public/chat/chat-widget";
 import { AuthProvider } from "@/components/auth/authContext";
 import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
+import CreateNewPost from './screens/staff/CreateNewBlogPost';
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -65,9 +72,14 @@ function Layout() {
                 <div>
                     <Routes>
                         <Route path="/" element={<Homepage />} />
+                        <Route path="/CategoryTestSelected" element={<CategoryTestSelected />} />
+                        <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
+                        <Route path="/questions-on-test/:testId" element={<TestForm />} />
+                        <Route path="/Test" element={<Test />} />
                         <Route path="/login" element={<PublicRoute element={<Login />} />} />
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
+                        <Route path="/create-post" element={<CreateNewPost/>} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}

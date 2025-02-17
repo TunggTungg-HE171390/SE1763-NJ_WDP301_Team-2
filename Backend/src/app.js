@@ -15,7 +15,7 @@ dotenv.config();
 app.use(express.json({ limit: "5mb" })); // Đặt kích thước tối đa là 5MB
 app.use(express.urlencoded({ limit: "5mb", extended: true }));
 app.use(express.json());
-app.use(bodyParser.json());
+// app.use(bodyParser.json());
 app.use(morgan("dev"));
 app.use(helmet());
 app.set("json replacer", (key, value) => {
@@ -40,6 +40,7 @@ app.set("json replacer", (key, value) => {
 // }))
 
 const allowedOrigins = [
+    "http://localhost:9999",
     "http://localhost:8081",
     "http://localhost:3000", // Thêm cổng 3000
     "http://localhost:5173",
