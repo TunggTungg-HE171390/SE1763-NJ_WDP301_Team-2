@@ -44,4 +44,23 @@ const sendVerificationEmail = async (email, verificationCode) => {
     await transporter.sendMail(mailOptions);
 };
 
-export default sendVerificationEmail;
+const sendCustomEmail = async (email, subject, body) => {
+    const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+            user: send_email,
+            pass: password,
+        },
+    });
+
+    const mailOptions = {
+        from: send_email,
+        to: email,
+        subject: subject,
+        text: body,
+    };
+
+    await transporter.sendMail(mailOptions);
+};
+
+export default { sendVerificationEmail, sendCustomEmail };

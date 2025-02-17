@@ -40,6 +40,7 @@ app.set("json replacer", (key, value) => {
 // }))
 
 const allowedOrigins = [
+    "http://localhost:9999",
     "http://localhost:8081",
     "http://localhost:3000", // Thêm cổng 3000
     "http://localhost:5173",
@@ -56,6 +57,7 @@ app.use(
             }
         },
         methods: ["GET", "POST", "PUT", "DELETE"],
+        allowedHeaders: ["Content-Type", "Authorization"],
     })
 );
 

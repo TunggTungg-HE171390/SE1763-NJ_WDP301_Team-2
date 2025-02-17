@@ -28,7 +28,7 @@ const TestSchema = new Schema(
         },
         category: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Category", // Referring to the Category collection
+            ref: "categories", // Referring to the Category collection
             required: true,
         },
         description: {

@@ -84,15 +84,16 @@ const UserSchema = new Schema(
         emailVerificationCode: {
             type: String,
             required: false,
+            default: null,
         },
         phoneVerificationCode: {
             type: String,
             required: false,
+            default: null,
         },
         verificationExpires: {
             type: Date,
-            default: () => new Date(Date.now() + 15 * 60 * 1000), // Set expiration time (10 minutes)
-            index: { expires: "15m" }, // TTL index to auto-delete expired data
+            default: () => new Date(Date.now() + 15 * 60 * 1000),
         },
         patient: {
             type: new Schema(
@@ -139,10 +140,12 @@ UserSchema.pre("save", function (next) {
     next();
 });
 
+// Hook to clear expired verification fields without deleting the user
 UserSchema.pre("save", function (next) {
     if (this.verificationExpires && this.verificationExpires < new Date()) {
-        this.emailVerificationCode = undefined; // Remove expired code
-        this.phoneVerificationCode = undefined;
+        this.emailVerificationCode = null; // Clear email verification code
+        this.phoneVerificationCode = null; // Clear phone verification code
+        this.verificationExpires = null; // Reset expiration field
     }
     next();
 });

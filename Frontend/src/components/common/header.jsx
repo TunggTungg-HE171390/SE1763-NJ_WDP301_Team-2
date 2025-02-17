@@ -1,6 +1,8 @@
 "use client";
 
-import TeamLogo from "../../assets/TeamLogo.svg";
+import { useEffect, useState, useContext } from "react";
+import { AuthContext } from "@/components/auth/authContext";
+import TeamLogo from "@/assets/TeamLogo.svg";
 import PropTypes from "prop-types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,16 @@ import {
     NavigationMenuTrigger,
     navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Settings, HelpCircle, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 
 function ListItem({ className, title, children, href }) {
     return (
@@ -42,6 +54,48 @@ ListItem.propTypes = {
 };
 
 export function Header() {
+    const { user } = useAuth(); // Get authentication state
+    const { logout } = useContext(AuthContext);
+    const [isAuthenticated, setIsAuthenticated] = useState(!!user);
+    const userName = user?.fullName;
+    const userAvatar =
+        user?.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGH692JKGKQ6t9K1nxWdKRaDa8V387Yqe1w&s";
+
+    useEffect(() => {
+        setIsAuthenticated(!!user); // Update when user state changes
+    }, [user]);
+
+    const UserMenu = () => (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button className="relative h-8 w-8 rounded-full bg-inherit">
+                    <Avatar className="h-9 w-9 bg-gray-300 hover:bg-gray-400 flex items-center justify-center">
+                        <AvatarImage
+                            src={"https://cdn-icons-png.flaticon.com/512/7996/7996254.png"}
+                            alt="chevron"
+                            className="h-6 w-6"
+                        />
+                    </Avatar>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mt-4" align="end">
+                <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    <span>FAQ</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-red-600 cursor-pointer" onSelect={logout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+
     return (
         <NavigationMenu className="w-full absolute top-[26px] left-0 h-[75px] bg-white shadow-md z-50 flex items-stretch px-6">
             <NavigationMenuList>
@@ -108,20 +162,39 @@ export function Header() {
                 </NavigationMenuItem>
             </NavigationMenuList>
             {/* Right - Login & Sign Up Buttons */}
-            <div className="flex gap-3 items-center justify-between ml-auto">
-                <Link to="/login">
-                    <Button variant="outline" className="px-4 py-2">
-                        Login
-                    </Button>
-                </Link>
-                <Link to="/signup">
-                    <Button variant="default" className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700">
-                        Sign Up
-                    </Button>
-                </Link>
+            <div className="flex gap-3 items-center justify-between ml-auto mr-4">
+                {isAuthenticated ? (
+                    <div className="flex flex-row items-center gap-2">
+                        <p className="flex items-center mr-1 font-semibold">{user.fullName}</p>
+                        <Avatar className="h-9 w-9">
+                            <AvatarImage src={userAvatar} alt={userName} />
+                            <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <UserMenu userAvatar={user.avatar} userName={user.fullName} />
+                    </div>
+                ) : (
+                    <>
+                        <Link to="/login">
+                            <Button variant="outline" className="px-4 py-2">
+                                Login
+                            </Button>
+                        </Link>
+                        <Link to="/signup">
+                            <Button variant="default" className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700">
+                                Sign Up
+                            </Button>
+                        </Link>
+                    </>
+                )}
             </div>
         </NavigationMenu>
     );
 }
+
+Header.propTypes = {
+    isAuthenticated: PropTypes.bool,
+    userAvatar: PropTypes.string,
+    userName: PropTypes.string,
+};
 
 export default Header;
