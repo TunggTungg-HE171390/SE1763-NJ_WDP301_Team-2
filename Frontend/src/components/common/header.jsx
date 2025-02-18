@@ -68,9 +68,13 @@ export function Header() {
     const UserMenu = () => (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button className="relative h-9 w-9 rounded-full">
-                    <Avatar className="h-10 w-10 bg-gray-300 hover:bg-gray-400">
-                        <AvatarImage src={"https://cdn-icons-png.flaticon.com/512/7996/7996254.png"} alt="chevron" />
+                <Button className="relative h-8 w-8 rounded-full bg-inherit">
+                    <Avatar className="h-9 w-9 bg-gray-300 hover:bg-gray-400 flex items-center justify-center">
+                        <AvatarImage
+                            src={"https://cdn-icons-png.flaticon.com/512/7996/7996254.png"}
+                            alt="chevron"
+                            className="h-6 w-6"
+                        />
                     </Avatar>
                 </Button>
             </DropdownMenuTrigger>
@@ -162,7 +166,7 @@ export function Header() {
                 {isAuthenticated ? (
                     <div className="flex flex-row items-center gap-2">
                         <p className="flex items-center mr-1 font-semibold">{user.fullName}</p>
-                        <Avatar className="h-10 w-10">
+                        <Avatar className="h-9 w-9">
                             <AvatarImage src={userAvatar} alt={userName} />
                             <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                         </Avatar>

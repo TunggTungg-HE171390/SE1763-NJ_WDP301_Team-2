@@ -15,3 +15,11 @@ export const verifyOTP = async (credentials) => {
 export const resendOTP = async (credentials) => {
     return apiClient.post("/auth/resend-otp", credentials);
 };
+
+export const botResponse = async (credentials) => {
+    return apiClient.post("/auth/chat-bot", credentials);
+};
+
+export const sendEmail = async (credentials) => {
+    return apiClient.post("/auth/send-email", credentials);
+};
