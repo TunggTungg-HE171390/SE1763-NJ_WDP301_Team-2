@@ -26,6 +26,7 @@
     import Blog from "./screens/public/Blog";
     import Blogdetail from "./screens/public/Blogdetail";
     import Psychologistappointment from "./screens/public/Psychologistappointment";
+    import ManageUsers from "./screens/admin/ManageUsers";
 import { useMemo } from "react";
 
     // Protected route with role-based access control
@@ -87,6 +88,7 @@ import { useMemo } from "react";
                     {!hideLayout && <Header />}
                     {!hideLayout && <ChatWidget />}
                     <ToastReceiver />
+
                     <div>
                             <Routes>
                             <Route path="/" element={<Homepage />} />
@@ -99,6 +101,7 @@ import { useMemo } from "react";
                             <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                             <Route path="/create-post" element={<CreateNewPost/>} />
                         <Route path="/blog" element={<Blog />} />
+                        <Route path="/manageusers" element={<ManageUsers />} />
                         <Route path="/blogdetail/:id" element={<Blogdetail />} />
                         <Route path="/psychologistappointment" element={<Psychologistappointment />} />
                             </Routes>
