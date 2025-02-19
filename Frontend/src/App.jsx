@@ -1,9 +1,13 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
-// import 'bootstrap/dist/css/bootstrap.min.css';
-
 import TopBar from "./components/common/topbar";
 import Header from "./components/common/header";
 import Footer from "./components/common/footer";
@@ -21,41 +25,44 @@ import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import CreateNewPost from "./screens/staff/CreateNewBlogPost";
+import ManagePosts from "./screens/staff/ManagePosts";
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
-    const { user } = useAuth();
+  const { user } = useAuth();
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-    if (requiredRole && user.role !== requiredRole) {
-        return <Navigate to="/" replace />; // Redirect unauthorized users to homepage
-    }
+  if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to="/" replace />; // Redirect unauthorized users to homepage
+  }
 
-    return element;
+  return element;
 }
 
 // Public routes (only accessible if not logged in)
 function PublicRoute({ element }) {
-    const { user } = useAuth();
-    return user ? <Navigate to="/" replace /> : element;
+  const { user } = useAuth();
+  return user ? <Navigate to="/" replace /> : element;
 }
 
 // Prop validation
 ProtectedRoute.propTypes = {
-    element: PropTypes.node.isRequired, // Use `node` instead of `element`
-    requiredRole: PropTypes.string, // Optional role check
+  element: PropTypes.node.isRequired, // Use `node` instead of `element`
+  requiredRole: PropTypes.string, // Optional role check
 };
 
 PublicRoute.propTypes = {
-    element: PropTypes.node.isRequired, // Fix for missing prop validation
+  element: PropTypes.node.isRequired, // Fix for missing prop validation
 };
 
 function Layout() {
-    const location = useLocation();
-    const hideLayout = ["/login", "/signup", "/verify"].includes(location.pathname);
+  const location = useLocation();
+  const hideLayout = ["/login", "/signup", "/verify"].includes(
+    location.pathname
+  );
 
     return (
         <div className="app">
@@ -78,22 +85,26 @@ function Layout() {
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
+                        <Route path="/manage-posts" element={<ManagePosts />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
             </HelmetProvider>
         </div>
-    );
+        {!hideLayout && <Footer />}
+      </HelmetProvider>
+    </div>
+  );
 }
 
 function App() {
-    return (
-        <AuthProvider>
-            <Router>
-                <Layout />
-            </Router>
-        </AuthProvider>
-    );
+  return (
+    <AuthProvider>
+      <Router>
+        <Layout />
+      </Router>
+    </AuthProvider>
+  );
 }
 
 export default App;
