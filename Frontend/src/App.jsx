@@ -8,7 +8,7 @@ import {
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+// import 'bootstrap/dist/css/bootstrap.min.css';
 
 import TopBar from "./components/common/topbar";
 import Header from "./components/common/header";
@@ -22,13 +22,11 @@ import CategoryTestSelected from "./screens/public/CategoryTestSelected";
 import CategoryDetailTest from "./screens/public/CategoryDetailTest";
 import TestForm from "./screens/public/TestForm";
 import Test from "./screens/public/Test";
-import ChatWidget from "@/components/public/chat/chat-widget";
 import { AuthProvider } from "@/components/auth/authContext";
 import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
-import CreateNewPost from "./screens/staff/CreateNewBlogPost";
-import ManagePosts from "./screens/staff/ManagePosts";
+import CreateNewPost from './screens/staff/CreateNewBlogPost';
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -67,50 +65,33 @@ function Layout() {
     location.pathname
   );
 
-  return (
-    <div className="app">
-      <HelmetProvider>
-        <Helmet>
-          <link rel="icon" type="image/svg+xml" href={TeamLogo} />
-        </Helmet>
-        <TopBar />
-        {!hideLayout && <Header />}
-        {!hideLayout && <ChatWidget />}
-        <Toaster />
-        <ToastReceiver />
-        <div>
-          <Routes>
-            <Route exact path="/" element={<Homepage />} />
-            <Route
-              path="/CategoryTestSelected"
-              element={<CategoryTestSelected />}
-            />
-            <Route
-              path="/getTest/:categoryId"
-              element={<CategoryDetailTest />}
-            />
-            <Route path="/questions-on-test/:testId" element={<TestForm />} />
-            <Route path="/Test" element={<Test />} />
-            <Route
-              path="/login"
-              element={<PublicRoute element={<Login />} />}
-            />
-            <Route
-              path="/signup"
-              element={<PublicRoute element={<SignUp />} />}
-            />
-            <Route
-              path="/verify"
-              element={<PublicRoute element={<Verify />} />}
-            />
-            <Route path="/create-post" element={<CreateNewPost />} />
-            <Route path="/manage-posts" element={<ManagePosts />} />
-          </Routes>
+    return (
+        <div className="app">
+            <HelmetProvider>
+                <Helmet>
+                    <link rel="icon" type="image/svg+xml" href={TeamLogo} />
+                </Helmet>
+                <TopBar />
+                {!hideLayout && <Header />}
+                <Toaster />
+                <ToastReceiver />
+                <div>
+                    <Routes>
+                        <Route path="/" element={<Homepage />} />
+                        <Route path="/CategoryTestSelected" element={<CategoryTestSelected />} />
+                        <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
+                        <Route path="/questions-on-test/:testId" element={<TestForm />} />
+                        <Route path="/Test" element={<Test />} />
+                        <Route path="/login" element={<PublicRoute element={<Login />} />} />
+                        <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
+                        <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
+                        <Route path="/create-post" element={<CreateNewPost />} />
+                    </Routes>
+                </div>
+                {!hideLayout && <Footer />}
+            </HelmetProvider>
         </div>
-        {!hideLayout && <Footer />}
-      </HelmetProvider>
-    </div>
-  );
+    );
 }
 
 function App() {
