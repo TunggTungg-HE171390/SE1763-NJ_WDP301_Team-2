@@ -8,8 +8,6 @@ import {
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
-// import 'bootstrap/dist/css/bootstrap.min.css';
-
 import TopBar from "./components/common/topbar";
 import Header from "./components/common/header";
 import Footer from "./components/common/footer";
@@ -26,7 +24,8 @@ import { AuthProvider } from "@/components/auth/authContext";
 import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
-import CreateNewPost from './screens/staff/CreateNewBlogPost';
+import CreateNewPost from "./screens/staff/CreateNewBlogPost";
+import ManagePosts from "./screens/staff/ManagePosts";
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -86,6 +85,7 @@ function Layout() {
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
+                        <Route path="/manage-posts" element={<ManagePosts />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
