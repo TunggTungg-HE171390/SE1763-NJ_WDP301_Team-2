@@ -1,6 +1,6 @@
 import express from "express";
 import blogPostRoutes from "./blogPost.routes.js";
-import userRouter from "./user.router.js";
+import userRouter from "./user.routes.js";
 import categoryRouter from "./category.router.js";
 import questionRouter from "./question.router.js";
 import testRouter from "./test.router.js";
