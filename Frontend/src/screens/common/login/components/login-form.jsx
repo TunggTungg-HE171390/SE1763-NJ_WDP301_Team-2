@@ -6,6 +6,7 @@ import { Form, FormControl, FormField, FormLabel, FormItem, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { Separator } from "@/components/ui/separator";
 import TeamLogo from "@/assets/TeamLogo.svg";
 import { Link, useNavigate } from "react-router-dom";
@@ -69,7 +70,7 @@ const LoginForm = () => {
                 variant: "destructive",
                 title: "Uh oh! Something went wrong.",
                 description: error.response?.data?.message || "There was a problem with your request.",
-                action: "Try Again",
+                action: <ToastAction altText="Close">Try Again</ToastAction>,
             });
         }
     }

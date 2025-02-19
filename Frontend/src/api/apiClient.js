@@ -1,7 +1,9 @@
 import axios from "axios";
 
+const PORT = import.meta.env.VITE_PORT;
+
 // Centralized Base URL
-const API_BASE_URL = "http://localhost:3000/api"; // Change here to update for all APIs
+const API_BASE_URL = `http://localhost:${PORT}/api`; // Change here to update for all APIs
 
 // Create Axios Instance
 const apiClient = axios.create({
