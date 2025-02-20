@@ -33,9 +33,12 @@ export const registerUser = async (req, res) => {
         }
 
         // Check if the user already exists
-        const existingUser = await User.findOne(isEmail ? { email: contact } : { phone: contact });
+        const existingUser = await User.findOne({
+            $or: [{ email: contact }, { phone: contact }],
+        });
+
         if (existingUser) {
-            return res.status(400).json({ message: "This contact is already in use" });
+            return res.status(400).json({ message: "This email or phone number is already in use" });
         }
 
         // Hash the password

@@ -1,25 +1,25 @@
 import apiClient from "./apiClient";
 
 export const registerUser = async (userData) => {
-    return apiClient.post("/auth/register", userData);
+    return await apiClient.post("/auth/register", userData);
 };
 
 export const loginUser = async (credentials) => {
-    return apiClient.post("/auth/login", credentials);
+    return await apiClient.post("/auth/login", credentials);
 };
 
 export const verifyOTP = async (credentials) => {
-    return apiClient.post("/auth/verify-otp", credentials);
+    return await apiClient.post("/auth/verify-otp", credentials);
 };
 
 export const resendOTP = async (credentials) => {
-    return apiClient.post("/auth/resend-otp", credentials);
+    return await apiClient.post("/auth/resend-otp", credentials);
 };
 
 export const botResponse = async (credentials) => {
-    return apiClient.post("/auth/chat-bot", credentials);
+    return await apiClient.post("/auth/chat-bot", credentials);
 };
 
 export const sendEmail = async (credentials) => {
-    return apiClient.post("/auth/send-email", credentials);
+    return await apiClient.post("/auth/send-email", credentials);
 };
