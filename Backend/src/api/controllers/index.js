@@ -8,6 +8,7 @@ import TestController from "./test.controller.js";
 import TestHistoryController from "./testHistory.controller.js";
 import UserController from "./user.controller.js";
 import BlogDetailController from "./blogDetail.controller.js";
+import AdminController from "./admin.controller.js";
 
 export {
     AppointmentController,
@@ -20,6 +21,7 @@ export {
     TestController,
     TestHistoryController,
     UserController,
+    AdminController,
 
 };
 

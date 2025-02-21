@@ -98,7 +98,7 @@ const UserSchema = new Schema(
         patient: {
             type: new Schema(
                 {
-                    medicalProfile: { type: MedicalProfileSchema, required: true },
+                    medicalProfile: { type: MedicalProfileSchema, required: false  },
                 },
                 { _id: false }
             ),
@@ -109,7 +109,7 @@ const UserSchema = new Schema(
         psychologist: {
             type: new Schema(
                 {
-                    psychologistProfile: { type: PsychologistProfileSchema, required: true },
+                    psychologistProfile: { type: PsychologistProfileSchema, required: false  },
                 },
                 { _id: false }
             ),
