@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Button, Container, Row, Col, Card, Table } from "react-bootstrap";
 import { getAllPosts } from "../../api/blogPosts.api"; // Đảm bảo import đúng
+import { useBootstrap } from "@/hooks/useBootstrap";
+
 
 const ManagePosts = () => {
+
+  useBootstrap(); 
+
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true); // Thêm trạng thái loading
 

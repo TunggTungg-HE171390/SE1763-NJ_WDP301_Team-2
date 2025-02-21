@@ -114,7 +114,7 @@ const LoginForm = () => {
                                         <div className="flex justify-between items-center">
                                             <FormLabel>Password</FormLabel>
                                             <a
-                                                href="/forgot-password"
+                                                href="/forgotPassword"
                                                 className="text-[13px] text-gray-500 hover:text-[#4262FF]">
                                                 Forgot your password?
                                             </a>
