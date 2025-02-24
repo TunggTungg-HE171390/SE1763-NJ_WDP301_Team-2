@@ -129,7 +129,7 @@ export function Header() {
                             <ListItem href="#" title="View Schedule">
                                 Look for online schedule
                             </ListItem>
-                            <ListItem href="#" title="Psychologist Profile">
+                            <ListItem href="/doctor-booking" title="Psychologist Profile">
                                 View list of our best psychologist
                             </ListItem>
                         </ul>

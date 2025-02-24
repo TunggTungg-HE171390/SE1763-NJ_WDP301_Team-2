@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import CreateNewPost from "./screens/staff/CreateNewBlogPost";
+import DoctorBooking from "./screens/public/appointment/DoctorBooking";
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -78,6 +79,7 @@ function Layout() {
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
+                        <Route path="/doctor-booking" element={<DoctorBooking />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}

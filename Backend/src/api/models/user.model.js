@@ -140,16 +140,6 @@ UserSchema.pre("save", function (next) {
     next();
 });
 
-// Hook to clear expired verification fields without deleting the user
-UserSchema.pre("save", function (next) {
-    if (this.verificationExpires && this.verificationExpires < new Date()) {
-        this.emailVerificationCode = null; // Clear email verification code
-        this.phoneVerificationCode = null; // Clear phone verification code
-        this.verificationExpires = null; // Reset expiration field
-    }
-    next();
-});
-
 // Create the User model
 const User = mongoose.model("users", UserSchema);
 
