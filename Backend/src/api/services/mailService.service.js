@@ -1,11 +1,9 @@
 import nodemailer from 'nodemailer';
-import messages from '../constants/messages.constant.js'; // Make sure the path is correct
+import messages from '../constants/messages.constant.js'; 
 import actions from '../actions/requestController.action.js';
-import dotenv from 'dotenv'; // Importing dotenv correctly in ES module
+import dotenv from 'dotenv'; 
 
-dotenv.config();  // Calling the dotenv config function
-
-// MailService function to handle mail-related functionality
+dotenv.config(); 
 export default function MailService() {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -24,7 +22,7 @@ export default function MailService() {
       emailText = messages.MESSAGE001(username, authCode);
       emailSubject = "Request to Reset Your Password by Tâm Giao WEB";
     } else if (action === actions.SUBMIT_TEST) {
-      emailText = messages.MESSAGE002(username);
+      emailText = messages.MESSAGE002(username, authCode);
       emailSubject = "Nhận kết quả đánh giá tâm lý qua bài test";
     } else {
       emailText = messages.MESSAGE_ERROR;

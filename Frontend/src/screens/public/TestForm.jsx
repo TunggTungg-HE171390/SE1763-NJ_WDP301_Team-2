@@ -149,7 +149,7 @@ export function TestForm() {
           <Modal.Title>Nhận thêm lời khuyên từ chuyên gia sau khi làm bài test</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p style={{ fontWeight: "bold" }}>HelloHello</p>
+          <p style={{ fontWeight: "bold" }}>Kết quả bài kiểm tra</p>
           <label>Lưu ý:
             <ul>
               <li>- Kết quả và lời khuyên từ chuyên gia tâm lý sẽ được gửi về mail, vui lòng nhập tên và email chính xác để nhận được thông tin.</li>
