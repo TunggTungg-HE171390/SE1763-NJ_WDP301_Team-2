@@ -26,6 +26,8 @@ import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import CreateNewPost from "./screens/staff/CreateNewBlogPost";
 import ManagePosts from "./screens/staff/ManagePosts";
+import CreateTestScreen from "./screens/admin/CreateTestScreen";
+import TestOutCome from "./screens/public/TestOutCome";
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -81,6 +83,8 @@ function Layout() {
                         <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
                         <Route path="/questions-on-test/:testId" element={<TestForm />} />
                         <Route path="/Test" element={<Test />} />
+                        <Route path="/create-test/:categoryId" element={<CreateTestScreen />} />
+                        <Route path="/test-outcome" element={<TestOutCome />} />
                         <Route path="/login" element={<PublicRoute element={<Login />} />} />
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
@@ -91,9 +95,6 @@ function Layout() {
                 {!hideLayout && <Footer />}
             </HelmetProvider>
         </div>
-        {!hideLayout && <Footer />}
-      </HelmetProvider>
-    </div>
   );
 }
 
