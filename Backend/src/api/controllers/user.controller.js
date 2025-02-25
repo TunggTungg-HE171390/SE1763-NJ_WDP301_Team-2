@@ -1,11 +1,13 @@
 import User from "../models/user.model.js";
 import { generateVerificationCode } from "../utils/auth.js";
-import sendVerificationEmail from "../utils/email.js";
+import Email from "../utils/email.js";
 import { sendVerificationSMS } from "../utils/phone.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const SECRET_KEY = process.env.JWT_SECRET;
+const API_KEY = process.env.GPT_API_KEY;
+const MODEL = process.env.MODEL;
 
 const findAllUsers = async (req, res, next) => {
     try {
@@ -60,7 +62,7 @@ export const registerUser = async (req, res) => {
 
         // Send OTP via email or SMS
         if (isEmail) {
-            sendVerificationEmail(contact, verificationCode)
+            Email.sendVerificationEmail(contact, verificationCode)
                 .then(() => console.log("Email sent successfully"))
                 .catch((error) => console.error("Failed to send email:", error));
         } else if (isPhone) {
@@ -69,7 +71,7 @@ export const registerUser = async (req, res) => {
                 .catch((error) => console.error("Failed to send SMS:", error));
         }
 
-        
+        res.status(200).json({ message: "Success" });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
@@ -78,15 +80,28 @@ export const registerUser = async (req, res) => {
 // User login
 export const loginUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { contact, password } = req.body;
 
-        // Check if user exists
-        const user = await User.findOne({ email });
-        if (!user) return res.status(400).json({ message: "Invalid email or password" });
+        // Determine if contact is an email or phone number
+        const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
+        const isPhone = /^\+?[1-9]\d{1,14}$/.test(contact);
+
+        if (!isEmail && !isPhone) {
+            return res.status(400).json({ message: "Invalid email or phone number format" });
+        }
+
+        // Find user by email or phone
+        const user = await User.findOne(isEmail ? { email: contact } : { phone: contact });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid email/phone or password" });
+        }
 
         // Compare password
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: "Invalid email or password" });
+        if (!isMatch) {
+            return res.status(400).json({ message: "Invalid email/phone or password" });
+        }
 
         // Generate JWT
         const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "7d" });
@@ -99,26 +114,152 @@ export const loginUser = async (req, res) => {
 };
 
 // Verify User (Persistent Login)
-export const verifyToken = async (req, res) => {
+export const verifyOTP = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1];
+        const { contact, otp } = req.body;
 
-        if (!token) return res.status(401).json({ message: "Unauthorized" });
+        const user = await User.findOne({
+            $or: [{ email: contact }, { phone: contact }],
+        });
 
-        const decoded = jwt.verify(token, SECRET_KEY);
-        const user = await User.findById(decoded.id).select("-password");
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
 
-        if (!user) return res.status(404).json({ message: "User not found" });
+        // Check if the OTP matches
+        const isEmail = user.email === contact;
+        const storedOTP = isEmail ? user.emailVerificationCode : user.phoneVerificationCode;
 
-        res.json({ user });
+        if (!storedOTP || storedOTP !== otp) {
+            return res.status(400).json({ message: "Invalid OTP" });
+        }
+
+        // Update verification status and clear OTP
+        if (isEmail) {
+            user.isEmailVerified = true;
+            user.emailVerificationCode = null;
+        } else {
+            user.isPhoneVerified = true;
+            user.phoneVerificationCode = null;
+        }
+
+        await user.save();
+        res.status(200).json({ message: "Verification successful" });
     } catch (error) {
-        res.status(401).json({ message: "Invalid token" });
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+export const resendOTP = async (req, res) => {
+    try {
+        const { contact } = req.body;
+
+        if (!contact) {
+            return res.status(400).json({ message: "Contact (email or phone) is required" });
+        }
+
+        // Find the user by email or phone
+        const user = await User.findOne({ $or: [{ email: contact }, { phone: contact }] });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Generate a new OTP
+        const newOTP = generateVerificationCode();
+        const expirationTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiry
+
+        if (user.email === contact) {
+            user.emailVerificationCode = newOTP;
+        } else if (user.phone === contact) {
+            user.phoneVerificationCode = newOTP;
+        }
+
+        user.verificationExpires = expirationTime;
+        await user.save();
+
+        // Send OTP via email or SMS
+        if (user.email === contact) {
+            await Email.sendVerificationEmail(contact, newOTP);
+        } else if (user.phone === contact) {
+            await sendVerificationSMS(contact, newOTP);
+        }
+
+        return res.status(200).json({ message: "OTP resent successfully" });
+    } catch (error) {
+        console.error("Error resending OTP: ", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// AI Chat Function
+export const chatWithAI = async (req, res) => {
+    try {
+        let conversationHistory = [{ role: "system", content: "You are a helpful assistant." }];
+        const { userMessage } = req.body;
+
+        if (!userMessage) {
+            return res.status(400).json({ message: "User message is required" });
+        }
+
+        // Add user message to history
+        conversationHistory.push({ role: "user", content: userMessage });
+
+        // Call AI API
+        const response = await fetch("https://api.yescale.io/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${API_KEY}`,
+            },
+            body: JSON.stringify({
+                model: MODEL,
+                messages: conversationHistory,
+                max_tokens: 1000,
+                temperature: 0.7,
+            }),
+        });
+
+        if (!response.ok) throw new Error("Error fetching response from OpenAI API");
+
+        const data = await response.json();
+        const aiMessage = data.choices[0].message.content.trim();
+
+        // Add AI response to history
+        conversationHistory.push({ role: "assistant", content: aiMessage });
+
+        res.json({ aiMessage });
+    } catch (error) {
+        console.error("Chat error: ", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const sendEmail = async (req, res) => {
+    try {
+        const { email, subject, content } = req.body;
+
+        if (!email || !content) {
+            return res.status(400).json({ message: "Email and content are required" });
+        }
+
+        // Send the email
+        await Email.sendCustomEmail(email, subject, content);
+
+        return res.status(200).json({ message: "Email sent successfully" });
+    } catch (error) {
+        console.error("Error sending email: ", error);
+        res.status(500).json({ message: "Server error" });
     }
 };
 
 export default {
     registerUser,
     loginUser,
-    verifyToken,
+    verifyOTP,
+    resendOTP,
     findAllUsers,
+    chatWithAI,
+    sendEmail,
 };

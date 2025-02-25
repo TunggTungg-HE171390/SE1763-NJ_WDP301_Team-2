@@ -6,6 +6,7 @@ import { Form, FormControl, FormField, FormLabel, FormItem, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { Separator } from "@/components/ui/separator";
 import TeamLogo from "@/assets/TeamLogo.svg";
 import { Link, useNavigate } from "react-router-dom";
@@ -55,7 +56,7 @@ const RegisterForm = () => {
 
     const onSubmit = async (data) => {
         try {
-            await API.registerUser({
+            API.registerUser({
                 contact: data.contact,
                 name: data.name,
                 password: data.password,
@@ -64,19 +65,20 @@ const RegisterForm = () => {
             // Store the toast message in session storage
             setToast({
                 title: "Success!",
-                description: "Account created successfully!",
+                description: "Verification Code Sent!",
                 actionText: "Close",
                 titleColor: "text-green-600",
                 className: "text-start",
             });
 
-            navigate("/login"); // Redirect to login page
+            navigate("/verify", { state: { contact: data.contact } });
+            // navigate("/login");
         } catch (error) {
             toast({
                 variant: "destructive",
                 title: "Uh oh! Something went wrong.",
                 description: error.response?.data?.message || "There was a problem with your request.",
-                actionText: "Try Again",
+                action: <ToastAction altText="Close">Try Again</ToastAction>,
             });
         }
     };

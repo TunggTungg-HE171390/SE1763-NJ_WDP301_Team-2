@@ -1,19 +1,11 @@
 import * as React from "react";
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState, useEffect } from "react";
+import { useBootstrap } from "@/hooks/useBootstrap";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
 import { getQuestionByTestId } from "../../api/Questions.api";
 import { submitTest } from "../../api/TestHistory.api";
 import { Modal, Spinner, Form } from "react-bootstrap";
@@ -40,11 +32,11 @@ export function TestForm() {
     }
   };
 
-  const handleAnswerChange = (questionIndex, answer) => {
-    setAnswers((prevAnswers) => ({
-      ...prevAnswers,
-      [questionIndex]: answer,
-    }));
+    const handleAnswerChange = (questionIndex, answer) => {
+        setAnswers((prevAnswers) => ({
+            ...prevAnswers,
+            [questionIndex]: answer,
+        }));
 
     console.log("Answers:", answers);
   };
@@ -104,39 +96,39 @@ export function TestForm() {
     }
   };
 
-  return (
-    <div className="flex justify-center items-center min-h-screen gap-6">
-      <Card className="w-full max-w-3xl">
-        <CardHeader>
-          <CardTitle>Bài kiểm tra: {questionData.testTitle}</CardTitle>
-          <CardDescription>Thể loại: {questionData.category}</CardDescription>
-        </CardHeader>
+    return (
+        <div className="flex justify-center items-center min-h-screen gap-6">
+            <Card className="w-full max-w-3xl">
+                <CardHeader>
+                    <CardTitle>Bài kiểm tra: {questionData.testTitle}</CardTitle>
+                    <CardDescription>Thể loại: {questionData.category}</CardDescription>
+                </CardHeader>
 
-        <CardContent className="space-y-6">
-          {questionData.questions?.map((question, index) => (
-            <Card key={question.questionId} className="border p-4 mb-4 shadow-md">
-              <CardHeader>
-                <CardTitle>{question.content}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  {question.answers?.map((answer, i) => (
-                    <div
-                      key={i}
-                      onClick={() => handleAnswerChange(index, answer.content)}
-                      className={`cursor-pointer border p-4 flex justify-center items-center text-center ${answers[index] === answer.content
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100"
-                        } rounded-md transition-all duration-200 ease-in-out hover:bg-blue-400`}
-                    >
-                      <Label>{answer.content}</Label>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </CardContent>
+                <CardContent className="space-y-6">
+                    {questionData.questions?.map((question, index) => (
+                        <Card key={question.questionId} className="border p-4 mb-4 shadow-md">
+                            <CardHeader>
+                                <CardTitle>{question.content}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {question.answers?.map((answer, i) => (
+                                        <div
+                                            key={i}
+                                            onClick={() => handleAnswerChange(index, answer.content)}
+                                            className={`cursor-pointer border p-4 flex justify-center items-center text-center ${
+                                                answers[index] === answer.content
+                                                    ? "bg-blue-500 text-white"
+                                                    : "bg-gray-100"
+                                            } rounded-md transition-all duration-200 ease-in-out hover:bg-blue-400`}>
+                                            <Label>{answer.content}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </CardContent>
 
         <CardFooter className="justify-between space-x-2">
           <Button style={{ marginLeft: "10px", color: "red" }} variant="ghost" onClick={() => navigate("/")}>Cancel</Button>
@@ -183,14 +175,14 @@ export function TestForm() {
         </Modal.Body>
       </Modal>
 
-      {/* Hiển thị spinner khi loading */}
-      {loading && (
-        <div className="d-flex justify-content-center mt-3">
-          <Spinner animation="border" variant="primary" />
+            {/* Hiển thị spinner khi loading */}
+            {loading && (
+                <div className="d-flex justify-content-center mt-3">
+                    <Spinner animation="border" variant="primary" />
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 
 export default TestForm;

@@ -6,9 +6,10 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { useBootstrap } from "@/hooks/useBootstrap";
 
 export function TestOutCome() {
+    useBootstrap();
     const location = useLocation();
     const navigate = useNavigate();
     const { testOutCome, answersArray } = location.state || {};

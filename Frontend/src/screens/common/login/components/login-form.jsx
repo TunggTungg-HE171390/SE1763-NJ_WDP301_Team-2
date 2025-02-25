@@ -5,37 +5,74 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormLabel, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 import { Separator } from "@/components/ui/separator";
-import TeamLogo from "../../../assets/TeamLogo.svg";
-import { Link } from "react-router-dom";
+import TeamLogo from "@/assets/TeamLogo.svg";
+import { Link, useNavigate } from "react-router-dom";
+import { setToast } from "@/components/common/toast/setToast";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
+import * as API from "@/api";
 
 const FormSchema = z.object({
-    email: z.string().email({ message: "Invalid email address" }),
-    password: z.string(),
+    contact: z.string().refine(
+        (value) => {
+            // Regex patterns
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email regex
+            const phonePattern = /^\+?\d{10,15}$/; // Accepts 10-15 digits, optional '+' prefix
+
+            return emailPattern.test(value) || phonePattern.test(value);
+        },
+        {
+            message: "Invalid credentials",
+        }
+    ),
+    password: z.string().min(6, "Invalid credentials"),
 });
 
 const LoginForm = () => {
+    const navigate = useNavigate();
+    const { toast } = useToast();
     const form = useForm({
         resolver: zodResolver(FormSchema),
         defaultValues: {
-            email: "",
+            contact: "",
             password: "",
         },
     });
 
-    function onSubmit(data) {
-        const { toast } = Toaster();
-        toast({
-            title: "RLogin",
-            description: (
-                <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-                    <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-                </pre>
-            ),
-        });
+    async function onSubmit(data) {
+        try {
+            const response = await API.loginUser({
+                contact: data.contact,
+                password: data.password,
+            });
+            const { token, user } = response.data;
+
+            // Save JWT to localStorage
+            localStorage.setItem("token", token);
+            localStorage.setItem("user", JSON.stringify(user));
+
+            // Store the toast message in session storage
+            setToast({
+                title: "Success!",
+                description: "Login successfully!",
+                actionText: "Close",
+                titleColor: "text-green-600",
+                className: "text-start",
+            });
+
+            navigate("/");
+            window.location.reload();
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Uh oh! Something went wrong.",
+                description: error.response?.data?.message || "There was a problem with your request.",
+                action: <ToastAction altText="Close">Try Again</ToastAction>,
+            });
+        }
     }
 
     return (
@@ -55,11 +92,11 @@ const LoginForm = () => {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                             <FormField
                                 control={form.control}
-                                name="email"
+                                name="contact"
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="flex justify-between items-start">
-                                            <FormLabel className="text-start">Email</FormLabel>
+                                            <FormLabel className="text-start">Email or Phone Number</FormLabel>
                                         </div>
                                         <FormControl>
                                             <Input placeholder="mail@example.com" {...field} />
