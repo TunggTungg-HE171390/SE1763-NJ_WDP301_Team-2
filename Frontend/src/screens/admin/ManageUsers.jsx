@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form } from 'react-bootstrap';
 
-const UserForm = ({ user, onChange, onSubmit }) => {
+const UserForm = ({ user, onChange, onSubmit }) => { 
+  const [dobError, setDobError] = useState("");
+
+  const handleDateChange = (field, value) => {
+    const today = new Date().toISOString().split("T")[0];
+    if (value > today) {
+      setDobError("Date of Birth cannot be in the future.");
+    } else {
+      setDobError("");
+    }
+    onChange(field, value);
+  };
+
   return (
     <Form onSubmit={onSubmit}>
       <Form.Group controlId="name">
@@ -18,15 +30,16 @@ const UserForm = ({ user, onChange, onSubmit }) => {
       </Form.Group>
       <Form.Group controlId="address">
         <Form.Label>Address</Form.Label>
-        <Form.Control type="text" value={user.address} onChange={(e) => onChange('address', e.target.value)} />
+        <Form.Control type="text" value={user.address} onChange={(e) => onChange('address', e.target.value)} required/>
       </Form.Group>
       <Form.Group controlId="dob">
         <Form.Label>Date of Birth</Form.Label>
-        <Form.Control type="date" value={user.dob} onChange={(e) => onChange('dob', e.target.value)} />
+        <Form.Control type="date" value={user.dob} onChange={(e) => handleDateChange('dob', e.target.value)} required/>
+        {dobError && <Form.Text className="text-danger">{dobError}</Form.Text>}
       </Form.Group>
       <Form.Group controlId="gender">
         <Form.Label>Gender</Form.Label>
-        <Form.Control as="select" value={user.gender} onChange={(e) => onChange('gender', e.target.value)}>
+        <Form.Control as="select" value={user.gender} onChange={(e) => onChange('gender', e.target.value)}required>
           <option value="">Select</option>
           <option value="Male">Male</option>
           <option value="Female">Female</option>
@@ -35,16 +48,20 @@ const UserForm = ({ user, onChange, onSubmit }) => {
       </Form.Group>
       <Form.Group controlId="status">
         <Form.Label>Status</Form.Label>
-        <Form.Control as="select" value={user.status} onChange={(e) => onChange('status', e.target.value)}>
+        <Form.Control as="select" value={user.status} onChange={(e) => onChange('status', e.target.value)}required>
           <option value="Active">Active</option>
           <option value="Inactive">Inactive</option>
         </Form.Control>
       </Form.Group>
       <Form.Group controlId="role">
         <Form.Label>Role</Form.Label>
-        <Form.Control type="text" value={user.role} onChange={(e) => onChange('role', e.target.value)} />
+        <Form.Control as="select" value={user.role} onChange={(e) => onChange('role', e.target.value)}required>
+          <option value="">Select</option>
+          <option value="Psychologist">Psychologist</option>
+          <option value="Patient">Patient</option>
+        </Form.Control>
       </Form.Group>
-      <Button variant="primary" type="submit" className="mt-3">Save</Button>
+      <Button variant="primary" type="submit" className="mt-3" disabled={dobError}>Save</Button>
     </Form>
   );
 };

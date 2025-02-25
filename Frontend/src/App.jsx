@@ -74,7 +74,7 @@ import { useMemo } from "react";
         // const hideLayout = ["/login", "/signup", "/verify"].includes(location.pathname);
 
         const hideLayout = useMemo(() => {
-            return ["/login", "/signup", "/verify"].includes(pathname);
+            return ["/login", "/signup", "/verify","/manageusers"].includes(pathname);
         }, [pathname])
 
 
