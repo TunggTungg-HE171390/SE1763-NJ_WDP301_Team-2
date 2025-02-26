@@ -21,7 +21,18 @@ const findTestsByCategoyId = async (req, res, next) => {
   }
 };
 
+const getCateNameByCateId = async (req, res, next) => {
+  try {
+    const category = await Categories.findById(req.params.categoryId).exec(); 
+    res.json({categoryName: category.categoryName});
+  } catch (error) {
+    console.error("Error fetching users: ", error);
+    next(error); 
+  }
+};
+
 export default { 
     findAllCategories,
-    findTestsByCategoyId
+    findTestsByCategoyId,
+    getCateNameByCateId
 };

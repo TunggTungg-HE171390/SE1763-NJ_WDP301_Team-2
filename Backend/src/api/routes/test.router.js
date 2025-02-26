@@ -4,6 +4,6 @@ import { TestController } from "../controllers/index.js";
 const testRouter = express.Router();
 
 testRouter.get("/:id", TestController.findTestsById); 
-testRouter.post("/create", TestController.createTest);
+testRouter.post("/create/:categoryId", TestController.createTest);
 
 export default testRouter;
