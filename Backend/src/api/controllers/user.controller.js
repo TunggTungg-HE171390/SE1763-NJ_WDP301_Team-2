@@ -171,7 +171,6 @@ export const resendOTP = async (req, res) => {
 
         // Generate a new OTP
         const newOTP = generateVerificationCode();
-        const expirationTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes expiry
 
         if (user.email === contact) {
             user.emailVerificationCode = newOTP;
@@ -179,7 +178,6 @@ export const resendOTP = async (req, res) => {
             user.phoneVerificationCode = newOTP;
         }
 
-        user.verificationExpires = expirationTime;
         await user.save();
 
         // Send OTP via email or SMS

@@ -44,7 +44,7 @@ const LoginForm = () => {
 
     async function onSubmit(data) {
         try {
-            const response = API.loginUser({
+            const response = await API.loginUser({
                 contact: data.contact,
                 password: data.password,
             });
