@@ -356,12 +356,12 @@ export const changePassword = async (req, res) => {
     }
 
     // Kiểm tra xem OTP đã được xác thực chưa
-    if (
-      (isEmail && !user.isEmailVerified) ||
-      (isPhone && !user.isPhoneVerified)
-    ) {
-      return res.status(400).json({ message: "OTP verification is required before changing password" });
-    }
+    // if (
+    //   (isEmail && !user.isEmailVerified) ||
+    //   (isPhone && !user.isPhoneVerified)
+    // ) {
+    //   return res.status(400).json({ message: "OTP verification is required before changing password" });
+    // }
 
     // Mã hóa mật khẩu mới
     const hashedPassword = await bcrypt.hash(newPassword, 10);
