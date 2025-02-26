@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import * as API from "@/api";
 import Profile from "./components/Profile";
 import Schedule from "./components/Schedule";
+import ToastReceiver from "@/components/common/toast/toast-receiver";
+import { Helmet } from "react-helmet-async";
 
 const DoctorProfile = () => {
     const { doctorId } = useParams();
@@ -32,10 +34,16 @@ const DoctorProfile = () => {
     const profile = psychologist?.psychologist?.psychologistProfile;
 
     return (
-        <div className="max-w-7xl mx-auto bg-gray-50 px-6 py-8">
-            <Profile psychologist={psychologist} profile={profile} />
-            <Schedule psychologist={psychologist} profile={profile} />
-        </div>
+        <>
+            <Helmet>
+                <title>{psychologist.fullName}</title>
+            </Helmet>
+            <ToastReceiver />
+            <div className="max-w-7xl mx-auto bg-gray-50 px-6 py-8">
+                <Profile psychologist={psychologist} profile={profile} />
+                <Schedule psychologist={psychologist} profile={profile} />
+            </div>
+        </>
     );
 };
 
