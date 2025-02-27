@@ -20,3 +20,13 @@ export const getTestByCateId = async (categoryId) => {
   }
 };
 
+export const getCateNameByCateId = async (categoryId) => {
+  try {
+    const response = await apiClient.get(`/category/getName/${categoryId}`);
+    return response;
+  } catch (error) {
+    console.error("Error fetching tests:", error);
+    throw error;
+  }
+};
+

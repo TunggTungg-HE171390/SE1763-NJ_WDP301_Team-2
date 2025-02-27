@@ -1,6 +1,6 @@
 import BlogPost from "../models/blogPost.model.js";
 
-const getBlogDetail = [
+ const getBlogDetail = [
     async (req, res) => {
         try {
             const { id } = req.params;
@@ -17,6 +17,7 @@ const getBlogDetail = [
     }
 ];
 
+
 export default {
     getBlogDetail
-};
+}

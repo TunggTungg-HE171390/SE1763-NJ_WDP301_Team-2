@@ -15,6 +15,7 @@ const getAllAccount = async (req, res) => {
             status: 1,
             role: 1,
         });
+
         res.status(200).json(listAcount);
     } catch (error) {
         console.log(error);

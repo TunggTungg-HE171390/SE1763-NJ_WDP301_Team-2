@@ -10,7 +10,7 @@ import UserController from "./user.controller.js";
 import BlogDetailController from "./blogDetail.controller.js";
 import AdminController from "./admin.controller.js";
 
-export {
+export default {
     AppointmentController,
     AvailabilityController,
     BlogDetailController,
@@ -22,7 +22,6 @@ export {
     TestHistoryController,
     UserController,
     AdminController,
-
 };
 
 

@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import morgan from "morgan";
 import helmet from "helmet";
 import dotenv from "dotenv";
-import { handleBadRequest, handleNotFound, handleServerErrors, logRequestTime } from "./api/middlewares/index.js";
+import { handleBadRequest, handleNotFound, handleServerErrors, logRequestTime} from "./api/middlewares/index.js";
 import router from "./api/routes/index.js";
 import cors from "cors";
 

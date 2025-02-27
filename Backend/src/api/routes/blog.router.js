@@ -1,10 +1,9 @@
 import express from "express";
 
-import { BlogPostController } from "../controllers/index.js";
-import { BlogDetailController } from "../controllers/index.js";
+import a from "../controllers/index.js";
 const blogRouter = express.Router();
 
-blogRouter.get("/allblog", BlogPostController.getAllBlog);
-blogRouter.get("/blogdetail/:id", BlogDetailController.getBlogDetail);
+blogRouter.get("/allblog", a.BlogPostController.getAllBlog);
+blogRouter.get("/blogdetail/:id", a.BlogDetailController.getBlogDetail);
 
 export default blogRouter;

@@ -20,6 +20,11 @@ const PsychologistProfileSchema = new Schema(
         educationalLevel: { type: String, required: true },
         specialization: { type: String, required: true },
         rating: { type: Number, required: true },
+        numberOfRatings: { type: Number, default: 0 },
+        appointmentsAttended: { type: Number, default: 0 },
+        consultationsCount: { type: Number, default: 0 },
+        medicalExperience: { type: [String], default: [] },
+        workHistory: { type: [String], default: [] },
     },
     { _id: false } // Prevent creating an ID for this subdocument
 );
@@ -91,31 +96,29 @@ const UserSchema = new Schema(
             required: false,
             default: null,
         },
-        verificationExpires: {
-            type: Date,
-            default: () => new Date(Date.now() + 15 * 60 * 1000),
-        },
         patient: {
             type: new Schema(
                 {
-                    medicalProfile: { type: MedicalProfileSchema, required: false  },
+                    medicalProfile: { type: MedicalProfileSchema, required: false },
                 },
                 { _id: false }
             ),
-            required: function () {
-                return this.role === "patient";
-            },
+            // required: function () {
+            //     return this.role === "patient";
+            // },
+            required: false,
         },
         psychologist: {
             type: new Schema(
                 {
-                    psychologistProfile: { type: PsychologistProfileSchema, required: false  },
+                    psychologistProfile: { type: PsychologistProfileSchema, required: false },
                 },
                 { _id: false }
             ),
-            required: function () {
-                return this.role === "psychologist";
-            },
+            // required: function () {
+            //     return this.role === "psychologist";
+            // },
+            required: false,
         },
     },
     {
@@ -125,28 +128,18 @@ const UserSchema = new Schema(
 
 // Add validation hook to enforce structure
 UserSchema.pre("save", function (next) {
-    if (this.role === "patient" && !this.patient) {
-        return next(new Error("A patient must have a medical profile."));
-    }
+    // if (this.role === "patient" && !this.patient) {
+    //     return next(new Error("A patient must have a medical profile."));
+    // }
 
-    if (this.role === "psychologist" && !this.psychologist) {
-        return next(new Error("A psychologist must have a psychologist profile."));
-    }
+    // if (this.role === "psychologist" && !this.psychologist) {
+    //     return next(new Error("A psychologist must have a psychologist profile."));
+    // }
 
-    if ((this.role === "admin" || this.role === "manager") && (this.patient || this.psychologist)) {
-        return next(new Error(`Users with role '${this.role}' cannot have patient or psychologist profiles.`));
-    }
+    // if ((this.role === "admin" || this.role === "manager") && (this.patient || this.psychologist)) {
+    //     return next(new Error(`Users with role '${this.role}' cannot have patient or psychologist profiles.`));
+    // }
 
-    next();
-});
-
-// Hook to clear expired verification fields without deleting the user
-UserSchema.pre("save", function (next) {
-    if (this.verificationExpires && this.verificationExpires < new Date()) {
-        this.emailVerificationCode = null; // Clear email verification code
-        this.phoneVerificationCode = null; // Clear phone verification code
-        this.verificationExpires = null; // Reset expiration field
-    }
     next();
 });
 

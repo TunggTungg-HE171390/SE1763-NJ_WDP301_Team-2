@@ -1,32 +1,49 @@
 const messages = {
   MESSAGE001: (username, authCode) => `
-    Hello, ${username}
+    Chào ${username},
 
-** This is an automated message -- please do not reply as you will not receive a response. **
+Cảm ơn bạn đã dành thời gian hoàn thành Bài Test đánh giá trên Tâm Giao WEB. Chúng tôi trân trọng sự quan tâm và tin tưởng của bạn.
 
-This message is in response to your request to reset your account password. 
-Please click the link below and follow the instructions to change your password.
-Your password is: ${authCode}
+Kết quả của bạn:
+ ${authCode}
 
-https://chgpwd.fpt.edu.vn
-Thank you.
-SlayMe-Team.
+Lưu ý: Kết quả bài test này chỉ mang tính chất tham khảo, không có giá trị thay thế chẩn đoán y khoa bởi bác sĩ/chuyên gia có chuyên môn.
+
+Trong trường hợp có bất kỳ vấn đề băn khoăn/câu hỏi về tình trạng sức khoẻ hiện tại, bạn có thể lựa chọn các Bác sĩ Sức khoẻ tâm thần/Chuyên gia Tâm lý để được thăm khám online/offline ngay tại website của Tâm Giao.
+Chúng tôi thấu hiểu những khó khăn và áp lực mà mỗi người đang phải đối mặt trong cuộc sống. Cuộc sống hiện đại với nhịp sống hối hả, nhiều lo toan có thể khiến chúng ta dễ dàng rơi vào trạng thái lo âu, căng thẳng hay stress, ảnh hưởng đến sức khỏe tinh thần và thể chất.
+
+Điều quan trọng là chúng ta cần nhận thức được vấn đề và tìm kiếm giải pháp để cải thiện. Hãy nhớ rằng, bạn không đơn độc! Rất nhiều người đang trải qua những điều tương tự như bạn.
+
+Trải nghiệm dịch vụ của chúng tôi tại: http://localhost:5173/login
+
+Một lần nữa, cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi. Chúc bạn luôn mạnh khỏe và hạnh phúc.
+Trân trọng,
+Tâm Giao.
   `,
 
-  MESSAGE002:(username) => `
-    Hello, ${username}
-Chúc mừng! Bạn đã đặt thành công dịch vụ tại SlayMe !
-Thông tin chi tiết về lịch hẹn của bạn:
+  MESSAGE002:(username, authCode) => `
+  Chào ${username},
 
-Dịch vụ đã đặt: Triệt lông chân
-Thời gian: 19:00, 24/01/2025
-Địa điểm: Trường Đại học FPT 
-Địa chỉ: Khu Công Nghệ Cao Hòa Lạc, km 29 
-Chúng tôi rất mong được chào đón bạn tại BeautyX. Nếu có bất kỳ thay đổi nào về lịch hẹn, bạn vui lòng liên hệ với chúng tôi để điều chỉnh.
+Cảm ơn bạn đã dành thời gian hoàn thành Bài Test đánh giá trên Tâm Giao WEB. Chúng tôi trân trọng sự quan tâm và tin tưởng của bạn.
 
-Cảm ơn bạn đã lựa chọn sử dụng dịch vụ booking của SlayMe, hẹn gặp lại bạn sớm!`,
+Kết quả của bạn:
+${authCode}
+
+Lưu ý: Kết quả bài test này chỉ mang tính chất tham khảo, không có giá trị thay thế chẩn đoán y khoa bởi bác sĩ/chuyên gia có chuyên môn.
+
+Trong trường hợp có bất kỳ vấn đề băn khoăn/câu hỏi về tình trạng sức khoẻ hiện tại, bạn có thể lựa chọn các Bác sĩ Sức khoẻ tâm thần/Chuyên gia Tâm lý để được thăm khám online/offline ngay tại website của Tâm Giao.
+Chúng tôi thấu hiểu những khó khăn và áp lực mà mỗi người đang phải đối mặt trong cuộc sống. Cuộc sống hiện đại với nhịp sống hối hả, nhiều lo toan có thể khiến chúng ta dễ dàng rơi vào trạng thái lo âu, căng thẳng hay stress, ảnh hưởng đến sức khỏe tinh thần và thể chất.
+
+Điều quan trọng là chúng ta cần nhận thức được vấn đề và tìm kiếm giải pháp để cải thiện. Hãy nhớ rằng, bạn không đơn độc! Rất nhiều người đang trải qua những điều tương tự như bạn.
+
+Trải nghiệm dịch vụ của chúng tôi tại: http://localhost:5173/login
+
+Một lần nữa, cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi. Chúc bạn luôn mạnh khỏe và hạnh phúc.
+Trân trọng,
+Tâm Giao.
+`,
 
   MESSAGE_ERROR: "ERROR: Unknown action code.",
 };
 
-module.exports = messages;
+export default messages;
