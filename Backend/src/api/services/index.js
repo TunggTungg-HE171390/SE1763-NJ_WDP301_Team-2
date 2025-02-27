@@ -1,5 +1,3 @@
-const MailService= require("./mailService.service");
+import MailService from "./mailService.service.js";
 
-module.exports= {
-    MailService,
-};
+export { MailService };

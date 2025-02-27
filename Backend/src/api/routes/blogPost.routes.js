@@ -10,4 +10,7 @@ router.post("/create", blogPostController.createBlogPost);
 // Route PUT để cập nhật bài viết
 router.put("/update/:id", blogPostController.updateBlogPost);
 
+// Route GET để lấy tất cả bài viết
+router.get("/", blogPostController.getAllBlogPosts);
+
 export default router;

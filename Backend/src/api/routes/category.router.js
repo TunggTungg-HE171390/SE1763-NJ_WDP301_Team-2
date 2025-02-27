@@ -5,5 +5,6 @@ const categoryRouter = express.Router();
 
 categoryRouter.get("/getCategories", CategoryController.findAllCategories); 
 categoryRouter.get("/getTest/:categoryId", CategoryController.findTestsByCategoyId);
+categoryRouter.get("/getName/:categoryId", CategoryController.getCateNameByCateId);
 
 export default categoryRouter;

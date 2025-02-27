@@ -10,4 +10,16 @@ export const getQuestionByTestId = async (testId) => {
     }
 };
 
+// export const checkIfTestHasQuestions = async (testId) => {
+//     try {
+//         const response = await apiClient.get(`question/check/${testId}`);
+//         console.log("API Response:", response);  // Log kết quả trả về
+
+//         return response.data.hasQuestions;;
+//     } catch (error) {
+//         console.error("Error fetching question:", error);
+//         throw error;
+//     }
+// };
+
 
