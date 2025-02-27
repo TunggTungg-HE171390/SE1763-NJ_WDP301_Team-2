@@ -13,7 +13,6 @@ const UserForm = ({ user, onChange, onSubmit }) => {
     }
     onChange(field, value);
   };
-
   return (
     <Form onSubmit={onSubmit}>
       <Form.Group controlId="name">
