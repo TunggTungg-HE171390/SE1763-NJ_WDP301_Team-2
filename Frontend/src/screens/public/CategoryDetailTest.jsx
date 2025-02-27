@@ -19,6 +19,8 @@ import { getQuestionByTestId } from "../../api/Questions.api";
 export function CategoryDetailTest() {
     const { categoryId } = useParams();
     const [testData, setTestData] = useState([]);
+    const [countQuestion, setCountQuestion] = useState([]);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -26,7 +28,6 @@ export function CategoryDetailTest() {
             try {
                 const response = await getTestByCateId(categoryId);
                 setTestData(response.data);
-                console.log("DATA", response.data);
             } catch (error) {
                 console.error("Error fetching test data:", error);
             }
@@ -59,7 +60,7 @@ export function CategoryDetailTest() {
                         <CardTitle className="text-2xl font-semibold text-left text-gray-800 mb-2">
                             Bài kiểm tra:
                             <Label className="ml-2 text-red-500 font-bold" style={{ fontSize: "1.25rem" }}>
-                                {test.title} -{test._id}
+                                {test.title}
                             </Label>
                         </CardTitle>
                         <CardDescription className="text-sm text-left mb-4">
@@ -67,6 +68,11 @@ export function CategoryDetailTest() {
                                 Mô tả:
                             </Label>
                             {test.description}
+                        </CardDescription>
+                        <CardDescription className="text-sm text-left mb-4">
+                            <Label className="text-black-500" style={{ fontSize: "1rem" }}>
+                                Số câu hỏi:
+                            </Label>
                         </CardDescription>
                     </CardHeader>
 

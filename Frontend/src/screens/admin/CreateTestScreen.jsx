@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container } from 'react-bootstrap';
+import { Alert, Container } from 'react-bootstrap';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import {
     Card, CardContent,
 } from "@/components/ui/card";
+import { useBootstrap } from "@/hooks/useBootstrap";
 import { useParams, useNavigate } from "react-router-dom";
 import { creatTest } from "../../api/Test.api";
 import { getCateNameByCateId } from "../../api/Categories.api";
+import { insertQuestionOnTest } from "../../api/Questions.api";
 
 import { Switch } from "@/components/ui/switch"
 import { FaTrash } from 'react-icons/fa';
@@ -22,6 +24,8 @@ import {
 } from "@/components/ui/select"
 
 export function CreateTestScreen() {
+    useBootstrap();
+
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [testOutcomes, setTestOutcomes] = useState([
@@ -90,65 +94,94 @@ export function CreateTestScreen() {
         setTestOutcomes(updatedOutcomes);
     };
 
-    // Xử lý khi lưu bài kiểm tra
-    const handleSaveTest = async () => {
-        if (validateOutcomes()) {
-            try {
-                const response = await creatTest(categoryId, title, description, testOutcomes);
-                console.log("Test created successfully:", response);
-                alert("Tạo bài kiểm tra thành công!");
-                navigate(`/getTest/${categoryId}`);
-            } catch (err) {
-                console.log("Error saving test:", err);
-            }
-        }
-    };
-
-    const handleDoubleClick = () => {
-        setIsEditing(true);
-    };
-
-    const handleBlur = () => {
-        setIsEditing(false);
-    };
-
-    const [questions, setQuestions] = useState([
+    const [questionsArray, setQuestionsArray] = useState([
         {
-            type: 'multiple-choice',
-            title: '',
-            options: ['Tùy chọn 1'],
-            required: true,
+            content: "",
+            answers: [{ content: "Đáp án 1", point: 0 }],
         },
     ]);
 
+    const updateQuestionContent = (index, value) => {
+        const updatedQuestions = [...questionsArray];
+        updatedQuestions[index] = {
+            ...updatedQuestions[index],
+            content: value
+        };
+        setQuestionsArray(updatedQuestions);
+    };
+
+    // Thêm câu hỏi mới
     const addQuestion = () => {
-        setQuestions([
-            ...questions,
-            {
-                type: 'multiple-choice',
-                title: '',
-                options: ['Tùy chọn 1'],
-                required: false,
-            },
-        ]);
+        setQuestionsArray([...questionsArray, { content: "", answers: [{ content: "Đáp án 1", point: 0 }] }]);
     };
 
-    const updateQuestion = (index, field, value) => {
-        const updatedQuestions = [...questions];
-        updatedQuestions[index][field] = value;
-        setQuestions(updatedQuestions);
+    // Xóa câu hỏi
+    const deleteQuestion = (index) => {
+        const updatedQuestions = questionsArray.filter((_, i) => i !== index);
+        setQuestionsArray(updatedQuestions);
     };
 
-    // Thêm đáp án mới nhưng giới hạn tối đa 6 đáp án
-    const addOption = (questionIndex) => {
-        const updatedQuestions = [...questions];
-        const currentOptions = updatedQuestions[questionIndex].options;
+    // Cập nhật nội dung đáp án
+    const updateAnswerContent = (questionIndex, answerIndex, value) => {
+        const updatedQuestions = [...questionsArray];
+        updatedQuestions[questionIndex].answers[answerIndex] = {
+            ...updatedQuestions[questionIndex].answers[answerIndex],
+            content: value,
+        };
+        setQuestionsArray(updatedQuestions);
+    };
 
-        if (currentOptions.length < 6) {
-            currentOptions.push('Tùy chọn ' + (currentOptions.length + 1));
-            setQuestions(updatedQuestions);
+    // Cập nhật điểm số của đáp án
+    const updateAnswerPoint = (questionIndex, answerIndex, value) => {
+        const updatedQuestions = [...questionsArray];
+        updatedQuestions[questionIndex].answers[answerIndex] = {
+            ...updatedQuestions[questionIndex].answers[answerIndex],
+            point: Number(value),
+        };
+        setQuestionsArray(updatedQuestions);
+    };
+
+    // Thêm đáp án mới nhưng tối đa 6 đáp án
+    const addAnswer = (questionIndex) => {
+        const updatedQuestions = [...questionsArray];
+        if (updatedQuestions[questionIndex].answers.length < 6) {
+            updatedQuestions[questionIndex].answers.push({ content: "Đáp án " + (updatedQuestions[questionIndex].answers.length + 1), point: 0 });
+            setQuestionsArray(updatedQuestions);
         } else {
-            Alert.alert("Tối đa 6 đáp án cho mỗi câu hỏi");
+            alert("Tối đa 6 đáp án cho mỗi câu hỏi");
+        }
+    };
+
+    // Xử lý khi lưu bài kiểm tra
+    const handleSaveTest = async () => {
+        try {
+            // Định dạng câu hỏi đúng format
+            const formattedQuestions = {
+                questions: questionsArray.map(q => ({
+                    content: q.content,
+                    answers: q.answers.map(ans => ({
+                        content: ans.content,
+                        point: ans.point
+                    }))
+                }))
+            };
+
+            if(formattedQuestions.questions.length === 0) {
+                alert("Vui lòng nhập câu hỏi.");
+            }else{
+                const response = await creatTest(categoryId, title, description, testOutcomes);
+                const testId = response.test;
+    
+                console.log("Formatted Questions:", JSON.stringify(formattedQuestions, null, 2));
+                const response2 = await insertQuestionOnTest(testId, formattedQuestions);
+                console.log("Response từ insertQuestionOnTest:", response2);
+    
+                alert("Tạo bài kiểm tra thành công!");
+                navigate(`/getTest/${categoryId}`);
+            }
+        } catch (err) {
+            console.error("Lỗi khi tạo bài kiểm tra hoặc chèn câu hỏi:", err);
+            alert("Có lỗi xảy ra!");
         }
     };
 
@@ -234,18 +267,17 @@ export function CreateTestScreen() {
             <Card className="text-sm text-left mb-4" style={{ marginBottom: '20px', padding: '20px' }}>
                 <h2>Câu hỏi cho bài kiểm tra</h2>
                 <CardContent className="grid gap-6">
-                    {questions.map((question, questionIndex) => (
+                    {questionsArray.map((question, questionIndex) => (
                         <div key={questionIndex} className="border p-4 mb-4 rounded">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                 <div className="md:col-span-1">
                                     <div className="grid gap-2">
                                         <Label htmlFor={`question-${questionIndex}`}>Câu hỏi {questionIndex + 1}</Label>
                                         <Input
-                                            id={`question-${questionIndex}`}
                                             type="text"
-                                            placeholder="Câu hỏi này không có tiêu đề"
-                                            value={question.title}
-                                            onChange={(e) => updateQuestion(questionIndex, 'title', e.target.value)}
+                                            placeholder="Nhập nội dung câu hỏi"
+                                            value={question.content}
+                                            onChange={(e) => updateQuestionContent(questionIndex, e.target.value)}
                                         />
                                     </div>
                                 </div>
@@ -286,22 +318,25 @@ export function CreateTestScreen() {
                                 {/* Render các đáp án */}
                                 <div className="grid gap-2">
                                     <Label>Đáp án</Label>
-                                    {question.options.map((option, optionIndex) => (
-                                        <Input
-                                            key={optionIndex}
-                                            type="text"
-                                            value={option}
-                                            onChange={(e) => {
-                                                const updatedQuestions = [...questions];
-                                                updatedQuestions[questionIndex].options[optionIndex] = e.target.value;
-                                                setQuestions(updatedQuestions);
-                                            }}
-                                            placeholder="Tùy chọn"
-                                        />
+                                    {question.answers.map((answer, answerIndex) => (
+                                        <div key={answerIndex} className="flex items-center space-x-2">
+                                            <Input
+                                                type="text"
+                                                value={answer.content}
+                                                onChange={(e) => updateAnswerContent(questionIndex, answerIndex, e.target.value)}
+                                                placeholder="Nhập đáp án"
+                                            />
+                                            <Input
+                                                type="number"
+                                                value={answer.point}
+                                                onChange={(e) => updateAnswerPoint(questionIndex, answerIndex, e.target.value)}
+                                                placeholder="Nhập điểm"
+                                            />
+                                        </div>
                                     ))}
                                     <Button
-                                        onClick={() => addOption(questionIndex)}
-                                        disabled={question.options.length >= 6}
+                                        onClick={() => addAnswer(questionIndex)}
+                                        disabled={question.answers.length >= 6}
                                         style={{
                                             width: '40px',
                                             height: '40px',
@@ -313,7 +348,7 @@ export function CreateTestScreen() {
                                             display: 'flex',
                                             justifyContent: 'center',
                                             alignItems: 'center',
-                                            cursor: question.options.length < 6 ? 'pointer' : 'not-allowed',
+                                            cursor: question.answers.length < 6 ? 'pointer' : 'not-allowed',
                                         }}
                                     >
                                         +
@@ -328,7 +363,7 @@ export function CreateTestScreen() {
             </Card>
 
             <Button style={{ marginTop: '20px' }} onClick={handleSaveTest}>
-                Lưu bài kiểm tra
+                Tạo bài kiểm tra
             </Button>
         </Container>
     );

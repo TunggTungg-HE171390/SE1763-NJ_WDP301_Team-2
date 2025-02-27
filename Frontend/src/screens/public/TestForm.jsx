@@ -11,6 +11,9 @@ import { submitTest } from "../../api/TestHistory.api";
 import { Modal, Spinner, Form } from "react-bootstrap";
 
 export function TestForm() {
+
+  useBootstrap();
+
   const { testId } = useParams();
   const navigate = useNavigate();
   const [questionData, setQuestionData] = useState({ testTitle: "", category: "", questions: [] });

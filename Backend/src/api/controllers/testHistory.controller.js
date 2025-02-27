@@ -75,6 +75,8 @@ const submitTest = async (req, res, next) => {
         savedTestHistory.score = totalScore;
 
     if (userInfo) {
+        console.log("name: " , userInfo.name);
+        // const commentAi = "comment Ai lỗi";
       const commentAi = await commentAI(answers, testName);
       savedTestHistory.commentAI = commentAi;
       console.log("Chuẩn bị gửi mail");
@@ -160,12 +162,12 @@ const commentAI = async (questionAndAnswer, testName) => {
     **Lưu ý**:
     - Hãy cung cấp lời khuyên, phương pháp và tiến trình phục hồi một cách chi tiết, có khoa học, dễ áp dụng và phù hợp với những câu trả lời mà người dùng đã chọn trong bài kiểm tra.
     `;
-
-        const response = await fetch("https://api.yescale.io/v1/chat/completions", {
+    // console.log("GPT_API_KEY:", process.env.API_KEY_GPT);
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${process.env.GPT_API_KEY}`,
+                Authorization: `Bearer ${process.env.API_KEY_GPT}`,
             },
             body: JSON.stringify({
                 model: "gpt-4o",
@@ -180,7 +182,9 @@ const commentAI = async (questionAndAnswer, testName) => {
             }),
         });
 
-        if (!response.ok) throw new Error("Error fetching response from OpenAI API");
+        if (!response.ok)
+            // console.error("Lỗi API OpenAI:", await response.text());
+            throw new Error("Error fetching response from OpenAI API");
 
         // Nhận kết quả từ OpenAI API
         const data = await response.json();

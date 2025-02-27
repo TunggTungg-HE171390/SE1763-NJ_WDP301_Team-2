@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const SECRET_KEY = process.env.JWT_SECRET;
-const API_KEY = process.env.GPT_API_KEY;
+const API_KEY = process.env.API_KEY_GPT;  
 const MODEL = process.env.MODEL;
 
 const findAllUsers = async (req, res, next) => {
