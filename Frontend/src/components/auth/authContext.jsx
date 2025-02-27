@@ -1,11 +1,14 @@
 import { createContext, useEffect, useState } from "react";
 import PropTypes from "prop-types";
 
-const AuthContext = createContext();
+const AuthContext = createContext({
+    login: () => {},
+    logout: () => {},
+    user: null,
+});
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-
     useEffect(() => {
         const token = localStorage.getItem("token");
         const storedUser = localStorage.getItem("user");

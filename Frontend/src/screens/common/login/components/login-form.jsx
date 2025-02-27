@@ -73,7 +73,7 @@ const LoginForm = () => {
         titleColor: "text-green-600",
         className: "text-start",
       });
-
+  
       navigate("/");
       window.location.reload();
     } catch (error) {

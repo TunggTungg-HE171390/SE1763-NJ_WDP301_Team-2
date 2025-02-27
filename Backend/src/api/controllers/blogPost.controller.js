@@ -1,6 +1,19 @@
 import BlogPost from "../models/blogPost.model.js"; // Import BlogPost model
 import { body, validationResult } from "express-validator";
 
+const getAllBlog = [
+    async (req, res) => {
+        try {
+            const blogPosts = await BlogPost.find();
+            res.status(200).json(blogPosts);
+    
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+];
+
 // Controller to create a new blog post with validation
 const createBlogPost = [
     // Validation rules
@@ -86,8 +99,7 @@ const updateBlogPost = [
 
             res.status(200).json(updatedBlogPost); // Trả về bài viết đã được cập nhật
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Server error while updating the blog post." });
+            res.status(500).json({ error: error.message });
         }
     },
 ];
@@ -104,4 +116,4 @@ const getAllBlogPosts = async (req, res) => {
 };
 
 
-export default { createBlogPost, updateBlogPost , getAllBlogPosts};
+export default { createBlogPost, updateBlogPost , getAllBlogPosts, getAllBlog};
