@@ -24,6 +24,7 @@ const getQuestionsOnTest = async (req, res, next) => {
     res.json({
       testTitle: questions[0]?.testId?.title,
       category: questions[0]?.category?.categoryName,
+      questionCount: questions.length,
       questions: questions.map((q) => {
         return {
           questionId: q._id,
@@ -40,12 +41,14 @@ const getQuestionsOnTest = async (req, res, next) => {
 
 const insertQuestionOnTest = async (req, res, next) => {
   try {
+    const { questions } = req.body;
+    console.log("Type of questions:", typeof questions);
+
     const checkTest = await Test.findById(req.params.testId);
+
     if (!checkTest) {
       return res.status(404).json({ error: "Test not found" });
     }
-
-    const { questions } = req.body;
 
     if (!Array.isArray(questions) || questions.length === 0) {
       return res.status(400).json({ error: "Questions must be an array and cannot be empty" });
