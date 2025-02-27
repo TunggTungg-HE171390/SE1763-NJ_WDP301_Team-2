@@ -1,10 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
@@ -35,44 +29,40 @@ import ChangePassword from "./screens/user/changePassword/changePassword";
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
-  const { user } = useAuth();
+    const { user } = useAuth();
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
 
-  if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to="/" replace />; // Redirect unauthorized users to homepage
-  }
+    if (requiredRole && user.role !== requiredRole) {
+        return <Navigate to="/" replace />; // Redirect unauthorized users to homepage
+    }
 
-  return element;
+    return element;
 }
 
 // Public routes (only accessible if not logged in)
 function PublicRoute({ element }) {
-  const { user } = useAuth();
-  return user ? <Navigate to="/" replace /> : element;
+    const { user } = useAuth();
+    return user ? <Navigate to="/" replace /> : element;
 }
 
 // Prop validation
 ProtectedRoute.propTypes = {
-  element: PropTypes.node.isRequired, // Use `node` instead of `element`
-  requiredRole: PropTypes.string, // Optional role check
+    element: PropTypes.node.isRequired, // Use `node` instead of `element`
+    requiredRole: PropTypes.string, // Optional role check
 };
 
 PublicRoute.propTypes = {
-  element: PropTypes.node.isRequired, // Fix for missing prop validation
+    element: PropTypes.node.isRequired, // Fix for missing prop validation
 };
 
 function Layout() {
-  const location = useLocation();
-  const hideLayout = [
-    "/login",
-    "/signup",
-    "/verify",
-    "/forgotPassword",
-    "/changePassword",
-  ].includes(location.pathname);
+    const location = useLocation();
+    const hideLayout = ["/login", "/signup", "/verify", "/forgotPassword", "/changePassword"].includes(
+        location.pathname
+    );
 
     return (
         <div className="app">
@@ -98,10 +88,10 @@ function Layout() {
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
                         <Route path="/forgotPassword" element={<PublicRoute element={<ForgotPassword />} />} />
-            {/* <Route path="/changePassword" element={<ProtectedRoute element={< ChangePassword/>} requiredRole={"user"} />} /> */}
-            <Route path="/changePassword" element={<ChangePassword />} />
-            <Route path="/create-post" element={<CreateNewPost />} />
-            <Route path="/manage-posts" element={<ManagePosts />} />
+                        {/* <Route path="/changePassword" element={<ProtectedRoute element={< ChangePassword/>} requiredRole={"user"} />} /> */}
+                        <Route path="/changePassword" element={<ChangePassword />} />
+                        <Route path="/create-post" element={<CreateNewPost />} />
+                        <Route path="/manage-posts" element={<ManagePosts />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
                         <Route path="/doctor" element={<DoctorBooking />} />
                         <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
@@ -110,17 +100,17 @@ function Layout() {
                 {!hideLayout && <Footer />}
             </HelmetProvider>
         </div>
-  );
+    );
 }
 
 function App() {
-  return (
-    <AuthProvider>
-      <Router>
-        <Layout />
-      </Router>
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider>
+            <Router>
+                <Layout />
+            </Router>
+        </AuthProvider>
+    );
 }
 
 export default App;
