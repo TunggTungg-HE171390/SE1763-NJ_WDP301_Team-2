@@ -13,9 +13,10 @@ const findTestsById = async (req, res, next) => {
 
 const createTest = async (req, res) => {
     try {
-        const { title, category, description, testOutcomes } = req.body;
+        const { title, description, testOutcomes } = req.body;
+        const category = req.params.categoryId;
 
-        if (!title || !category || !description || !testOutcomes || !Array.isArray(testOutcomes)) {
+        if (!title || !description || !testOutcomes || !Array.isArray(testOutcomes)) {
             return res.status(400).json({ error: "Missing required fields" });
         }
 

@@ -4,4 +4,4 @@ const actions={
     ACTIONERROR: "Error",
 }
 
-module.exports = actions;
+export default actions;

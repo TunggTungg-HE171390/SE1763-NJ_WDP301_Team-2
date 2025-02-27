@@ -9,6 +9,7 @@ import Homepage from "./screens/public/home/homepage";
 import Login from "@/screens/common/login/login";
 import SignUp from "@/screens/common/register/register";
 import Verify from "@/screens/common/verify/verify";
+import ForgotPassword from "@/screens/common/forgotPassword/forgotPassword";
 import TeamLogo from "@/assets/TeamLogo.svg";
 import CategoryTestSelected from "./screens/public/CategoryTestSelected";
 import CategoryDetailTest from "./screens/public/CategoryDetailTest";
@@ -20,6 +21,9 @@ import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import CreateNewPost from "./screens/staff/CreateNewBlogPost";
 import ManagePosts from "./screens/staff/ManagePosts";
+import CreateTestScreen from "./screens/admin/CreateTestScreen";
+import TestOutCome from "./screens/public/TestOutCome";
+import ChangePassword from "./screens/user/changePassword/changePassword";
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -54,7 +58,9 @@ PublicRoute.propTypes = {
 
 function Layout() {
     const location = useLocation();
-    const hideLayout = ["/login", "/signup", "/verify"].includes(location.pathname);
+    const hideLayout = ["/login", "/signup", "/verify", "/forgotPassword", "/changePassword"].includes(
+        location.pathname
+    );
 
     return (
         <div className="app">
@@ -73,9 +79,15 @@ function Layout() {
                         <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
                         <Route path="/questions-on-test/:testId" element={<TestForm />} />
                         <Route path="/Test" element={<Test />} />
+                        <Route path="/create-test/:categoryId" element={<CreateTestScreen />} />
+                        <Route path="/test-outcome" element={<TestOutCome />} />
                         <Route path="/login" element={<PublicRoute element={<Login />} />} />
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
+                        <Route path="/manage-posts" element={<ManagePosts />} />
+                        <Route path="/forgotPassword" element={<PublicRoute element={<ForgotPassword />} />} />
+                        {/* <Route path="/changePassword" element={<ProtectedRoute element={< ChangePassword/>} requiredRole={"user"} />} /> */}
+                        <Route path="/changePassword" element={<ChangePassword />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
                     </Routes>

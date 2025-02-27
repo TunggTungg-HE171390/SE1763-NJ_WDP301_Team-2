@@ -1,8 +1,8 @@
 import Tests from "../models/test.model.js";
 import TestHistory from "../models/testHistory.model.js";
 import Question from "../models/question.model.js";
-// import sendEmail from "../services/mailService.service.js";
-// const actions = require('../actions/requestController.action.js');
+import {MailService} from "../services/index.js";
+import actions from '../actions/requestController.action.js';
 
 const getUserAnswerForQuestion = async (req, res, next) => {
     try {
@@ -44,9 +44,9 @@ const getUserAnswerForQuestion = async (req, res, next) => {
 };
 
 const submitTest = async (req, res, next) => {
-    try {
-        const { userId, testId } = req.params;
-        const { answers, userEmail } = req.body;
+  try {
+    const { userId, testId } = req.params;
+    const { answers, userInfo } = req.body;
 
         const test = await Tests.findById(testId);
         console.log("Ten bai kiem tra", test.title);
@@ -74,26 +74,30 @@ const submitTest = async (req, res, next) => {
 
         savedTestHistory.score = totalScore;
 
-        // if(userEmail){
-        const commentAi = await commentAI(answers, testName);
-        savedTestHistory.commentAI = commentAi;
-        // await MailService.sendEmail(userEmail, savedTestHistory.userId.fullName, commentAi, actions.SUBMIT_TEST);
-        // }
-
-        await savedTestHistory.save();
-
-        res.json({
-            userName: savedTestHistory.userId.fullName,
-            testTitle: savedTestHistory.testId.title,
-            score: totalScore,
-            result: resultText,
-            questions: savedTestHistory.questions,
-            commentAI: commentAi,
-        });
-    } catch (error) {
-        console.error("Error:", error);
-        res.status(500).json({ message: "Lỗi server." });
+    if (userInfo) {
+      const commentAi = await commentAI(answers, testName);
+      savedTestHistory.commentAI = commentAi;
+      console.log("Chuẩn bị gửi mail");
+      const mailService = MailService();
+      await mailService.sendEmail(userInfo.mail, userInfo.name, commentAi, actions.SUBMIT_TEST);
+      console.log("Gui mail thanh cong");
     }
+
+    // await savedTestHistory.save();
+
+    res.json({
+      userName: savedTestHistory.userId.fullName,
+      testTitle: savedTestHistory.testId.title,
+      score: totalScore,
+      result: resultText,
+      questions: savedTestHistory.questions,
+     commentAI: savedTestHistory.commentAI,
+    });
+
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "Lỗi server." });
+  }
 };
 
 const calculateScore = async (testHistory, answers) => {
