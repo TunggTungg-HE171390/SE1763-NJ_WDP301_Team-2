@@ -8,93 +8,100 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import {
-    NavigationMenu,
-    NavigationMenuContent,
-    NavigationMenuItem,
-    NavigationMenuLink,
-    NavigationMenuList,
-    NavigationMenuTrigger,
-    navigationMenuTriggerStyle,
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, HelpCircle, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 
 function ListItem({ className, title, children, href }) {
-    return (
-        <li>
-            <NavigationMenuLink asChild>
-                <a
-                    href={href}
-                    className={cn(
-                        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                        className
-                    )}>
-                    <div className="text-sm font-medium leading-none">{title}</div>
-                    <div className="line-clamp-2 text-sm leading-snug text-muted-foreground">{children}</div>
-                </a>
-            </NavigationMenuLink>
-        </li>
-    );
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <Link
+          href={href}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+        >
+          <div className="text-sm font-medium leading-none">{title}</div>
+          <div className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+            {children}
+          </div>
+        </Link>
+      </NavigationMenuLink>
+    </li>
+  );
 }
 
 ListItem.displayName = "ListItem";
 ListItem.propTypes = {
-    className: PropTypes.string,
-    title: PropTypes.string.isRequired,
-    children: PropTypes.node.isRequired,
-    href: PropTypes.string.isRequired,
+  className: PropTypes.string,
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node.isRequired,
+  href: PropTypes.string.isRequired,
 };
 
 export function Header() {
-    const { user } = useAuth(); // Get authentication state
-    const { logout } = useContext(AuthContext);
-    const [isAuthenticated, setIsAuthenticated] = useState(!!user);
-    const userName = user?.fullName;
-    const userAvatar =
-        user?.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGH692JKGKQ6t9K1nxWdKRaDa8V387Yqe1w&s";
+  const { user } = useAuth(); // Get authentication state
+  const { logout } = useContext(AuthContext);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!user);
+  const userName = user?.fullName;
+  const userAvatar =
+    user?.avatar ||
+    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGH692JKGKQ6t9K1nxWdKRaDa8V387Yqe1w&s";
 
-    useEffect(() => {
-        setIsAuthenticated(!!user); // Update when user state changes
-    }, [user]);
+  useEffect(() => {
+    setIsAuthenticated(!!user); // Update when user state changes
+  }, [user]);
 
-    const UserMenu = () => (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button className="relative h-8 w-8 rounded-full bg-inherit">
-                    <Avatar className="h-9 w-9 bg-gray-300 hover:bg-gray-400 flex items-center justify-center">
-                        <AvatarImage
-                            src={"https://cdn-icons-png.flaticon.com/512/7996/7996254.png"}
-                            alt="chevron"
-                            className="h-6 w-6"
-                        />
-                    </Avatar>
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 mt-4" align="end">
-                <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                    <HelpCircle className="mr-2 h-4 w-4" />
-                    <span>FAQ</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 cursor-pointer" onSelect={logout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Logout</span>
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
+  const UserMenu = () => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className="relative h-8 w-8 rounded-full bg-inherit">
+          <Avatar className="h-9 w-9 bg-gray-300 hover:bg-gray-400 flex items-center justify-center">
+            <AvatarImage
+              src={"https://cdn-icons-png.flaticon.com/512/7996/7996254.png"}
+              alt="chevron"
+              className="h-6 w-6"
+            />
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 mt-4" align="end">
+        <DropdownMenuItem>
+          <Settings className="mr-2 h-4 w-4" />
+          <span>Settings</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <HelpCircle className="mr-2 h-4 w-4" />
+          <span>FAQ</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="text-red-600 cursor-pointer"
+          onSelect={logout}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>Logout</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
     return (
         <NavigationMenu className="w-full absolute top-[26px] left-0 h-[75px] bg-white shadow-md z-50 flex items-stretch px-6">
@@ -192,9 +199,9 @@ export function Header() {
 }
 
 Header.propTypes = {
-    isAuthenticated: PropTypes.bool,
-    userAvatar: PropTypes.string,
-    userName: PropTypes.string,
+  isAuthenticated: PropTypes.bool,
+  userAvatar: PropTypes.string,
+  userName: PropTypes.string,
 };
 
 export default Header;

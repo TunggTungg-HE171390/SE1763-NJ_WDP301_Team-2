@@ -92,4 +92,16 @@ const updateBlogPost = [
     },
 ];
 
-export default { createBlogPost, updateBlogPost };
+// Lấy tất cả bài viết
+const getAllBlogPosts = async (req, res) => {
+    try {
+        const posts = await BlogPost.find(); 
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Error fetching blog posts:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+
+export default { createBlogPost, updateBlogPost , getAllBlogPosts};

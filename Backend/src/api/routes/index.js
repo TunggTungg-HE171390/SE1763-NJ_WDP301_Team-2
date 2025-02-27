@@ -7,6 +7,7 @@ import testRouter from "./test.router.js";
 import testHistoryRouter from "./testHistory.router.js";
 import psychologistRouter from "./psychologist.routes.js";
 
+
 const router = express.Router();
 router.use("/blogposts", blogPostRoutes);
 router.use("/psychologist", psychologistRouter);

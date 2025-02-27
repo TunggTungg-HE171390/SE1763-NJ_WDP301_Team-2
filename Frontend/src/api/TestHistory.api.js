@@ -1,14 +1,11 @@
 import apiClient from "./apiClient";
 
-export const submitTest = async (userId, testId, answers, userEmail) => {
-    try {
-        const response = await apiClient.post(`/test-history/submit/67b5c578591386158323089f/${testId}`, {
-            answers,
-            userEmail,
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error submitting test:", error);
-        throw error;
-    }
+export const submitTest = async (userId, testId, answers, userInfo) => {
+  try {
+    const response = await apiClient.post(`/test-history/submit/67a0374b7ad0db88c8b251c0/${testId}`, { answers, userInfo }); 
+    return response.data; 
+  } catch (error) {
+    console.error("Error submitting test:", error);
+    throw error; 
+  }
 };

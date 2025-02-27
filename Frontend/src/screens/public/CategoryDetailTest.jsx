@@ -37,7 +37,9 @@ export function CategoryDetailTest() {
             {/* Phai co role Manager */}
             <Card className="w-[500px] p-4 border rounded-md shadow-lg hover:scale-105 hover:border-yellow-500 transition-all duration-300 ease-in-out mb-8">
                 <CardContent className="flex-grow flex justify-center items-center h-full">
-                    <div className="rounded-full bg-gray-300 w-60 h-60 flex items-center justify-center cursor-pointer hover:bg-gray-400 transition duration-300">
+                    <div
+                        className="rounded-full bg-gray-300 w-60 h-60 flex items-center justify-center cursor-pointer hover:bg-gray-400 transition duration-300"
+                        onClick={() => navigate(`/create-test/${categoryId}`)}>
                         {" "}
                         {/* Larger circle */}
                         <span className="text-6xl font-bold text-gray-600">+</span>
@@ -54,7 +56,7 @@ export function CategoryDetailTest() {
                         <CardTitle className="text-2xl font-semibold text-left text-gray-800 mb-2">
                             Bài kiểm tra:
                             <Label className="ml-2 text-red-500 font-bold" style={{ fontSize: "1.25rem" }}>
-                                {test.title}
+                                {test.title} -{test._id}
                             </Label>
                         </CardTitle>
                         <CardDescription className="text-sm text-left mb-4">

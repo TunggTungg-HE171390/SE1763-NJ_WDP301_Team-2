@@ -3,8 +3,13 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import style cho Quill
 import { Button, Form, Container, Row, Col, Card, Stack } from "react-bootstrap";
 import { createBlogPost } from "../../api/blogPosts.api";
+import { useBootstrap } from "@/hooks/useBootstrap";
+
 
 const CreateNewPost = () => {
+
+    useBootstrap();
+
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [status, setStatus] = useState("Draft");
