@@ -20,6 +20,8 @@ import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import CreateNewPost from "./screens/staff/CreateNewBlogPost";
+import DoctorBooking from "./screens/public/psychologistList/DoctorBooking";
+import PsychologistProfile from "./screens/public/psychologistProfile/psychologistProfile";
 import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";
 import TestOutCome from "./screens/public/TestOutCome";
@@ -90,6 +92,9 @@ function Layout() {
                         <Route path="/changePassword" element={<ChangePassword />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
+                        <Route path="/create-post" element={<CreateNewPost />} />
+                        <Route path="/doctor" element={<DoctorBooking />} />
+                        <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}

@@ -20,6 +20,11 @@ const PsychologistProfileSchema = new Schema(
         educationalLevel: { type: String, required: true },
         specialization: { type: String, required: true },
         rating: { type: Number, required: true },
+        numberOfRatings: { type: Number, default: 0 },
+        appointmentsAttended: { type: Number, default: 0 },
+        consultationsCount: { type: Number, default: 0 },
+        medicalExperience: { type: [String], default: [] },
+        workHistory: { type: [String], default: [] },
     },
     { _id: false } // Prevent creating an ID for this subdocument
 );
@@ -91,10 +96,6 @@ const UserSchema = new Schema(
             required: false,
             default: null,
         },
-        verificationExpires: {
-            type: Date,
-            default: () => new Date(Date.now() + 15 * 60 * 1000),
-        },
         patient: {
             type: new Schema(
                 {
@@ -139,7 +140,6 @@ UserSchema.pre("save", function (next) {
 
     next();
 });
-
 
 // Create the User model
 const User = mongoose.model("users", UserSchema);
