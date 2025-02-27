@@ -116,4 +116,4 @@ const getAllBlogPosts = async (req, res) => {
 };
 
 
-export default { createBlogPost, updateBlogPost , getAllBlogPosts};
+export default { createBlogPost, updateBlogPost , getAllBlogPosts, getAllBlog};

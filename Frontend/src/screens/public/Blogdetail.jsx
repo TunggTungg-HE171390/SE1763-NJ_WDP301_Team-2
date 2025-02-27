@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import { Card, CardContent } from "@/components/ui/card";
+import request from "../../service/request";
 
 const BlogDetail = () => {
   const { id } = useParams();
@@ -18,9 +19,9 @@ const BlogDetail = () => {
       }
 
       try {
-        const response = await axios.get(`http://localhost:3000/api/blogs/blogdetail/${id}`);
-        console.log("Blog data:", response.data);
-        setArticle(response.data);
+       const res = await request.get(`blogs/blogdetail/${id}`)
+        console.log("Blog data:", res.data);
+        setArticle(res.data);
       } catch (error) {
         console.error("Error fetching blog data:", error);
         setError("Failed to fetch article. Please try again later.");

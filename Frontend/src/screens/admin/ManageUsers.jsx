@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { Table, Button, Modal, Form } from 'react-bootstrap';
+import { useAuth } from '../../hooks/useAuth';
+import { use } from 'react';
+import { useNavigate } from 'react-router';
+import moment from 'moment';
 
 const UserForm = ({ user, onChange, onSubmit }) => { 
   const [dobError, setDobError] = useState("");
@@ -57,8 +61,10 @@ const UserForm = ({ user, onChange, onSubmit }) => {
         <Form.Label>Role</Form.Label>
         <Form.Control as="select" value={user.role} onChange={(e) => onChange('role', e.target.value)}required>
           <option value="">Select</option>
-          <option value="Psychologist">Psychologist</option>
-          <option value="Patient">Patient</option>
+          <option value="psychologist">Psychologist</option>
+          <option value="patient">Patient</option>
+          <option value="admin">Admin</option>
+
         </Form.Control>
       </Form.Group>
       <Button variant="primary" type="submit" className="mt-3" disabled={dobError}>Save</Button>
@@ -67,17 +73,57 @@ const UserForm = ({ user, onChange, onSubmit }) => {
 };
 
 const ManageUsers = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [newUser, setNewUser] = useState({ fullName: '', email: '', address: '', dob: '', gender: '', status: 'Active', role: '',password: '' });
 
+  useLayoutEffect(() => {
+    if (user) {
+      if (user.role === 'admin') return
+
+      navigate('/')
+    }
+  }, [user])
+
   useEffect(() => {
-    fetch('http://localhost:3000/api/admin/allaccount')
-      .then(response => response.json())
+    fetch(`http://localhost:${import.meta.env.VITE_PORT}/api/admin/allaccount`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      },
+    })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('Failed to fetch users');
+      })
       .then(data => setUsers(data))
       .catch(error => console.error('Error fetching users:', error));
   }, []);
+ const handleDelete = (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa tài khoản này?")) return;
 
+    fetch(`http://localhost:${import.meta.env.VITE_PORT}/api/admin/deleteaccount/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+      .then(response => {
+        if (response.ok) {
+          setUsers(users.filter(user => user._id !== id)); // Cập nhật danh sách user sau khi xóa
+          alert("Xóa tài khoản thành công!");
+        } else {
+          throw new Error("Xóa tài khoản thất bại");
+        }
+      })
+      .catch(error => console.error("Error deleting user:", error));
+  };
   const handleAddUser = () => setShowModal(true);
   const handleClose = () => setShowModal(false);
 
@@ -87,11 +133,18 @@ const ManageUsers = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/api/admin/addaccount', {
+      const response = await fetch(`http://localhost:${import.meta.env.VITE_PORT}/api/admin/addaccount`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+         },
         body: JSON.stringify(newUser),
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to add user');
+      }
   
       const data = await response.json();
   
@@ -105,12 +158,14 @@ const ManageUsers = () => {
       console.error('Error adding user:', error.message);
     }
   };
-  
+
   return (
     <div className="container mt-5">
-      <h2>Manage Users</h2>
-      <Button variant="primary" onClick={handleAddUser}>Add User</Button>
-      <Table striped bordered hover className="mt-3">
+      {users.length > 0 ? (
+        <div>
+          <h2>Manage Users</h2>
+        <Button variant="primary" onClick={handleAddUser}>Add User</Button>
+        <Table striped bordered hover className="mt-3">
         <thead>
           <tr>
             <th>Name</th>
@@ -129,18 +184,24 @@ const ManageUsers = () => {
               <td>{user.fullName}</td>
               <td>{user.email}</td>
               <td>{user.address}</td>
-              <td>{user.dob}</td>
+              <td>{moment(user.dob).format('DD MMMM, YYYY')}</td>
               <td>{user.gender}</td>
               <td>{user.status}</td>
               <td>{user.role}</td>
               <td>
                 <Button variant="warning">Edit</Button>
-                <Button variant="danger" className="ms-2">Delete</Button>
+                <Button variant="danger" onClick={() => handleDelete(user._id)}>Delete</Button>
               </td>
             </tr>
           ))}
         </tbody>
       </Table>
+        </div>
+      ) : (
+        <div className='flex col justify-center items-center'>
+          <h5>Không có dữ liệu người dùng</h5>
+        </div>
+      )}
 
       <Modal show={showModal} onHide={handleClose}>
         <Modal.Header closeButton>

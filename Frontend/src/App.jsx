@@ -15,7 +15,7 @@ import Homepage from "./screens/public/home/homepage";
 import Login from "@/screens/common/login/login";
 import SignUp from "@/screens/common/register/register";
 import Verify from "@/screens/common/verify/verify";
-import ForgotPassword from "@/screens/common/forgotPassword/forgotPassword";
+// import ForgotPassword from "@/screens/common/forgotPassword/forgotPassword";
 import TeamLogo from "@/assets/TeamLogo.svg";
 import CategoryTestSelected from "./screens/public/CategoryTestSelected";
 import CategoryDetailTest from "./screens/public/CategoryDetailTest";
@@ -29,8 +29,11 @@ import CreateNewPost from "./screens/staff/CreateNewBlogPost";
 import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";
 import TestOutCome from "./screens/public/TestOutCome";
-import ChangePassword from "./screens/user/changePassword/changePassword";
-
+// import ChangePassword from "./screens/user/changePassword/changePassword";
+import ManageUsers from "./screens/admin/ManageUsers";
+import BlogDetail from "./screens/public/Blogdetail";
+import Blog from "./screens/public/Blog";
+import DoctorBooking from "./screens/public/psychologistList/DoctorBooking";
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
   const { user } = useAuth();
@@ -69,7 +72,7 @@ function Layout() {
     "/signup",
     "/verify",
     "/forgotPassword",
-    "/changePassword",
+    "/changePassword"
   ].includes(location.pathname);
 
     return (
@@ -95,11 +98,15 @@ function Layout() {
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
-                        <Route path="/forgotPassword" element={<PublicRoute element={<ForgotPassword />} />} />
+                        {/*<Route path="/forgotPassword" element={<PublicRoute element={<ForgotPassword />} />} />*/}
             {/* <Route path="/changePassword" element={<ProtectedRoute element={< ChangePassword/>} requiredRole={"user"} />} /> */}
-            <Route path="/changePassword" element={<ChangePassword />} />
+            {/*<Route path="/changePassword" element={<ChangePassword />} />*/}
+            <Route path='manageusers' element={<ManageUsers />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blogdetail/:id" element={<BlogDetail />} />
             <Route path="/create-post" element={<CreateNewPost />} />
             <Route path="/manage-posts" element={<ManagePosts />} />
+            <Route path="/doctorbooking" element={<DoctorBooking />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}

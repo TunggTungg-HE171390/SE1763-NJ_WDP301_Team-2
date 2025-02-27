@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import request from "../../service/request";
 
 export default function BlogScreen() {
   const [search, setSearch] = useState("");
@@ -17,11 +18,7 @@ export default function BlogScreen() {
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/blogs/allblog", {
-          headers: {
-            "Content-Type": "application/json",
-          }
-        });
+        const response = await request.get('/blogs/allblog')
         setArticles(response.data);
       } catch (error) {
         console.error("Error fetching blog data:", error);
