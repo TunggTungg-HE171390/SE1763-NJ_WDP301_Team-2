@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import style cho Quill
 import { Button, Form, Container, Row, Col, Card, Stack } from "react-bootstrap";
-import { createBlogPost } from "../../api/blogPosts.api";
+import { getBlogPostById, updateBlogPost } from "../../api/blogPosts.api";
 import { useBootstrap } from "@/hooks/useBootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-const CreateNewPost = () => {
+const UpdatePost = () => {
     useBootstrap();
     const navigate = useNavigate();
+    const { postId } = useParams();
 
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
@@ -16,15 +17,32 @@ const CreateNewPost = () => {
     const [image, setImage] = useState("");
     const [preview, setPreview] = useState("");
 
+    useEffect(() => {
+        const fetchPost = async () => {
+            try {
+                const post = await getBlogPostById(postId);
+                setTitle(post.title);
+                setContent(post.content);
+                setStatus(post.status);
+                setImage(post.image);
+                setPreview(post.image);
+            } catch (error) {
+                console.error("Error fetching post:", error);
+            }
+        };
+        fetchPost();
+    }, [postId]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         const postData = { title, content, status, image };
 
         try {
-            const result = await createBlogPost(postData); // ✅ Gọi API từ file riêng
-            alert("✅ Post created successfully!");
-            console.log("Post created:", result);
+            const result = await updateBlogPost(postId, postData); // ✅ Gọi API từ file riêng
+            alert("✅ Post updated successfully!");
+            console.log("Post updated:", result);
+            navigate("/manage-posts");
         } catch (error) {
             alert(`❌ Error: ${error.message}`);
         }
@@ -50,7 +68,7 @@ const CreateNewPost = () => {
                 Back to Manage Posts
             </Button>
             <Card className="p-4 shadow-sm mt-3" style={{ borderRadius: "10px", backgroundColor: "#ffffff" }}>
-                <h2 className="text-center mb-4">Create New Post</h2>
+                <h2 className="text-center mb-4">Update Post</h2>
                 <Form onSubmit={handleSubmit}>
                     <Form.Group controlId="title">
                         <Form.Label className="text-start d-block mb-2">Title</Form.Label>
@@ -154,7 +172,7 @@ const CreateNewPost = () => {
                                 borderRadius: "5px",
                                 width: "150px",
                             }}>
-                            Create Post
+                            Update Post
                         </Button>
                     </Stack>
                 </Form>
@@ -163,4 +181,4 @@ const CreateNewPost = () => {
     );
 };
 
-export default CreateNewPost;
+export default UpdatePost;

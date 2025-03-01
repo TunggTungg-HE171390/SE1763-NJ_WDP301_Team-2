@@ -24,6 +24,7 @@ import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";
 import TestOutCome from "./screens/public/TestOutCome";
 import ChangePassword from "./screens/user/changePassword/changePassword";
+import UpdatePost from "./screens/staff/UpdatePost";
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -89,6 +90,7 @@ function Layout() {
                         {/* <Route path="/changePassword" element={<ProtectedRoute element={< ChangePassword/>} requiredRole={"user"} />} /> */}
                         <Route path="/changePassword" element={<ChangePassword />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
+                        <Route path="/update-post/:postId" element={<UpdatePost />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
                     </Routes>
                 </div>
