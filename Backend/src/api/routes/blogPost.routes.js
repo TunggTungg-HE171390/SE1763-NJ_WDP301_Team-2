@@ -7,7 +7,10 @@ const router = express.Router();
 router.post("/create", blogPostController.createBlogPost);
 
 // Route PUT để cập nhật bài viết
-router.put("/update/:id", blogPostController.updateBlogPost);
+router.put("/:id", blogPostController.updateBlogPost);
+
+// Route GET để lấy bài viết theo ID
+router.get("/:id", blogPostController.getBlogPostById);
 
 // Route GET để lấy tất cả bài viết
 router.get("/", blogPostController.getAllBlogPosts);

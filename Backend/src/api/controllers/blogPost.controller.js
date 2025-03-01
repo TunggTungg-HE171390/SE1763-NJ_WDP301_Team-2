@@ -92,10 +92,26 @@ const updateBlogPost = [
     },
 ];
 
+// Controller to get a blog post by ID
+const getBlogPostById = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const post = await BlogPost.findById(id);
+        if (!post) {
+            return res.status(404).json({ message: "Blog post not found." });
+        }
+        res.status(200).json(post);
+    } catch (error) {
+        console.error("Error fetching blog post by ID:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
 // Lấy tất cả bài viết
 const getAllBlogPosts = async (req, res) => {
     try {
-        const posts = await BlogPost.find(); 
+        const posts = await BlogPost.find();
         res.status(200).json(posts);
     } catch (error) {
         console.error("Error fetching blog posts:", error);
@@ -103,5 +119,4 @@ const getAllBlogPosts = async (req, res) => {
     }
 };
 
-
-export default { createBlogPost, updateBlogPost , getAllBlogPosts};
+export default { createBlogPost, updateBlogPost, getAllBlogPosts, getBlogPostById };
