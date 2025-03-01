@@ -178,7 +178,9 @@ export function Header() {
           <NavigationMenuLink
             className={`${navigationMenuTriggerStyle()} cursor-pointer text-black`}
           >
-            Test Mental Health
+            <Link to="/CategoryTestSelected" className="text-black">
+                Test Mental Health
+            </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>
