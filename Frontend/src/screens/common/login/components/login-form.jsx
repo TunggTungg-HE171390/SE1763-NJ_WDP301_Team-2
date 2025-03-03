@@ -75,7 +75,7 @@ const LoginForm = () => {
       });
 
       navigate("/");
-      window.location.reload();
+      window.location.reload(); 
     } catch (error) {
       toast({
         variant: "destructive",

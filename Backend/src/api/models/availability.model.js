@@ -6,7 +6,7 @@ const AvailabilitySchema = new Schema(
         psychologistId: {
             type: Schema.Types.ObjectId,
             required: true,
-            ref: "users", // Assuming "User" model for psychologists
+            ref: "users",
         },
         date: {
             type: Date,

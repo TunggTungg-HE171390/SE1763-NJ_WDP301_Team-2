@@ -45,22 +45,31 @@ const sendVerificationEmail = async (email, verificationCode) => {
 };
 
 const sendCustomEmail = async (email, subject, body) => {
-    const transporter = nodemailer.createTransport({
-        service: "Gmail",
-        auth: {
-            user: send_email,
-            pass: password,
-        },
-    });
+    try {
+        console.log("Sending email to:", email); // Add logging
+        const transporter = nodemailer.createTransport({
+            service: "Gmail",
+            auth: {
+                user: send_email,
+                pass: password,
+            },
+        });
 
-    const mailOptions = {
-        from: send_email,
-        to: email,
-        subject: subject,
-        text: body,
-    };
+        const mailOptions = {
+            from: send_email,
+            to: email,
+            subject: subject,
+            html: body,
+        };
 
-    await transporter.sendMail(mailOptions);
+        console.log("Sending email with options:", mailOptions); // Add logging before sending email
+
+        await transporter.sendMail(mailOptions);
+
+        console.log("Email sent successfully");
+    } catch (error) {
+        console.error("Error sending email:", error); // Log the error
+    }
 };
 
 export default { sendVerificationEmail, sendCustomEmail };
