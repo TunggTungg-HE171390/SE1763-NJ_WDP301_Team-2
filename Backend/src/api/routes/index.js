@@ -5,11 +5,12 @@ import categoryRouter from "./category.router.js";
 import questionRouter from "./question.router.js";
 import testRouter from "./test.router.js";
 import testHistoryRouter from "./testHistory.router.js";
+import psychologistRouter from "./psychologist.routes.js";
 
 
 const router = express.Router();
 router.use("/blogposts", blogPostRoutes);
-
+router.use("/psychologist", psychologistRouter);
 router.use("/auth", userRouter);
 router.use("/category", categoryRouter);
 router.use("/question", questionRouter);

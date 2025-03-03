@@ -9,7 +9,7 @@ import Homepage from "./screens/public/home/homepage";
 import Login from "@/screens/common/login/login";
 import SignUp from "@/screens/common/register/register";
 import Verify from "@/screens/common/verify/verify";
-import ForgotPassword from "@/screens/common/forgotPassword/forgotPassword";
+// import ForgotPassword from "@/screens/common/forgotPassword/forgotPassword";
 import TeamLogo from "@/assets/TeamLogo.svg";
 import CategoryTestSelected from "./screens/public/CategoryTestSelected";
 import CategoryDetailTest from "./screens/public/CategoryDetailTest";
@@ -20,10 +20,14 @@ import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import CreateNewPost from "./screens/staff/CreateNewBlogPost";
+import DoctorBooking from "./screens/public/psychologistList/DoctorBooking";
+import PsychologistProfile from "./screens/public/psychologistProfile/psychologistProfile";
 import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";
 import TestOutCome from "./screens/public/TestOutCome";
-import ChangePassword from "./screens/user/changePassword/changePassword";
+// import ChangePassword from "./screens/user/changePassword/changePassword";
+import BookAppointment from "./screens/public/bookAppointment/bookAppointment";
+import FinishBooking from "./screens/public/finishBooking/finishBooking";
 import UpdatePost from "./screens/staff/UpdatePost";
 
 // Protected route with role-based access control
@@ -86,12 +90,14 @@ function Layout() {
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
-                        <Route path="/forgotPassword" element={<PublicRoute element={<ForgotPassword />} />} />
-                        {/* <Route path="/changePassword" element={<ProtectedRoute element={< ChangePassword/>} requiredRole={"user"} />} /> */}
-                        <Route path="/changePassword" element={<ChangePassword />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
                         <Route path="/update-post/:postId" element={<UpdatePost />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
+                        <Route path="/create-post" element={<CreateNewPost />} />
+                        <Route path="/doctor" element={<DoctorBooking />} />
+                        <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
+                        <Route path="/book-appointment" element={<BookAppointment />} />
+                        <Route path="/finish-booking" element={<FinishBooking />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
