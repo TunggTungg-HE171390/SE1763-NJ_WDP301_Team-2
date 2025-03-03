@@ -13,7 +13,8 @@ import { ToastAction } from "@/components/ui/toast";
 import { Helmet } from "react-helmet-async";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import * as API from "@/api";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { setToast } from "@/components/common/toast/setToast";
 
 const appointmentSchema = z.object({
     symptoms: z.string().min(17, "Vui lòng nhập ít nhất 10 ký tự"),
@@ -22,6 +23,7 @@ const appointmentSchema = z.object({
 
 const BookAppointment = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { user } = useAuth();
     const { toast } = useToast();
     const [psychologist, setPsychologist] = useState(null);
@@ -86,11 +88,19 @@ const BookAppointment = () => {
             console.log(formData.get("scheduleId")); // Should log scheduleId
             console.log(formData.get("symptoms")); // Should log symptoms
 
-            toast({
+            const response = await API.saveAppointment(formData);
+
+            setToast({
                 title: "Đặt lịch thành công!",
                 description: "Bạn đã đặt lịch hẹn thành công.",
-                action: <ToastAction altText="Close">Đóng</ToastAction>,
+                actionText: "Đóng",
+                titleColor: "text-green-600",
+                className: "text-start",
             });
+
+            if (response.data?.appointmentId) {
+                navigate(`/finish-booking?appointmentId=${response.data.appointmentId}`);
+            }
         } catch (error) {
             toast({
                 variant: "destructive",
@@ -267,7 +277,9 @@ const BookAppointment = () => {
                                     setValue("symptoms", sanitizedValue, { shouldValidate: true }); // Trigger validation
                                 }}
                             />
-                            {errors.symptoms && <p className="text-red-500 text-sm">{errors.symptoms.message}</p>}
+                            {errors.symptoms && (
+                                <p className="text-red-500 text-sm text-end">{errors.symptoms.message}</p>
+                            )}
                         </CardContent>
                     </Card>
                     <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md">

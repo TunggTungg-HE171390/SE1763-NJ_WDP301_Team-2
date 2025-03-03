@@ -27,6 +27,7 @@ import CreateTestScreen from "./screens/admin/CreateTestScreen";
 import TestOutCome from "./screens/public/TestOutCome";
 // import ChangePassword from "./screens/user/changePassword/changePassword";
 import BookAppointment from "./screens/public/bookAppointment/bookAppointment";
+import FinishBooking from "./screens/public/finishBooking/finishBooking";
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -94,6 +95,7 @@ function Layout() {
                         <Route path="/doctor" element={<DoctorBooking />} />
                         <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
                         <Route path="/book-appointment" element={<BookAppointment />} />
+                        <Route path="/finish-booking" element={<FinishBooking />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}

@@ -9,7 +9,7 @@ export const getSpecializationList = async () => {
 };
 
 export const getPsychologist = async (id) => {
-    return apiClient.get(`psychologist/${id}`);
+    return await apiClient.get(`psychologist/${id}`);
 };
 
 export const getScheduleListByDoctorId = async (id) => {
@@ -17,5 +17,17 @@ export const getScheduleListByDoctorId = async (id) => {
 };
 
 export const getScheduleById = async (id) => {
-    return apiClient.get(`psychologist/schedule/${id}`);
+    return await apiClient.get(`psychologist/schedule/${id}`);
+};
+
+export const saveAppointment = async (formData) => {
+    return apiClient.post("/psychologist/save-appointment", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data", // Ensure proper content type
+        },
+    });
+};
+
+export const getAppointmentById = async (id) => {
+    return await apiClient.get(`/psychologist/appointment/${id}`);
 };
