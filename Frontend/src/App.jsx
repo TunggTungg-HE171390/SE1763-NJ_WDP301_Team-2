@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
 import "./App.css";
 import TopBar from "./components/common/topbar";
 import Header from "./components/common/header";
@@ -25,6 +26,44 @@ import CreateTestScreen from "./screens/admin/CreateTestScreen";
 import TestOutCome from "./screens/public/TestOutCome";
 import ChangePassword from "./screens/user/changePassword/changePassword";
 import UpdatePost from "./screens/staff/UpdatePost";
+import ViewAppointment from './screens/psychologist/viewAppointment/viewAppointment';
+import ViewAppointmentDetail from './screens/psychologist/viewAppointmentDetail/viewAppointmentDetail';
+
+// Create MUI theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#3788d8',
+    },
+    secondary: {
+      main: '#f50057',
+    },
+    success: {
+      main: '#4caf50',
+    },
+    warning: {
+      main: '#ff9800',
+    },
+    error: {
+      main: '#f44336',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 600,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+        },
+      },
+    },
+  },
+});
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -49,12 +88,12 @@ function PublicRoute({ element }) {
 
 // Prop validation
 ProtectedRoute.propTypes = {
-    element: PropTypes.node.isRequired, // Use `node` instead of `element`
-    requiredRole: PropTypes.string, // Optional role check
+    element: PropTypes.node.isRequired,
+    requiredRole: PropTypes.string,
 };
 
 PublicRoute.propTypes = {
-    element: PropTypes.node.isRequired, // Fix for missing prop validation
+    element: PropTypes.node.isRequired,
 };
 
 function Layout() {
@@ -71,8 +110,6 @@ function Layout() {
                 </Helmet>
                 <TopBar />
                 {!hideLayout && <Header />}
-                <Toaster />
-                <ToastReceiver />
                 <div>
                     <Routes>
                         <Route path="/" element={<Homepage />} />
@@ -92,6 +129,8 @@ function Layout() {
                         <Route path="/create-post" element={<CreateNewPost />} />
                         <Route path="/update-post/:postId" element={<UpdatePost />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
+                        <Route path="/psychologist/view-appointments" element={<ViewAppointment />} />
+                        <Route path="/psychologist/view-appointment-detail/:appointmentId" element={<ViewAppointmentDetail />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
@@ -103,9 +142,12 @@ function Layout() {
 function App() {
     return (
         <AuthProvider>
-            <Router>
-                <Layout />
-            </Router>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <Router>
+                    <Layout />
+                </Router>
+            </ThemeProvider>
         </AuthProvider>
     );
 }
