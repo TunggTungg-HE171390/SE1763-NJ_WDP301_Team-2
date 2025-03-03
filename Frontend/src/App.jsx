@@ -28,6 +28,7 @@ import TestOutCome from "./screens/public/TestOutCome";
 // import ChangePassword from "./screens/user/changePassword/changePassword";
 import BookAppointment from "./screens/public/bookAppointment/bookAppointment";
 import FinishBooking from "./screens/public/finishBooking/finishBooking";
+import UpdatePost from "./screens/staff/UpdatePost";
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -90,6 +91,7 @@ function Layout() {
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
+                        <Route path="/update-post/:postId" element={<UpdatePost />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
                         <Route path="/doctor" element={<DoctorBooking />} />
