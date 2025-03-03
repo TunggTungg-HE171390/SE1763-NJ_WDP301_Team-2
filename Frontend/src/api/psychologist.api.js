@@ -9,5 +9,13 @@ export const getSpecializationList = async () => {
 };
 
 export const getPsychologist = async (id) => {
-    return await apiClient.get(`psychologist/${id}`);
+    return apiClient.get(`psychologist/${id}`);
+};
+
+export const getScheduleListByDoctorId = async (id) => {
+    return await apiClient.get(`psychologist/scheduleList/${id}`);
+};
+
+export const getScheduleById = async (id) => {
+    return apiClient.get(`psychologist/schedule/${id}`);
 };

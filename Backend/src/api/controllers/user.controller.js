@@ -33,11 +33,11 @@ export const registerUser = async (req, res) => {
         .status(400)
         .json({ message: "Invalid email or phone number format" });
     }
-
+ 
         // Check if the user already exists
         const existingUser = await User.findOne({
             $or: [{ email: contact }, { phone: contact }],
-        });
+        }); 
 
         if (existingUser) {
             return res.status(400).json({ message: "This email or phone number is already in use" });

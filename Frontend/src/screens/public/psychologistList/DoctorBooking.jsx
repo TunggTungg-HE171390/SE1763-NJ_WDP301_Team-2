@@ -273,7 +273,7 @@ const DoctorBooking = () => {
                                     specialty: doctor.psychologist.psychologistProfile.specialization,
                                     rating: doctor.psychologist.psychologistProfile.rating || 0,
                                     appointments: doctor.psychologist.psychologistProfile.appointments || 0,
-                                    image: doctor.profileImg || "/api/placeholder/150/150",
+                                    image: doctor.profileImg,
                                     isAvailable: true,
                                 }}
                             />

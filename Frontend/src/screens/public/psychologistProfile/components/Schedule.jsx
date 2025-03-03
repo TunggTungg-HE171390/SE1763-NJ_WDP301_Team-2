@@ -1,15 +1,63 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Check, Video } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
+import * as API from "@/api";
+import { useNavigate } from "react-router-dom";
 
 const Schedule = ({ psychologist, profile }) => {
+    const navigate = useNavigate();
     const [date, setDate] = useState(new Date());
     const [selectedTime, setSelectedTime] = useState(null);
-    const timeSlots = ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00"];
+    const [timeSlots, setTimeSlots] = useState([]);
+
+    useEffect(() => {
+        const fetchSchedule = async () => {
+            try {
+                const response = await API.getScheduleListByDoctorId(psychologist._id);
+                const scheduleData = response.data;
+
+                const selectedDateUTC = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+
+                const availableSlots = scheduleData
+                    .filter((slot) => {
+                        const slotDate = new Date(slot.date);
+                        const slotDateUTC = new Date(
+                            Date.UTC(slotDate.getFullYear(), slotDate.getMonth(), slotDate.getDate())
+                        );
+                        return slotDateUTC.getTime() === selectedDateUTC.getTime() && !slot.isBooked;
+                    })
+                    .map((slot) => ({
+                        id: slot._id, // Extracting schedule ID
+                        time: `${new Date(slot.startTime).toLocaleTimeString("vi-VN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                        })} - ${new Date(slot.endTime).toLocaleTimeString("vi-VN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: false,
+                        })}`,
+                    }));
+
+                setTimeSlots(availableSlots);
+            } catch (error) {
+                console.error("Error fetching schedule:", error);
+                setTimeSlots([]);
+            }
+        };
+
+        fetchSchedule();
+    }, [date, psychologist._id]);
+
+    const handleStartConsultation = () => {
+        if (selectedTime) {
+            navigate(`/book-appointment/?psychologistId=${psychologist._id}&scheduleId=${selectedTime.id}`);
+        }
+    };
 
     return (
         <Card className="mb-4">
@@ -30,12 +78,19 @@ const Schedule = ({ psychologist, profile }) => {
                                 <Calendar
                                     mode="single"
                                     selected={date}
-                                    onSelect={setDate}
+                                    onSelect={(newDate) => {
+                                        if (newDate && newDate.getTime() !== date.getTime()) {
+                                            setDate(newDate);
+                                        }
+                                    }}
                                     className="rounded-md border text-sm text-blue-600"
                                     disabled={(day) => {
                                         const today = new Date();
                                         today.setHours(0, 0, 0, 0);
-                                        return day < today;
+                                        const sevenDaysLater = new Date();
+                                        sevenDaysLater.setDate(today.getDate() + 7);
+                                        sevenDaysLater.setHours(0, 0, 0, 0);
+                                        return day < today || day > sevenDaysLater;
                                     }}
                                     modifiersClassNames={{
                                         selected: "bg-blue-600 text-white",
@@ -46,21 +101,25 @@ const Schedule = ({ psychologist, profile }) => {
                     </div>
 
                     <div className="grid grid-cols-10 gap-2 mt-4">
-                        {timeSlots.map((time, index) => (
-                            <Button
-                                key={index}
-                                variant="outline"
-                                size="sm"
-                                className={`text-sm h-10 transition-colors border-blue-600
+                        {timeSlots.length > 0 ? (
+                            timeSlots.map(({ id, time }) => (
+                                <Button
+                                    key={id}
+                                    variant="outline"
+                                    size="sm"
+                                    className={`text-sm h-10 transition-colors border-blue-600
                                         ${
-                                            selectedTime === time
-                                                ? "bg-blue-600 text-white"
+                                            selectedTime?.id === id
+                                                ? "bg-blue-600 text-white hover:bg-blue-800 hover:text-white"
                                                 : "bg-white text-black hover:bg-blue-600 hover:text-white"
                                         }`}
-                                onClick={() => setSelectedTime(time)}>
-                                {time}
-                            </Button>
-                        ))}
+                                    onClick={() => setSelectedTime(selectedTime?.id === id ? null : { id, time })}>
+                                    {time}
+                                </Button>
+                            ))
+                        ) : (
+                            <p className="text-gray-500 text-sm col-span-10">No available slots for this date.</p>
+                        )}
                     </div>
 
                     {selectedTime && (
@@ -74,7 +133,9 @@ const Schedule = ({ psychologist, profile }) => {
                                     </p>
                                 </div>
                                 <div className="mt-4">
-                                    <Button className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center px-6 py-4 w-full sm:w-auto">
+                                    <Button
+                                        onClick={handleStartConsultation}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center px-6 py-4 w-full sm:w-auto">
                                         <Video className="h-5 w-5 mr-2" />
                                         <span className="font-medium">Start Consultation</span>
                                     </Button>
@@ -100,9 +161,9 @@ const Schedule = ({ psychologist, profile }) => {
     );
 };
 
-// **Prop Validation**
 Schedule.propTypes = {
     psychologist: PropTypes.shape({
+        _id: PropTypes.string,
         fullName: PropTypes.string.isRequired,
     }).isRequired,
     profile: PropTypes.shape({

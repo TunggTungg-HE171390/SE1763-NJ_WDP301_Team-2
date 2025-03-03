@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
 
         if (token && storedUser) {
             setUser(JSON.parse(storedUser));
-        }
+        }  
     }, []);
 
     useEffect(() => {

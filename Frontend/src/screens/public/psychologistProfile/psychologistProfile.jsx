@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import * as API from "@/api";
 import Profile from "./components/Profile";
@@ -8,6 +8,7 @@ import { Helmet } from "react-helmet-async";
 
 const DoctorProfile = () => {
     const { doctorId } = useParams();
+    const navigate = useNavigate();
     const [psychologist, setPsychologist] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -33,6 +34,10 @@ const DoctorProfile = () => {
 
     const profile = psychologist?.psychologist?.psychologistProfile;
 
+    const handleBookAppointment = (appointmentData) => {
+        navigate("/book-appointment", { state: appointmentData });
+    };
+
     return (
         <>
             <Helmet>
@@ -41,7 +46,7 @@ const DoctorProfile = () => {
             <ToastReceiver />
             <div className="max-w-7xl mx-auto bg-gray-50 px-6 py-8">
                 <Profile psychologist={psychologist} profile={profile} />
-                <Schedule psychologist={psychologist} profile={profile} />
+                <Schedule psychologist={psychologist} profile={profile} onBookAppointment={handleBookAppointment} />
             </div>
         </>
     );
