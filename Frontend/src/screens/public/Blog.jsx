@@ -1,25 +1,24 @@
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import request from "../../service/request";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function BlogScreen() {
   const [search, setSearch] = useState("");
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const articlesPerPage = 6;
+  const [visibleCount, setVisibleCount] = useState(4);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await request.get("/blogs/allblog");
+        const response = await request.get('/blogs/allblog')
         setArticles(response.data);
       } catch (error) {
         console.error("Error fetching blog data:", error);
@@ -28,23 +27,14 @@ export default function BlogScreen() {
         setLoading(false);
       }
     };
+
     fetchArticles();
   }, []);
 
   const filteredArticles = articles.filter((article) =>
     article.title.toLowerCase().includes(search.toLowerCase())
   );
-
-  // Pagination Logic
-  const indexOfLastArticle = currentPage * articlesPerPage;
-  const indexOfFirstArticle = indexOfLastArticle - articlesPerPage;
-  const currentArticles = filteredArticles.slice(
-    indexOfFirstArticle,
-    indexOfLastArticle
-  );
-
-  const totalPages = Math.ceil(filteredArticles.length / articlesPerPage);
-
+  
   const handleCardClick = (article) => {
     navigate(`/blogdetail/${article._id}`, { state: { article } });
   };
@@ -56,7 +46,7 @@ export default function BlogScreen() {
           <img
             src="https://media.vneconomy.vn/w800/images/upload/2024/05/11/kham-chua-benh.png"
             alt="Header"
-            className="w-full h-full object-fill"
+            className="w-full h-full object-cover"
           />
         </div>
 
@@ -69,54 +59,35 @@ export default function BlogScreen() {
         </div>
 
         {error && <p className="text-danger">{error}</p>}
-        <div className="row g-4 mb-4" >
-  {loading ? (
-    <p>Loading....</p>
-  ) : (
-    currentArticles.map((article, index) => (
-      <div className="col-md-4" key={index}>
-        <Card className="overflow-hidden cursor-pointer d-flex flex-column p-3 shadow-sm border rounded" style={{ maxWidth: "90%", backgroundColor: "#F4F4F4" }} onClick={() => handleCardClick(article)}>
-          <div className="relative flex justify-center items-center">
-          <Avatar className="w-[40vh] h-[25vh] rounded-md">
-              <AvatarImage src={article.image} />
-              <AvatarFallback>{article.title}</AvatarFallback>
-            </Avatar>
-          </div>
-          <CardContent className="p-3 d-flex flex-column justify-content-between">
-            <h3 className="fw-bold mb-2 fs-6 text-truncate" title={article.title}>{article.title}</h3>
-            <p className="text-muted small mb-2 text-truncate" title={article.content}>
-              {article.content.length > 100 ? `${article.content.substring(0, 100)}...` : article.content}
-            </p>
-            <p className="text-muted small mb-0">{new Date(article.createdAt).toLocaleDateString()}</p>
-          </CardContent>
-        </Card>
-      </div>
-    ))
-  )}
-</div>
+        <div className="row g-4 mb-4">
+          {loading ? (
+            <p>Loading....</p>
+          ) : (
+            filteredArticles.slice(0, visibleCount).map((article, index) => (
+              <div className="col-md-6" key={index}>
+                <Card className="overflow-hidden cursor-pointer d-flex flex-row p-3" style={{ maxWidth: "100%", height: "120px" }} onClick={() => handleCardClick(article)}>
+                  <div className="w-25 h-100 flex-shrink-0">
+                    <img src={article.image} alt={article.title} className="w-full h-full object-cover rounded" />
+                  </div>
+                  <CardContent className="flex-grow p-3 d-flex flex-column justify-content-center">
+                    <h3 className="fw-bold mb-1 fs-6">{article.title}</h3>
+                    <p className="text-muted small mb-0">
+                      {article.content.length > 100 ? `${article.content.substring(0, 100)}...` : article.content}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            ))
+          )}
+        </div>
 
-
-
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="d-flex justify-content-center gap-2">
-            <button
-              className="btn btn-secondary"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(currentPage - 1)}
-            >
-              Previous
-            </button>
-            <span className="align-self-center">Page {currentPage} of {totalPages}</span>
-            <button
-              className="btn btn-secondary"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(currentPage + 1)}
-            >
-              Next
-            </button>
+        {visibleCount < filteredArticles.length && (
+          <div className="d-flex justify-content-center">
+            <button className="btn btn-primary px-8" onClick={() => setVisibleCount(visibleCount + 4)}>See more</button>
           </div>
         )}
+
+
       </div>
     </div>
   );

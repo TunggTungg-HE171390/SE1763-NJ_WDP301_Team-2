@@ -40,16 +40,13 @@ const BlogDetail = () => {
   return (
     <div className="max-w-4xl mx-auto p-4">
       {/* Hero Image Section */}
-      <div className="w-full h-[400px] rounded-lg overflow-hidden flex justify-center items-center bg-gray-100">
-  <img
-    src={article.image || "https://via.placeholder.com/800x400"}
-    alt={article.title || "Blog Image"}
-    className="w-full h-full object-fill"
-  />
-</div>
-
-
-
+      <div className="w-full h-[500px] rounded-lg overflow-hidden mb-6">
+        <img
+          src={article.image || "https://via.placeholder.com/800x400"}
+          alt={article.title || "Blog Image"}
+          className="w-full h-full object-cover"
+        />
+      </div>
 
       {/* Title Section */}
       <h1 className="text-2xl font-bold text-center mb-8">{article.title}</h1>
