@@ -199,7 +199,7 @@ const ManageUsers = () => {
         </div>
       ) : (
         <div className='flex col justify-center items-center'>
-          <h5>Không có dữ liệu người dùng</h5>
+          <h5>No user data</h5>
         </div>
       )}
 
