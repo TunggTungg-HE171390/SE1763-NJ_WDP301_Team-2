@@ -33,7 +33,6 @@ export const registerUser = async (req, res) => {
         .status(400)
         .json({ message: "Invalid email or phone number format" });
     }
- 
         // Check if the user already exists
         const existingUser = await User.findOne({
             $or: [{ email: contact }, { phone: contact }],
@@ -159,7 +158,11 @@ export const verifyOTP = async (req, res) => {
     }
 
     await user.save();
-    res.status(200).json({ message: "Verification successful" });
+
+    // Generate JWT
+    const token = jwt.sign({ id: user._id }, SECRET_KEY, { expiresIn: "7d" });
+
+    res.status(200).json({ message: "Verification successful", accessToken: token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });

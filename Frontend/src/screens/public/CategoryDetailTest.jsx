@@ -57,7 +57,7 @@ export function CategoryDetailTest() {
                         <CardTitle className="text-2xl font-semibold text-left text-gray-800 mb-2">
                             Bài kiểm tra:
                             <Label className="ml-2 text-red-500 font-bold" style={{ fontSize: "1.25rem" }}>
-                                {test.title}
+                                {test.title} -{test._id}
                             </Label>
                         </CardTitle>
                         <CardDescription className="text-sm text-left mb-4">

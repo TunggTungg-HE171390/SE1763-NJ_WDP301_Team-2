@@ -46,10 +46,12 @@ const CreateNewPost = () => {
 
     return (
         <Container style={{ maxWidth: "800px", marginTop: "200px" }} className="my-5">
+
             <Button variant="secondary" onClick={() => navigate("/manage-posts")}>
                 Back to Manage Posts
             </Button>
             <Card className="p-4 shadow-sm mt-3" style={{ borderRadius: "10px", backgroundColor: "#ffffff" }}>
+
                 <h2 className="text-center mb-4">Create New Post</h2>
                 <Form onSubmit={handleSubmit}>
                     <Form.Group controlId="title">

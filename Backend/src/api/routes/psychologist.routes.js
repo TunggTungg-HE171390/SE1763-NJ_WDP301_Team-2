@@ -13,3 +13,4 @@ psychologistRouter.post("/save-appointment", psychologistController.saveAppointm
 psychologistRouter.get("/appointment/:appointmentId", psychologistController.getAppointmentById);
 
 export default psychologistRouter;
+

@@ -3,7 +3,7 @@ import bodyParser from "body-parser";
 import morgan from "morgan";
 import helmet from "helmet";
 import dotenv from "dotenv";
-import { handleBadRequest, handleNotFound, handleServerErrors, logRequestTime } from "./api/middlewares/index.js";
+import { handleBadRequest, handleNotFound, handleServerErrors, logRequestTime} from "./api/middlewares/index.js";
 import router from "./api/routes/index.js";
 import cors from "cors";
 
@@ -45,14 +45,15 @@ const allowedOrigins = [
 
 app.use(
     cors({
-        origin: function (origin, callback) {
-            // Nếu không có origin (ví dụ: khi gọi từ Postman), cho phép
-            if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-                callback(null, origin);
-            } else {
-                callback(new Error("Not allowed by CORS"));
-            }
-        },
+        // origin: function (origin, callback) {
+        //     // Nếu không có origin (ví dụ: khi gọi từ Postman), cho phép
+        //     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        //         callback(null, origin);
+        //     } else {
+        //         callback(new Error("Not allowed by CORS"));
+        //     }
+        // },
+        "origin": "*",
         methods: ["GET", "POST", "PUT", "DELETE"],
         allowedHeaders: ["Content-Type", "Authorization"],
     })

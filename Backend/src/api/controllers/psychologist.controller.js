@@ -161,6 +161,7 @@ export default {
     getPsychologistList,
     getUniqueSpecializations,
     getPsychologistById,
+
     saveAppointment,
     getAppointmentById,
 };
