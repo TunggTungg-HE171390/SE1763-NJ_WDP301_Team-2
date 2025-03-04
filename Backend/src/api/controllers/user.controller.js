@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const SECRET_KEY = process.env.JWT_SECRET;
-const API_KEY = process.env.GPT_API_KEY;
+const API_KEY = process.env.API_KEY_GPT;  
 const MODEL = process.env.MODEL;
 
 const findAllUsers = async (req, res, next) => {
@@ -33,16 +33,14 @@ export const registerUser = async (req, res) => {
         .status(400)
         .json({ message: "Invalid email or phone number format" });
     }
+        // Check if the user already exists
+        const existingUser = await User.findOne({
+            $or: [{ email: contact }, { phone: contact }],
+        }); 
 
-    // Check if the user already exists
-    const existingUser = await User.findOne(
-      isEmail ? { email: contact } : { phone: contact }
-    );
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ message: "This contact is already in use" });
-    }
+        if (existingUser) {
+            return res.status(400).json({ message: "This email or phone number is already in use" });
+        }
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -188,7 +186,6 @@ export const resendOTP = async (req, res) => {
 
         // Generate a new OTP
         const newOTP = generateVerificationCode();
-        const expirationTime = new Date(Date.now() + 15 * 60 * 1000); // OTP hết hạn sau 15 phút
 
         // Cập nhật OTP và thời gian hết hạn
         if (user.email === contact) {
@@ -197,7 +194,6 @@ export const resendOTP = async (req, res) => {
             user.phoneVerificationCode = newOTP;
         }
 
-        user.verificationExpires = expirationTime;
         await user.save();
 
         // Gửi OTP qua email hoặc SMS

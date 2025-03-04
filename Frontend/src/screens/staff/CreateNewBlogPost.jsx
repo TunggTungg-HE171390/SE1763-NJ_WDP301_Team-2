@@ -4,11 +4,11 @@ import "react-quill/dist/quill.snow.css"; // Import style cho Quill
 import { Button, Form, Container, Row, Col, Card, Stack } from "react-bootstrap";
 import { createBlogPost } from "../../api/blogPosts.api";
 import { useBootstrap } from "@/hooks/useBootstrap";
-
+import { useNavigate } from "react-router-dom";
 
 const CreateNewPost = () => {
-
     useBootstrap();
+    const navigate = useNavigate();
 
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
@@ -46,7 +46,12 @@ const CreateNewPost = () => {
 
     return (
         <Container style={{ maxWidth: "800px", marginTop: "200px" }} className="my-5">
-            <Card className="p-4 shadow-sm" style={{ borderRadius: "10px", backgroundColor: "#ffffff" }}>
+
+            <Button variant="secondary" onClick={() => navigate("/manage-posts")}>
+                Back to Manage Posts
+            </Button>
+            <Card className="p-4 shadow-sm mt-3" style={{ borderRadius: "10px", backgroundColor: "#ffffff" }}>
+
                 <h2 className="text-center mb-4">Create New Post</h2>
                 <Form onSubmit={handleSubmit}>
                     <Form.Group controlId="title">

@@ -12,6 +12,7 @@ import psychologistRouter from "./psychologist.routes.js";
 
 const router = express.Router();
 router.use("/blogposts", blogPostRoutes);
+router.use("/psychologist", psychologistRouter);
 router.use("/blogs", blogRouter);
 router.use("/auth", userRouter);
 router.use("/category", categoryRouter);

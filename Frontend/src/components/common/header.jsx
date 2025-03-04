@@ -125,7 +125,7 @@ export function Header() {
                 <NavigationMenuLink asChild>
                   <Link
                     className="flex h-full w-full select-none flex-col justify-center rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                    href="/"
+                    to="/"
                   >
                     <div className="mb-2 mt-4 text-lg font-medium">
                       TrustTalk
@@ -176,9 +176,12 @@ export function Header() {
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink
+            asChild
             className={`${navigationMenuTriggerStyle()} cursor-pointer text-black`}
           >
-            Test Mental Health
+            <Link to="/CategoryTestSelected" className="text-black">
+                Test Mental Health
+            </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>

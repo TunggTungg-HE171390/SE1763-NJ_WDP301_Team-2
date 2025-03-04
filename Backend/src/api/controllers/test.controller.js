@@ -31,7 +31,7 @@ const createTest = async (req, res) => {
 
         const savedTest = await newTest.save();
 
-        res.status(201).json({ message: "Test created successfully", test: savedTest });
+        res.status(201).json({ message: "Test created successfully", test: savedTest._id });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

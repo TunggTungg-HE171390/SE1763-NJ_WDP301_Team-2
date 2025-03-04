@@ -1,45 +1,61 @@
-import { createContext, useEffect, useState } from "react";
-import PropTypes from "prop-types";
+import React, { createContext, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 
-const AuthContext = createContext({
-    login: () => {},
-    logout: () => {},
-    user: null,
+export const AuthContext = createContext({
+  user: null,
+  login: () => {},
+  logout: () => {},
+  updateUser: () => {},
+  loading: true,
 });
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        const storedUser = localStorage.getItem("user");
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-        if (token && storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-    }, []);
+  useEffect(() => {
+    // Check if user data exists in localStorage when app loads
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
 
-    useEffect(() => {
-        console.log("AuthContext user changed:", user);
-    }, [user]);
+    if (storedUser && storedToken) {
+      setUser(JSON.parse(storedUser));
+    }
 
-    const login = (userData, token) => {
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(userData));
-        setUser(userData);
-    };
+    setLoading(false); // Set loading to false after check is done
+  }, []);
 
-    const logout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        setUser(null);
-        window.location.reload();
-    };
+  useEffect(() => {
+    console.log("AuthContext user changed:", user);
+  }, [user]);
 
-    return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+  const login = (userData, token) => {
+    localStorage.setItem("user", JSON.stringify(userData));
+    localStorage.setItem("token", token);
+    setUser(userData);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null);
+    window.location.reload();
+  };
+
+  const updateUser = (userData) => {
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  return (
+    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 AuthProvider.propTypes = {
-    children: PropTypes.node.isRequired,
+  children: PropTypes.node.isRequired,
 };
 
-export { AuthContext };
+export default AuthContext;

@@ -6,7 +6,8 @@ import {
   useLocation,
 } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
 import "./App.css";
 import TopBar from "./components/common/topbar";
 import Header from "./components/common/header";
@@ -26,14 +27,55 @@ import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import CreateNewPost from "./screens/staff/CreateNewBlogPost";
+import DoctorBooking from "./screens/public/psychologistList/DoctorBooking";
+import PsychologistProfile from "./screens/public/psychologistProfile/psychologistProfile";
 import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";
 import TestOutCome from "./screens/public/TestOutCome";
 // import ChangePassword from "./screens/user/changePassword/changePassword";
+import FinishBooking from "./screens/public/finishBooking/finishBooking";
+import UpdatePost from "./screens/staff/UpdatePost";
+import ViewAppointment from './screens/psychologist/viewAppointment/viewAppointment';
+import ViewAppointmentDetail from './screens/psychologist/viewAppointmentDetail/viewAppointmentDetail';
 import ManageUsers from "./screens/admin/ManageUsers";
 import BlogDetail from "./screens/public/Blogdetail";
 import Blog from "./screens/public/Blog";
-import DoctorBooking from "./screens/public/psychologistList/DoctorBooking";
+// Create MUI theme
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#3788d8',
+    },
+    secondary: {
+      main: '#f50057',
+    },
+    success: {
+      main: '#4caf50',
+    },
+    warning: {
+      main: '#ff9800',
+    },
+    error: {
+      main: '#f44336',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    h4: {
+      fontWeight: 600,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none',
+        },
+      },
+    },
+  },
+});
+
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
   const { user } = useAuth();
@@ -57,6 +99,21 @@ function PublicRoute({ element }) {
 
 // Prop validation
 ProtectedRoute.propTypes = {
+
+    element: PropTypes.node.isRequired,
+    requiredRole: PropTypes.string,
+};
+
+PublicRoute.propTypes = {
+    element: PropTypes.node.isRequired,
+};
+
+function Layout() {
+    const location = useLocation();
+    const hideLayout = ["/login", "/signup", "/verify", "/forgotPassword", "/changePassword"].includes(
+        location.pathname
+    );
+
   element: PropTypes.node.isRequired, // Use `node` instead of `element`
   requiredRole: PropTypes.string, // Optional role check
 };
@@ -74,6 +131,7 @@ function Layout() {
     "/forgotPassword",
     "/changePassword"
   ].includes(location.pathname);
+
 
     return (
         <div className="app">
@@ -98,6 +156,16 @@ function Layout() {
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
+                        <Route path="/create-post" element={<CreateNewPost />} />
+                        <Route path="/update-post/:postId" element={<UpdatePost />} />
+                        <Route path="/manage-posts" element={<ManagePosts />} />
+                        <Route path="/psychologist/view-appointments" element={<ViewAppointment />} />
+                        <Route path="/psychologist/view-appointment-detail/:appointmentId" element={<ViewAppointmentDetail />} />
+                        <Route path="/create-post" element={<CreateNewPost />} />
+                        <Route path="/doctor" element={<DoctorBooking />} />
+                        <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
+                        <Route path="/book-appointment" element={<BookAppointment />} />
+                        <Route path="/finish-booking" element={<FinishBooking />} />
                         {/*<Route path="/forgotPassword" element={<PublicRoute element={<ForgotPassword />} />} />*/}
             {/* <Route path="/changePassword" element={<ProtectedRoute element={< ChangePassword/>} requiredRole={"user"} />} /> */}
             {/*<Route path="/changePassword" element={<ChangePassword />} />*/}
@@ -106,7 +174,6 @@ function Layout() {
             <Route path="/blogdetail/:id" element={<BlogDetail />} />
             <Route path="/create-post" element={<CreateNewPost />} />
             <Route path="/manage-posts" element={<ManagePosts />} />
-            <Route path="/doctorbooking" element={<DoctorBooking />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
@@ -116,13 +183,18 @@ function Layout() {
 }
 
 function App() {
-  return (
-    <AuthProvider>
-      <Router>
-        <Layout />
-      </Router>
-    </AuthProvider>
-  );
+
+    return (
+        <AuthProvider>
+            <ThemeProvider theme={theme}>
+                <CssBaseline />
+                <Router>
+                    <Layout />
+                </Router>
+            </ThemeProvider>
+        </AuthProvider>
+    );
+
 }
 
 export default App;
