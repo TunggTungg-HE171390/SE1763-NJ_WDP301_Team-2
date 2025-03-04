@@ -1,4 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
@@ -27,12 +33,13 @@ import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";
 import TestOutCome from "./screens/public/TestOutCome";
 // import ChangePassword from "./screens/user/changePassword/changePassword";
-import BookAppointment from "./screens/public/bookAppointment/bookAppointment";
 import FinishBooking from "./screens/public/finishBooking/finishBooking";
 import UpdatePost from "./screens/staff/UpdatePost";
 import ViewAppointment from './screens/psychologist/viewAppointment/viewAppointment';
 import ViewAppointmentDetail from './screens/psychologist/viewAppointmentDetail/viewAppointmentDetail';
-
+import ManageUsers from "./screens/admin/ManageUsers";
+import BlogDetail from "./screens/public/Blogdetail";
+import Blog from "./screens/public/Blog";
 // Create MUI theme
 const theme = createTheme({
   palette: {
@@ -71,27 +78,28 @@ const theme = createTheme({
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
-    const { user } = useAuth();
+  const { user } = useAuth();
 
-    if (!user) {
-        return <Navigate to="/login" replace />;
-    }
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
-    if (requiredRole && user.role !== requiredRole) {
-        return <Navigate to="/" replace />; // Redirect unauthorized users to homepage
-    }
+  if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to="/" replace />; // Redirect unauthorized users to homepage
+  }
 
-    return element;
+  return element;
 }
 
 // Public routes (only accessible if not logged in)
 function PublicRoute({ element }) {
-    const { user } = useAuth();
-    return user ? <Navigate to="/" replace /> : element;
+  const { user } = useAuth();
+  return user ? <Navigate to="/" replace /> : element;
 }
 
 // Prop validation
 ProtectedRoute.propTypes = {
+
     element: PropTypes.node.isRequired,
     requiredRole: PropTypes.string,
 };
@@ -106,6 +114,25 @@ function Layout() {
         location.pathname
     );
 
+  element: PropTypes.node.isRequired, // Use `node` instead of `element`
+  requiredRole: PropTypes.string, // Optional role check
+};
+
+PublicRoute.propTypes = {
+  element: PropTypes.node.isRequired, // Fix for missing prop validation
+};
+
+function Layout() {
+  const location = useLocation();
+  const hideLayout = [
+    "/login",
+    "/signup",
+    "/verify",
+    "/forgotPassword",
+    "/changePassword"
+  ].includes(location.pathname);
+
+
     return (
         <div className="app">
             <HelmetProvider>
@@ -114,6 +141,8 @@ function Layout() {
                 </Helmet>
                 <TopBar />
                 {!hideLayout && <Header />}
+                <Toaster />
+                <ToastReceiver />
                 <div>
                     <Routes>
                         <Route path="/" element={<Homepage />} />
@@ -137,15 +166,24 @@ function Layout() {
                         <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
                         <Route path="/book-appointment" element={<BookAppointment />} />
                         <Route path="/finish-booking" element={<FinishBooking />} />
+                        {/*<Route path="/forgotPassword" element={<PublicRoute element={<ForgotPassword />} />} />*/}
+            {/* <Route path="/changePassword" element={<ProtectedRoute element={< ChangePassword/>} requiredRole={"user"} />} /> */}
+            {/*<Route path="/changePassword" element={<ChangePassword />} />*/}
+            <Route path='manageusers' element={<ManageUsers />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blogdetail/:id" element={<BlogDetail />} />
+            <Route path="/create-post" element={<CreateNewPost />} />
+            <Route path="/manage-posts" element={<ManagePosts />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
             </HelmetProvider>
         </div>
-    );
+  );
 }
 
 function App() {
+
     return (
         <AuthProvider>
             <ThemeProvider theme={theme}>
@@ -156,6 +194,7 @@ function App() {
             </ThemeProvider>
         </AuthProvider>
     );
+
 }
 
 export default App;

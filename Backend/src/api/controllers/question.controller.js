@@ -41,6 +41,7 @@ const getQuestionsOnTest = async (req, res, next) => {
 
 const insertQuestionOnTest = async (req, res, next) => {
   try {
+
     const { questions } = req.body;
     console.log("Type of questions:", typeof questions);
 

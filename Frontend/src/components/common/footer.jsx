@@ -12,6 +12,8 @@ export default function Footer() {
                         <p className="mt-2 text-gray-400">
                             We provide expert mental health and wellness consultations to help you live a better life.
                         </p>
+                        
+                    
                     </div>
 
                     {/* Column 2: Head Office */}

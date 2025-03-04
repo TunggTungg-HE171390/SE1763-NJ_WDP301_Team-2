@@ -46,3 +46,14 @@ export const updateBlogPost = async (postId, postData) => {
   }
 };
 
+// Lấy tất cả bài viết
+export const getAllPosts = async () => {
+    try {
+        const response = await apiClient.get(API_BASE_URL);
+        return response.data; // Trả về danh sách bài viết
+    } catch (error) {
+        console.error("Error fetching all posts:", error);
+        throw error.response ? error.response.data : error;
+    }
+};
+

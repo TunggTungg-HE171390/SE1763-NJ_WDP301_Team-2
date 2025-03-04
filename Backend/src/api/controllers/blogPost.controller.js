@@ -1,6 +1,16 @@
 import BlogPost from "../models/blogPost.model.js"; // Import BlogPost model
 import { body, validationResult } from "express-validator";
 
+const getAllBlogPosts = async (req, res) => {
+    try {
+        const posts = await BlogPost.find();
+        res.status(200).json(posts);
+    } catch (error) {
+        console.error("Error fetching blog posts:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
 // Controller to create a new blog post with validation
 const createBlogPost = [
     // Validation rules
@@ -10,7 +20,6 @@ const createBlogPost = [
         .withMessage("UserId must be a valid MongoDB ObjectId")
         .notEmpty()
         .withMessage("UserId is required"),
-    // body("userId").isMongoId().withMessage("UserId must be a valid MongoDB ObjectId").notEmpty().withMessage("UserId is required"),
     body("content").isString().withMessage("Content must be a string").notEmpty().withMessage("Content is required"),
     body("status").optional().isIn(["Draft", "Published"]).withMessage("Status must be either 'Draft' or 'Published'"),
 
@@ -59,8 +68,8 @@ const updateBlogPost = [
 
     // Controller to handle the update
     async (req, res) => {
-        const { id } = req.params; // Lấy ID từ tham số route
-        const { title, content, status, image } = req.body; // Lấy các trường cần cập nhật từ body
+        const { id } = req.params;
+        const { title, content, status, image } = req.body;
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -68,7 +77,7 @@ const updateBlogPost = [
         }
 
         try {
-            // Tìm và cập nhật bài viết
+            // Find and update the blog post
             const updatedBlogPost = await BlogPost.findByIdAndUpdate(
                 id,
                 {
@@ -78,16 +87,15 @@ const updateBlogPost = [
                     image,
                 },
                 { new: true }
-            ); // Trả về bài viết đã cập nhật
+            );
 
             if (!updatedBlogPost) {
                 return res.status(404).json({ message: "Blog post not found." });
             }
 
-            res.status(200).json(updatedBlogPost); // Trả về bài viết đã được cập nhật
+            res.status(200).json(updatedBlogPost);
         } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Server error while updating the blog post." });
+            res.status(500).json({ error: error.message });
         }
     },
 ];
@@ -108,15 +116,9 @@ const getBlogPostById = async (req, res) => {
     }
 };
 
-// Lấy tất cả bài viết
-const getAllBlogPosts = async (req, res) => {
-    try {
-        const posts = await BlogPost.find();
-        res.status(200).json(posts);
-    } catch (error) {
-        console.error("Error fetching blog posts:", error);
-        res.status(500).json({ message: "Internal Server Error" });
-    }
+export default {
+    createBlogPost,
+    updateBlogPost,
+    getAllBlogPosts,
+    getBlogPostById,
 };
-
-export default { createBlogPost, updateBlogPost, getAllBlogPosts, getBlogPostById };
