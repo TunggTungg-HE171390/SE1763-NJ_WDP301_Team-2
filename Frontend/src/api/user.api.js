@@ -23,3 +23,15 @@ export const botResponse = async (credentials) => {
 export const sendEmail = async (credentials) => {
     return apiClient.post("/auth/send-email", credentials);
 };
+
+export const psychologistList = async () => {
+    try {
+        const response = await apiClient.get("/auth/psychologists");
+        return response.data;
+    } catch (error) {
+        console.error("Error submitting:", error);
+        throw error;
+    }
+};
+
+

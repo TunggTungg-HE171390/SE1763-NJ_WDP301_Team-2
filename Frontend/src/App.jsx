@@ -28,6 +28,8 @@ import CreateNewPost from "./screens/staff/CreateNewBlogPost";
 import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";
 import TestOutCome from "./screens/public/TestOutCome";
+import PsychologistList from "./screens/staff/PsychologistList";
+import PsychologistSchedule from "./screens/staff/PsychologistSchedule";
 
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
@@ -90,6 +92,8 @@ function Layout() {
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                         <Route path="/create-post" element={<CreateNewPost />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
+                        <Route path="/psychologists" element={<PsychologistList />} />
+                        <Route path="/psychologist-schedule/:psychologistId" element={<PsychologistSchedule />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}

@@ -14,7 +14,7 @@ Chúng tôi thấu hiểu những khó khăn và áp lực mà mỗi người đ
 
 Điều quan trọng là chúng ta cần nhận thức được vấn đề và tìm kiếm giải pháp để cải thiện. Hãy nhớ rằng, bạn không đơn độc! Rất nhiều người đang trải qua những điều tương tự như bạn.
 
-Trải nghiệm dịch vụ của chúng tôi tại: http://localhost:5173/login
+Trải nghiệm dịch vụ của chúng tôi tại: http://localhost:5173/
 
 Một lần nữa, cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi. Chúc bạn luôn mạnh khỏe và hạnh phúc.
 Trân trọng,

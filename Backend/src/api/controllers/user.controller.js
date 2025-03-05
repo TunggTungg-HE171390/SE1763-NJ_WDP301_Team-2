@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const SECRET_KEY = process.env.JWT_SECRET;
-const API_KEY = process.env.API_KEY_GPT;  
+const API_KEY = process.env.API_KEY_GPT;
 const MODEL = process.env.MODEL;
 
 const findAllUsers = async (req, res, next) => {
@@ -254,6 +254,32 @@ export const sendEmail = async (req, res) => {
     }
 };
 
+const getAllPsychologist = async (req, res, next) => {
+    try {
+        const psychologistData = await User.find({ role: "psychologist" })
+            .populate('psychologist.psychologistProfile.psychologicalCategory').exec();
+
+        const psychologists = psychologistData.map((psychologist) => ({
+            psychologistId: psychologist._id,
+            psychologistName: psychologist.fullName,
+            email: psychologist.email,
+            phone: psychologist.phone,
+            psychologistProfile: {
+                professionalLevel: psychologist.psychologist.psychologistProfile.professionalLevel,
+                educationalLevel: psychologist.psychologist.psychologistProfile.educationalLevel,
+                specialization: psychologist.psychologist.psychologistProfile.specialization,
+                psychologicalCategory: psychologist.psychologist.psychologistProfile.psychologicalCategory.categoryName,
+                rating: psychologist.psychologist.psychologistProfile.rating,
+            },
+        }));
+
+        res.json(psychologists);
+    } catch (error) {
+        console.error("Error fetching psychologists: ", error);
+        next(error);
+    }
+};
+
 export default {
     registerUser,
     loginUser,
@@ -262,4 +288,5 @@ export default {
     findAllUsers,
     chatWithAI,
     sendEmail,
+    getAllPsychologist,
 };
