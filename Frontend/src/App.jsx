@@ -32,7 +32,9 @@ import FinishBooking from "./screens/public/finishBooking/finishBooking";
 import UpdatePost from "./screens/staff/UpdatePost";
 import ViewAppointment from './screens/psychologist/viewAppointment/viewAppointment';
 import ViewAppointmentDetail from './screens/psychologist/viewAppointmentDetail/viewAppointmentDetail';
-
+import BlogScreen from './screens/public/blog/blog.jsx';
+import BlogDetail from './screens/public/blog/Blogdetail.jsx';
+import ManageUsers from './screens/admin/ManageUsers.jsx';
 // Create MUI theme
 const theme = createTheme({
   palette: {
@@ -137,6 +139,10 @@ function Layout() {
                         <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
                         <Route path="/book-appointment" element={<BookAppointment />} />
                         <Route path="/finish-booking" element={<FinishBooking />} />
+                        <Route path="/blog" element={< BlogScreen />} /> 
+                        <Route path="/blogdetail/:id" element={<BlogDetail />} />
+                        <Route path='manageusers' element={<ManageUsers />} />
+
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}

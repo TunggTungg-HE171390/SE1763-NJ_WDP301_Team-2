@@ -21,5 +21,13 @@ apiClient.interceptors.request.use((config) => {
     return config;
 });
 
+apiClient.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        console.log("API Client Error:", error);
+        return Promise.reject(error);
+    }
+);
+
 // Export API Client
 export default apiClient;
