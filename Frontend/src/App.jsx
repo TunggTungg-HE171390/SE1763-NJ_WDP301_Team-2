@@ -118,7 +118,7 @@ function Layout() {
                 {!hideLayout && <Header />}
                 <div>
                     <Routes>
-                        <Route path="/" element={<Homepage />} />
+                        <Route path="/" element={<Homepage />} /> 
                         <Route path="/CategoryTestSelected" element={<CategoryTestSelected />} />
                         <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
                         <Route path="/questions-on-test/:testId" element={<TestForm />} />
