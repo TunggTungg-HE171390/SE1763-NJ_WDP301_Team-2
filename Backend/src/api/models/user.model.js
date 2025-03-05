@@ -103,9 +103,9 @@ const UserSchema = new Schema(
                 },
                 { _id: false }
             ),
-            required: function () {
-                return this.role === "patient";
-            },
+            // required: function () {
+            //     return this.role === "patient";
+            // },
         },
         psychologist: {
             type: new Schema(
@@ -114,9 +114,9 @@ const UserSchema = new Schema(
                 },
                 { _id: false }
             ),
-            required: function () {
-                return this.role === "psychologist";
-            },
+            // required: function () {
+            //     return this.role === "psychologist";
+            // },
         },
     },
     {
@@ -125,21 +125,21 @@ const UserSchema = new Schema(
 );
 
 // Add validation hook to enforce structure
-UserSchema.pre("save", function (next) {
-    if (this.role === "patient" && !this.patient) {
-        return next(new Error("A patient must have a medical profile."));
-    }
+// UserSchema.pre("save", function (next) {
+//     if (this.role === "patient" && !this.patient) {
+//         return next(new Error("A patient must have a medical profile."));
+//     }
 
-    if (this.role === "psychologist" && !this.psychologist) {
-        return next(new Error("A psychologist must have a psychologist profile."));
-    }
+//     if (this.role === "psychologist" && !this.psychologist) {
+//         return next(new Error("A psychologist must have a psychologist profile."));
+//     }
 
-    if ((this.role === "admin" || this.role === "manager") && (this.patient || this.psychologist)) {
-        return next(new Error(`Users with role '${this.role}' cannot have patient or psychologist profiles.`));
-    }
+//     if ((this.role === "admin" || this.role === "manager") && (this.patient || this.psychologist)) {
+//         return next(new Error(`Users with role '${this.role}' cannot have patient or psychologist profiles.`));
+//     }
 
-    next();
-});
+//     next();
+// });
 
 // Create the User model
 const User = mongoose.model("users", UserSchema);
