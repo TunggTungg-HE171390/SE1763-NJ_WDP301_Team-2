@@ -6,7 +6,6 @@ import instanceMongoDb from "./api/database/connect.mongodb.js";
 dotenv.config();
 
 const PORT = process.env.PORT;
-const HOSTNAME = "localhost"; // Sử dụng "localhost"
 
 // Ensure MongoDB is connected before starting the server
 const startServer = async () => {

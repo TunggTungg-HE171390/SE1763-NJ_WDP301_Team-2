@@ -4,6 +4,7 @@ const PORT = import.meta.env.VITE_PORT;
 
 // Centralized Base URL
 const API_BASE_URL = `http://localhost:${PORT}/api`; // Change here to update for all APIs
+// const API_BASE_URL = `https://tamgiao-be.onrender.com/api`;
 
 // Create Axios Instance
 const apiClient = axios.create({
