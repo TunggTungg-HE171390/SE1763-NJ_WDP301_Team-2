@@ -31,7 +31,7 @@ const Register = () => {
     return (
         <>
             <Helmet>
-                <title>Register</title>
+                <title>Đăng ký</title>
             </Helmet>
             <div className="min-h-screen w-full fixed inset-0 flex items-center justify-center bg-cover bg-center">
                 <div

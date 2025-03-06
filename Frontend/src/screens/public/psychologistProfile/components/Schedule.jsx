@@ -64,7 +64,7 @@ const Schedule = ({ psychologist, profile }) => {
             <CardContent className="p-4">
                 <div className="p-6 rounded-lg mb-4 bg-blue-50">
                     <div className="flex items-center gap-x-8 mb-2">
-                        <p className="text-lg font-medium">Online Consultation Schedule</p>
+                        <p className="text-lg font-medium">Lịch tư vấn trực tuyến</p>
                         <Popover>
                             <PopoverTrigger asChild>
                                 <Button
@@ -118,7 +118,7 @@ const Schedule = ({ psychologist, profile }) => {
                                 </Button>
                             ))
                         ) : (
-                            <p className="text-gray-500 text-sm col-span-10">No available slots for this date.</p>
+                            <p className="text-gray-500 text-sm col-span-10">Không có lịch tư vấn cho ngày hôm nay.</p>
                         )}
                     </div>
 
@@ -126,10 +126,10 @@ const Schedule = ({ psychologist, profile }) => {
                         <div className="mt-6 border-t">
                             <div className="rounded-md py-4">
                                 <div className="flex items-center">
-                                    <Check className="h-5 w-5 text-green-500 mr-2" />
+                                    <Check className="h-5 w-5 text-blue-500 mr-2" />
                                     <p className="text-md font-medium">
-                                        Online Consultation with {psychologist.fullName}{" "}
-                                        <span className="font-bold text-blue-600">$50</span>
+                                        Tư vấn trực tuyến với {psychologist.fullName}{" "}
+                                        <span className="font-bold text-blue-600">150.000đ</span>
                                     </p>
                                 </div>
                                 <div className="mt-4">
@@ -137,7 +137,7 @@ const Schedule = ({ psychologist, profile }) => {
                                         onClick={handleStartConsultation}
                                         className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center px-6 py-4 w-full sm:w-auto">
                                         <Video className="h-5 w-5 mr-2" />
-                                        <span className="font-medium">Start Consultation</span>
+                                        <span className="font-medium">Đặt lịch tư vấn</span>
                                     </Button>
                                 </div>
                             </div>
@@ -146,11 +146,11 @@ const Schedule = ({ psychologist, profile }) => {
                 </div>
 
                 <div className="pl-8">
-                    <h3 className="text-lg font-semibold uppercase mb-4 text-left">Experience & Work History</h3>
+                    <h3 className="text-lg font-semibold uppercase mb-4 text-left">Kinh nghiệm và Lịch sử làm việc</h3>
                     <ul className="text-base pl-6 text-left">
                         {profile.medicalExperience.concat(profile.workHistory).map((exp, index) => (
                             <li key={index} className="flex items-start mb-3">
-                                <span className="text-green-500 mr-2">•</span>
+                                <span className="text-blue-500 mr-2">•</span>
                                 <span>{exp}</span>
                             </li>
                         ))}

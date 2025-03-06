@@ -9,24 +9,23 @@ const getAllBlog = async (req, res) => {
         console.log(error);
         res.status(500).json({ error: error.message });
     }
-}
+};
 
-
-const getBlogDetail = [
-    async (req, res) => {
-        try {
-            const { id } = req.params;
-            const blogPost = await BlogPost.findById(id);
-            if (!blogPost) {
-                return res.status(404).json({ message: "Blog post not found" });
-            }
-            
-            res.status(200).json(blogPost);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
+const getBlogDetail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const blogPost = await BlogPost.findById(id);
+        if (!blogPost) {
+            return res.status(404).json({ message: "Blog post not found" });
         }
+
+        res.status(200).json(blogPost);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: error.message });
     }
-];
+};
+
 const addComment = async (req, res) => {
     try {
         const { postId } = req.params; // ID của bài viết cần thêm bình luận
@@ -63,7 +62,7 @@ const updateComment = async (req, res) => {
             return res.status(404).json({ error: "Bài viết không tồn tại" });
         }
 
-        const commentIndex = blogPost.comments.findIndex(c => c._id.toString() === commentId);
+        const commentIndex = blogPost.comments.findIndex((c) => c._id.toString() === commentId);
         if (commentIndex === -1) {
             return res.status(404).json({ error: "Bình luận không tồn tại" });
         }
@@ -86,7 +85,7 @@ const deleteComment = async (req, res) => {
             return res.status(404).json({ error: "Bài viết không tồn tại" });
         }
 
-        const commentIndex = blogPost.comments.findIndex(c => c._id.toString() === commentId);
+        const commentIndex = blogPost.comments.findIndex((c) => c._id.toString() === commentId);
         if (commentIndex === -1) {
             return res.status(404).json({ error: "Bình luận không tồn tại" });
         }
@@ -220,4 +219,14 @@ const getAllBlogPosts = async (req, res) => {
     }
 };
 
-export default { createBlogPost, updateBlogPost, getAllBlogPosts, getBlogPostById, getAllBlog, getBlogDetail,updateComment,addComment,deleteComment };
+export default {
+    createBlogPost,
+    updateBlogPost,
+    getAllBlogPosts,
+    getBlogPostById,
+    getAllBlog,
+    getBlogDetail,
+    updateComment,
+    addComment,
+    deleteComment,
+};

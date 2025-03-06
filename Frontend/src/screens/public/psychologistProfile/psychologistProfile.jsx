@@ -28,9 +28,9 @@ const DoctorProfile = () => {
         fetchPsychologist();
     }, [doctorId]);
 
-    if (loading) return <p>Loading psychologist information...</p>;
+    if (loading) return <p>Đang tải dữ liệu chuyên viên...</p>;
     if (error) return <p className="text-red-500">{error}</p>;
-    if (!psychologist) return <p>No psychologist data available.</p>;
+    if (!psychologist) return <p>Không tìm thấy thông tin chuyên viên.</p>;
 
     const profile = psychologist?.psychologist?.psychologistProfile;
 

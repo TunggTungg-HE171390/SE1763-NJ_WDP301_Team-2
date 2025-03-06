@@ -18,7 +18,7 @@ const Profile = ({ psychologist, profile }) => {
                         <div className="flex flex-row mt-2">
                             <div className="flex items-start">
                                 <div>
-                                    <p className="text-sm text-gray-600 text-start pb-3">150.000d</p>
+                                    <p className="text-sm text-gray-600 text-start pb-3">150.000đ</p>
                                     <div className="mt-1 flex flex-wrap gap-2 max-w-[400px]">
                                         <Badge variant="outline" className="bg-slate-200 rounded-md">
                                             {profile.professionalLevel}
@@ -34,17 +34,17 @@ const Profile = ({ psychologist, profile }) => {
                             </div>
                             <div className="flex flex-col space-y-2 pl-[4rem]">
                                 <div className="flex items-center">
-                                    <CalendarDays className="h-4 w-4 text-green-500 mr-1" />
-                                    <span className="font-semibold">Appointments: {profile.appointmentsAttended}</span>
+                                    <CalendarDays className="h-4 w-4 text-blue-500 mr-1" />
+                                    <span className="font-semibold">Cuộc hẹn đã tham gia: {profile.appointmentsAttended}</span>
                                 </div>
                                 <div className="flex items-center">
-                                    <CalendarDays className="h-4 w-4 text-green-500 mr-1" />
-                                    <span className="font-semibold">Consultations: {profile.consultationsCount}</span>
+                                    <CalendarDays className="h-4 w-4 text-blue-500 mr-1" />
+                                    <span className="font-semibold">Số người đã tư vấn: {profile.consultationsCount}</span>
                                 </div>
                                 <div className="flex items-center">
                                     <Star className="h-4 w-4 text-yellow-500 mr-1" />
                                     <span className="font-semibold">
-                                        Rating: {profile.rating} ({profile.numberOfRatings} reviews)
+                                        Đánh giá: {profile.rating} ({profile.numberOfRatings} đánh giá)
                                     </span>
                                 </div>
                             </div>

@@ -24,8 +24,8 @@ const BlogDetail = () => {
         return;
       }
 
-      try {
-        const res = await apiClient.get(`/blogposts/blogdetail/${id}`);
+        try {
+        const res = await apiClient.get(`blogposts/blogdetail/${id}`);
         setArticle(res.data);
         setComments(res.data.comments || []);
       } catch (error) {
@@ -71,87 +71,86 @@ const BlogDetail = () => {
   if (!article) return <p>No article found.</p>;
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
-      <h1 className="text-2xl font-bold text-center mb-8">{article.title}</h1>
-      <Card className="bg-white shadow-sm">
-        <CardContent className="p-6">
-          <div
-            className="text-gray-600"
-            dangerouslySetInnerHTML={{ __html: article.content || "<p>No content available</p>" }}
-          />
-        </CardContent>
-      </Card>
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">Comments</h2>
-        {comments.length === 0 ? (
-          <p>No comments yet.</p>
-        ) : (
-          <div className="space-y-4">
-            {comments.map((comment) => (
-              <Card key={comment.id} className="bg-white shadow-sm p-4 flex items-start space-x-4">
-                <Avatar>
-                  <AvatarImage src={comment.avatar} />
-                  <AvatarFallback>{comment.username.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="font-semibold text-gray-800">{comment.username}</p>
-                  {editingComment === comment.id ? (
-                    <Textarea
-                      value={comment.comment}
-                      onChange={(e) =>
-                        setComments((prevComments) =>
-                          prevComments.map((c) =>
-                            c.id === comment.id ? { ...c, comment: e.target.value } : c
-                          )
-                        )
-                      }
-                      className="w-full"
-                    />
-                  ) : (
-                    <p className="text-gray-600">{comment.comment}</p>
-                  )}
-                  <p className="text-gray-400 text-sm mt-1">
-                    {new Date(comment.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex space-x-2">
-                  {editingComment === comment.id ? (
-                    <Button size="sm" onClick={() => setEditingComment(null)}>
-                      Save
-                    </Button>
-                  ) : (
-                    <Button size="sm" onClick={() => setEditingComment(comment.id)}>
-                      Edit
-                      
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleCommentDelete(comment.id)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </Card>
-            ))}
+      <div className="max-w-4xl mx-auto p-4">
+          <h1 className="text-2xl font-bold text-center mb-8">{article.title}</h1>
+          <Card className="bg-white shadow-sm">
+              <CardContent className="p-6">
+                  <img src={article.image} />
+                  <div
+                      className="text-gray-600"
+                      dangerouslySetInnerHTML={{ __html: article.content || "<p>No content available</p>" }}
+                  />
+              </CardContent>
+          </Card>
+          <div className="mt-8">
+              <h2 className="text-xl font-bold mb-4">Bình luận</h2>
+              {comments.length === 0 ? (
+                  <p>Chưa có bình luận.</p>
+              ) : (
+                  <div className="space-y-4">
+                      {comments.map((comment) => (
+                          <Card key={comment.id} className="bg-white shadow-sm p-4 flex items-start space-x-4">
+                              <Avatar>
+                                  <AvatarImage src={comment.avatar} />
+                                  <AvatarFallback>A</AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                  <p className="font-semibold text-gray-800">{comment.username}</p>
+                                  {editingComment === comment.id ? (
+                                      <Textarea
+                                          value={comment.comment}
+                                          onChange={(e) =>
+                                              setComments((prevComments) =>
+                                                  prevComments.map((c) =>
+                                                      c.id === comment.id ? { ...c, comment: e.target.value } : c
+                                                  )
+                                              )
+                                          }
+                                          className="w-full"
+                                      />
+                                  ) : (
+                                      <p className="text-gray-600">{comment.comment}</p>
+                                  )}
+                                  <p className="text-gray-400 text-sm mt-1">
+                                      {new Date(comment.createdAt).toLocaleDateString()}
+                                  </p>
+                              </div>
+                              <div className="flex space-x-2">
+                                  {editingComment === comment.id ? (
+                                      <Button size="sm" onClick={() => setEditingComment(null)}>
+                                          Lưu
+                                      </Button>
+                                  ) : (
+                                      <Button size="sm" onClick={() => setEditingComment(comment.id)}>
+                                          Sửa
+                                      </Button>
+                                  )}
+                                  <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      onClick={() => handleCommentDelete(comment.id)}>
+                                      Xoá
+                                  </Button>
+                              </div>
+                          </Card>
+                      ))}
+                  </div>
+              )}
           </div>
-        )}
+          <div className="mt-6">
+              <h2 className="text-lg font-bold mb-2">Thêm bình luận</h2>
+              <Input
+                  type="text"
+                  placeholder="Write your comment here..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="w-full mb-2"
+              />
+              <Button onClick={handleCommentSubmit} className="w-full">
+                  Gửi
+              </Button>
+          </div>
       </div>
-      <div className="mt-6">
-        <h2 className="text-lg font-bold mb-2">Add a Comment</h2>
-        <Input
-          type="text"
-          placeholder="Write your comment here..."
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          className="w-full mb-2"
-        />
-        <Button onClick={handleCommentSubmit} className="w-full">
-          Submit Comment
-        </Button>
-      </div>
-    </div>
   );
 };
 

@@ -1,68 +1,81 @@
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link } from "react-router-dom"; // Ensure you are using React Router for navigation
-import { GraduationCap, Building2, MapPin } from "lucide-react";
-
-const doctors = [
-    { name: "NGUYỄN HOÀNG GIANG", specialty: "Bác sĩ Nam", hospital: "Phòng khám Đa khoa" },
-    { name: "CHU THỊ MINH", specialty: "Chuyên khoa Gan tiêu hóa", hospital: "BVĐK Tâm Anh" },
-    { name: "LÊ VĂN VINH", specialty: "Tim mạch", hospital: "Bệnh viện Y tế MEDPLUS" },
-];
-
-const blogs = [
-    {
-        title: "Cách phòng tránh bệnh tim mạch",
-        author: "TS. Lê Văn Vinh",
-        views: 1200,
-        imageUrl: "https://placekitten.com/400/300",
-    },
-    {
-        title: "Dinh dưỡng cho bệnh gan",
-        author: "BS. Chu Thị Minh",
-        views: 950,
-        imageUrl: "https://placebear.com/400/300",
-    },
-    {
-        title: "Lời khuyên cho sức khỏe nam giới",
-        author: "BS. Nguyễn Hoàng Giang",
-        views: 800,
-        imageUrl: "https://source.unsplash.com/random/400x300",
-    },
-];
+import { GraduationCap, Building2, Star } from "lucide-react";
+import * as API from "@/api";
+import apiClient from "@/api/apiClient";
 
 const HomeSection = () => {
+    const [blogs, setBlogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [doctors, setDoctors] = useState([]);
+
+    useEffect(() => {
+        const fetchBlogs = async () => {
+            try {
+                const response = await apiClient.get("/blogposts/allblogs");
+                const sortedBlogs = response.data.sort((a, b) => b.views - a.views); // Sort by most views
+                setBlogs(sortedBlogs.slice(0, 4)); // Get top 4 blogs
+            } catch (error) {
+                setError("Failed to fetch blog posts. Please try again later.", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchBlogs();
+    }, []);
+
+    useEffect(() => {
+        const fetchDoctors = async () => {
+            try {
+                const response = await API.getPsychologistList();
+                const topDoctors = response.data.data.slice(0, 3); // Get top 3
+                setDoctors(topDoctors);
+            } catch (error) {
+                console.error("Error fetching doctors:", error);
+            }
+        };
+
+        fetchDoctors();
+    }, []);
+
     return (
-        <div className="w-full mx-auto p-8 bg-[#e6f5f2] flex justify-center">
+        <div className="w-full mx-auto p-8 bg-blue-50 flex justify-center">
             <div className="max-w-6xl w-full grid grid-cols-5 gap-8">
                 {/* Left: Top Viewed Blogs (3/5) */}
                 <div className="col-span-3">
-                    <h2 className="text-2xl font-semibold mb-6 text-[#104a93]">Bài viết được xem nhiều</h2>
+                    <h2 className="text-2xl font-semibold mb-6 text-blue-600">Bài viết được xem nhiều</h2>
+                    {loading && <p>Đang tải...</p>}
+                    {error && <p className="text-red-500">{error}</p>}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {blogs.map((blog, index) => (
-                            <div key={index}>
-                                <Card className="hover:shadow-lg transition-shadow mb-[-10px]">
-                                    <CardContent className="p-0">
-                                        {/* Featured Image */}
-                                        <img
-                                            src={blog.imageUrl} // Ensure blogs have imageUrl property
-                                            alt={blog.title}
-                                            className="w-full h-48 object-cover rounded-t-lg"
-                                        />
-                                    </CardContent>
-                                </Card>
-                                {/* Blog Title */}
-                                <div className="p-4">
-                                    <h3 className="font-semibold text-lg text-center">{blog.title}</h3>
-                                </div>
+                        {blogs.map((blog) => (
+                            <div key={blog._id}>
+                                <Link to={`/blogdetail/${blog._id}`}>
+                                    <Card className="hover:shadow-lg transition-shadow mb-[-10px]">
+                                        <CardContent className="p-0">
+                                            {/* Featured Image */}
+                                            <img
+                                                src={blog.image || "https://source.unsplash.com/400x300?health"} // Default image if none
+                                                alt={blog.title}
+                                                className="w-full h-44 object-cover rounded-t-lg"
+                                            />
+                                        </CardContent>
+                                    </Card>
+                                    {/* Blog Title */}
+                                    <div className="p-4">
+                                        <h3 className="font-semibold text-lg text-center line-clamp-1">{blog.title}</h3>
+                                    </div>
+                                </Link>
                             </div>
                         ))}
                     </div>
 
                     {/* Link to All Blogs */}
                     <div className="mt-4 flex justify-center">
-                        <Link
-                            to="/blogs"
-                            className="text-[#104a93] hover:underline flex items-center gap-1 justify-end">
+                        <Link to="/blog" className="text-blue-600 hover:underline flex items-center gap-1 justify-end">
                             Xem tất cả bài viết →
                         </Link>
                     </div>
@@ -70,46 +83,60 @@ const HomeSection = () => {
 
                 {/* Right: Featured Doctors (2/5) */}
                 <div className="col-span-2">
-                    <h2 className="text-2xl font-semibold mb-6 text-[#104a93]">Bác sĩ nổi bật</h2>
-                    <div className="space-y-4">
-                        {doctors.map((doctor, index) => (
-                            <Card key={index} className="hover:shadow-lg transition-shadow bg-white">
-                                <CardContent className="p-6">
-                                    <div className="flex items-start gap-4">
-                                        <Avatar className="w-16 h-16">
-                                            <AvatarImage src={doctor.imageUrl} />
-                                            <AvatarFallback>{doctor.name?.charAt(0)}</AvatarFallback>
-                                        </Avatar>
+                    <h2 className="text-2xl font-semibold mb-6 text-blue-600">Bác sĩ nổi bật</h2>
+                    <div className="space-y-6">
+                        {doctors.map((doctor) => (
+                            <Link to={`/doctor/profile/${doctor._id}`} key={doctor._id}>
+                                <Card className="hover:shadow-lg flex transition-shadow bg-white cursor-pointer mb-4">
+                                    <CardContent className="p-4 w-full">
+                                        {" "}
+                                        {/* Ensures full width */}
+                                        <div className="flex items-start gap-4">
+                                            {/* Avatar */}
+                                            <Avatar className="w-16 h-16 flex-shrink-0">
+                                                <AvatarImage src={doctor.profileImg} />
+                                                <AvatarFallback>{doctor.fullName?.charAt(0)}</AvatarFallback>
+                                            </Avatar>
 
-                                        <div className="space-y-2">
-                                            <h3 className="font-semibold text-lg text-gray-900">{doctor.name}</h3>
+                                            {/* Text Content - Ensures Left Alignment */}
+                                            <div className="space-y-2 flex-1 text-left">
+                                                <h3 className="font-semibold text-lg text-gray-900">
+                                                    {doctor.fullName}
+                                                </h3>
 
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <GraduationCap className="w-4 h-4" />
-                                                <span className="text-sm">{doctor.degree}</span>
-                                            </div>
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <GraduationCap className="w-4 h-4" />
+                                                    <span className="text-sm">
+                                                        {doctor.psychologist?.psychologistProfile?.specialization}
+                                                    </span>
+                                                </div>
 
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <Building2 className="w-4 h-4" />
-                                                <span className="text-sm">{doctor.hospital}</span>
-                                            </div>
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <Building2 className="w-4 h-4" />
+                                                    <span className="text-sm">{doctor.address || "N/A"}</span>
+                                                </div>
 
-                                            <div className="flex items-center gap-2 text-gray-600">
-                                                <MapPin className="w-4 h-4" />
-                                                <span className="text-sm">{doctor.location}</span>
+                                                <div className="flex items-center gap-2 text-gray-600">
+                                                    <Star className="w-4 h-4 text-yellow-500" />
+                                                    <span className="text-sm">
+                                                        {doctor.psychologist?.psychologistProfile?.rating} ⭐ (
+                                                        {doctor.psychologist?.psychologistProfile?.numberOfRatings} đánh
+                                                        giá)
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                    </CardContent>
+                                </Card>
+                            </Link>
                         ))}
                     </div>
 
                     {/* Link to All Doctors */}
                     <div className="mt-4 flex justify-center">
                         <Link
-                            to="/doctors"
-                            className="text-[#104a93] hover:underline flex items-center gap-1 justify-end">
+                            to="/doctor"
+                            className="text-blue-600 hover:underline flex items-center gap-1 justify-end">
                             Xem tất cả bác sĩ →
                         </Link>
                     </div>

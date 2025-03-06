@@ -23,20 +23,20 @@ const FormSchema = z
                 const phoneRegex = /^\+?[1-9]\d{1,14}$/; // Accepts international phone formats
                 return emailRegex.test(value) || phoneRegex.test(value);
             },
-            { message: "Invalid email or phone number" }
+            { message: "Sai định dạng email hoặc số điện thoại" }
         ),
-        name: z.string().min(4, { message: "Name must be at least 4 characters" }),
+        name: z.string().min(4, { message: "Tên phải ít nhất 4 ký tự trở lên" }),
         password: z
             .string()
-            .min(8, "Password must be at least 8 characters long")
-            .max(32, "Password must be at most 32 characters long")
-            .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-            .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-            .regex(/\d/, "Password must contain at least one number"),
+            .min(8, "Mật khẩu phải ít nhất 8 ký tự")
+            .max(32, "Mật khẩu không được quá 32 ký tự")
+            .regex(/[A-Z]/, "Mật khẩu phải chứa ít nhất một ký tự viết hoa")
+            .regex(/[a-z]/, "Mật khẩu phải chứa ít nhất một ký tự viết thường")
+            .regex(/\d/, "Mật khẩu phải chứa ít nhất một chữ số"),
         confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {
-        message: "Passwords don't match",
+        message: "Mật khẩu không trùng",
         path: ["confirmPassword"],
     });
 
@@ -64,9 +64,9 @@ const RegisterForm = () => {
 
             // Store the toast message in session storage
             setToast({
-                title: "Success!",
-                description: "Verification Code Sent!",
-                actionText: "Close",
+                title: "Thành công!",
+                description: "Đã gửi mã xác thực!",
+                actionText: "Đóng",
                 titleColor: "text-green-600",
                 className: "text-start",
             });
@@ -76,8 +76,8 @@ const RegisterForm = () => {
         } catch (error) {
             toast({
                 variant: "destructive",
-                title: "Uh oh! Something went wrong.",
-                description: error.response?.data?.message || "There was a problem with your request.",
+                title: "Uh oh! Đã có lỗi xảy ra.",
+                description: error.response?.data?.message || "Đã xảy ra sự cố với yêu cầu của bạn.",
                 action: <ToastAction altText="Close">Try Again</ToastAction>,
             });
         }
@@ -92,8 +92,8 @@ const RegisterForm = () => {
                             <img src={TeamLogo} alt="Team Logo" className="w-[61px] h-[58px] py-1" />
                         </Link>
                     </div>
-                    <CardTitle className="text-2xl font-bold">Sign Up</CardTitle>
-                    <p className="text-sm text-gray-500">Create your TrustTalk account</p>
+                    <CardTitle className="text-2xl font-bold">Đăng ký</CardTitle>
+                    <p className="text-sm text-gray-500">Tạo tài khoản Tâm Giao của bạn</p>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -104,10 +104,10 @@ const RegisterForm = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="flex justify-between items-start">
-                                            <FormLabel className="text-start">Email or Phone Number</FormLabel>
+                                            <FormLabel className="text-start">Email hoặc Số điện thoại</FormLabel>
                                         </div>
                                         <FormControl>
-                                            <Input placeholder="mail@example.com or +1234567890" {...field} />
+                                            <Input placeholder="mail@example.com hoặc +1234567890" {...field} />
                                         </FormControl>
                                         <FormMessage className="flex justify-end" />
                                     </FormItem>
@@ -120,7 +120,7 @@ const RegisterForm = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="flex justify-between items-start">
-                                            <FormLabel className="text-start">Full Name</FormLabel>
+                                            <FormLabel className="text-start">Tên đầy đủ</FormLabel>
                                         </div>
                                         <FormControl>
                                             <Input placeholder="Jane Doe" {...field} />
@@ -136,7 +136,7 @@ const RegisterForm = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="flex justify-between items-center">
-                                            <FormLabel>Password</FormLabel>
+                                            <FormLabel>Mật khẩu</FormLabel>
                                         </div>
                                         <FormControl>
                                             <Input type="password" {...field} />
@@ -152,7 +152,7 @@ const RegisterForm = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="flex justify-between items-center">
-                                            <FormLabel>Confirm Password</FormLabel>
+                                            <FormLabel>Nhập lại mật khẩu</FormLabel>
                                         </div>
                                         <FormControl>
                                             <Input type="password" {...field} />
@@ -163,7 +163,7 @@ const RegisterForm = () => {
                             />
 
                             <Button type="submit" className="w-full bg-[#4262FF] hover:bg-[#3a56e0]">
-                                Continue
+                                Tiếp tục
                             </Button>
 
                             <div className="relative">
@@ -171,7 +171,7 @@ const RegisterForm = () => {
                                     <Separator className="w-full" />
                                 </div>
                                 <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-[#fcfcfc] px-2 text-gray-500">Or continue with</span>
+                                    <span className="bg-[#fcfcfc] px-2 text-gray-500">Hoặc tiếp tục với</span>
                                 </div>
                             </div>
 
@@ -191,10 +191,10 @@ const RegisterForm = () => {
                             </div>
 
                             <div className="text-center text-sm text-gray-500">
-                                Already have an account?{" "}
-                                <a href="/login" className="font-semibold text-[#4262FF] hover:text-[#15298b]">
-                                    Login
-                                </a>
+                                Đã có tài khoản?{" "}
+                                <Link to="/login" className="font-semibold text-[#4262FF] hover:text-[#15298b]">
+                                    Đăng nhập
+                                </Link>
                             </div>
                         </form>
                     </Form>

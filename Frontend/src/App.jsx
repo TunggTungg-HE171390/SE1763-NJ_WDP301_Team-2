@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline } from '@mui/material';
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { CssBaseline } from "@mui/material";
+import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
 import TopBar from "./components/common/topbar";
 import Header from "./components/common/header";
@@ -10,7 +11,7 @@ import Homepage from "./screens/public/home/homepage";
 import Login from "@/screens/common/login/login";
 import SignUp from "@/screens/common/register/register";
 import Verify from "@/screens/common/verify/verify";
-// import ForgotPassword from "@/screens/common/forgotPassword/forgotPassword";
+import ForgotPassword from "@/screens/common/forgotPassword/forgotPassword";
 import TeamLogo from "@/assets/TeamLogo.svg";
 import CategoryTestSelected from "./screens/public/CategoryTestSelected";
 import CategoryDetailTest from "./screens/public/CategoryDetailTest";
@@ -26,49 +27,50 @@ import PsychologistProfile from "./screens/public/psychologistProfile/psychologi
 import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";
 import TestOutCome from "./screens/public/TestOutCome";
-// import ChangePassword from "./screens/user/changePassword/changePassword";
+import ChangePassword from "./screens/user/changePassword/changePassword";
 import BookAppointment from "./screens/public/bookAppointment/bookAppointment";
 import FinishBooking from "./screens/public/finishBooking/finishBooking";
 import UpdatePost from "./screens/staff/UpdatePost";
-import ViewAppointment from './screens/psychologist/viewAppointment/viewAppointment';
-import ViewAppointmentDetail from './screens/psychologist/viewAppointmentDetail/viewAppointmentDetail';
-import BlogScreen from './screens/public/blog/blog.jsx';
-import BlogDetail from './screens/public/blog/Blogdetail.jsx';
-import ManageUsers from './screens/admin/ManageUsers.jsx';
+import ViewAppointment from "./screens/psychologist/viewAppointment/viewAppointment";
+import ViewAppointmentDetail from "./screens/psychologist/viewAppointmentDetail/viewAppointmentDetail";
+import BlogScreen from "./screens/public/blog/blog.jsx";
+import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
+import ManageUsers from "./screens/admin/ManageUsers.jsx";
+import AboutUs from "./screens/common/aboutUs.jsx";
 // Create MUI theme
 const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#3788d8',
-    },
-    secondary: {
-      main: '#f50057',
-    },
-    success: {
-      main: '#4caf50',
-    },
-    warning: {
-      main: '#ff9800',
-    },
-    error: {
-      main: '#f44336',
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    h4: {
-      fontWeight: 600,
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
+    palette: {
+        primary: {
+            main: "#3788d8",
         },
-      },
+        secondary: {
+            main: "#f50057",
+        },
+        success: {
+            main: "#4caf50",
+        },
+        warning: {
+            main: "#ff9800",
+        },
+        error: {
+            main: "#f44336",
+        },
     },
-  },
+    typography: {
+        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+        h4: {
+            fontWeight: 600,
+        },
+    },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    textTransform: "none",
+                },
+            },
+        },
+    },
 });
 
 // Protected route with role-based access control
@@ -115,10 +117,12 @@ function Layout() {
                     <link rel="icon" type="image/svg+xml" href={TeamLogo} />
                 </Helmet>
                 <TopBar />
+                <Toaster />
+                <ToastReceiver />
                 {!hideLayout && <Header />}
                 <div>
                     <Routes>
-                        <Route path="/" element={<Homepage />} /> 
+                        <Route path="/" element={<Homepage />} />
                         <Route path="/CategoryTestSelected" element={<CategoryTestSelected />} />
                         <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
                         <Route path="/questions-on-test/:testId" element={<TestForm />} />
@@ -133,16 +137,21 @@ function Layout() {
                         <Route path="/update-post/:postId" element={<UpdatePost />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
                         <Route path="/psychologist/view-appointments" element={<ViewAppointment />} />
-                        <Route path="/psychologist/view-appointment-detail/:appointmentId" element={<ViewAppointmentDetail />} />
+                        <Route
+                            path="/psychologist/view-appointment-detail/:appointmentId"
+                            element={<ViewAppointmentDetail />}
+                        />
                         <Route path="/create-post" element={<CreateNewPost />} />
                         <Route path="/doctor" element={<DoctorBooking />} />
                         <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
                         <Route path="/book-appointment" element={<BookAppointment />} />
                         <Route path="/finish-booking" element={<FinishBooking />} />
-                        <Route path="/blog" element={< BlogScreen />} /> 
+                        <Route path="/blog" element={<BlogScreen />} />
                         <Route path="/blogdetail/:id" element={<BlogDetail />} />
-                        <Route path='manageusers' element={<ManageUsers />} />
-
+                        <Route path="/manageusers" element={<ManageUsers />} />
+                        <Route path="/about-us" element={<AboutUs />} />
+                        <Route path="/changePassword" element={<ChangePassword />} />
+                        <Route path="/forgotPassword" element={<ForgotPassword />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}

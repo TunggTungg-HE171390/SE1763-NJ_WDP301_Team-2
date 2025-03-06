@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Link } from "react-router-dom";
 import { RichTextEditor } from "@mantine/rte";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -114,7 +115,7 @@ const BookAppointment = () => {
     return (
         <>
             <Helmet>
-                <title>Book Appointment</title>
+                <title>Đặt lịch khám</title>
             </Helmet>
             <ToastReceiver />
             <div className="max-w-4xl mx-auto p-6">
@@ -180,9 +181,11 @@ const BookAppointment = () => {
                                     <>
                                         <p className="font-medium">Người tới khám</p>
                                         <p className="text-red-500">Bạn chưa đăng nhập</p>
-                                        <Button variant="link" className="p-0 h-auto text-sm text-gray-800">
-                                            Đăng nhập ngay
-                                        </Button>
+                                        <Link to="/login">
+                                            <Button variant="link" className="p-0 h-auto text-sm text-gray-800">
+                                                Đăng nhập ngay
+                                            </Button>
+                                        </Link>
                                     </>
                                 )}
                             </div>

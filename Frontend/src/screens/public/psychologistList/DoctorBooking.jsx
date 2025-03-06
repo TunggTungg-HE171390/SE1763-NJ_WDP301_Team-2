@@ -136,13 +136,13 @@ const DoctorBooking = () => {
     return (
         <>
             <Helmet>
-                <title>Book Doctor</title>
+                <title>Đặt tư vấn từ danh sách chuyên viên</title>
             </Helmet>
             <ToastReceiver />
             <div className="max-w-7xl mx-auto px-6 pt-8">
                 <div className="text-center mb-8">
-                    <h1 className="text-2xl font-semibold text-emerald-500 mb-2">Đặt khám trước qua TrustTalk</h1>
-                    <p className="text-gray-600">Để được kham online</p>
+                    <h1 className="text-2xl font-semibold text-blue-500 mb-2">Đặt lịch trước qua Tâm Giao</h1>
+                    <p className="text-gray-600">Để được tư vấn trực tuyến</p>
                 </div>
             </div>
             <div className="max-w-7xl mx-auto p-6">
@@ -154,7 +154,7 @@ const DoctorBooking = () => {
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                 <Input
                                     className="w-full pl-10"
-                                    placeholder="Tìm triệu chứng, chuyên khoa, tên bác sĩ..."
+                                    placeholder="Tìm theo tên chuyên viên..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
@@ -186,7 +186,7 @@ const DoctorBooking = () => {
                             {/* Filter Button */}
                             <Dialog>
                                 <DialogTrigger asChild>
-                                    <Button variant="outline" className="text-emerald-500 border-emerald-500">
+                                    <Button variant="outline" className="text-blue-500 border-blue-500">
                                         Lọc thêm
                                     </Button>
                                 </DialogTrigger>
@@ -205,7 +205,7 @@ const DoctorBooking = () => {
                                                         <Checkbox
                                                             id={specialty}
                                                             checked={selectedSpecializations.includes(specialty)}
-                                                            className="border-gray-300 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 data-[state=checked]:text-white"
+                                                            className="border-gray-300 data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500 data-[state=checked]:text-white"
                                                             onCheckedChange={() =>
                                                                 setSelectedSpecializations((prev) =>
                                                                     prev.includes(specialty)
@@ -230,7 +230,7 @@ const DoctorBooking = () => {
                                                         id="male"
                                                         onClick={() => handleGenderSelect("male")}
                                                         checked={selectedGender === "male"}
-                                                        className="border-gray-300 data-[state=checked]:bg-white data-[state=checked]:border-emerald-500 data-[state=checked]:text-emerald-500"
+                                                        className="border-gray-300 data-[state=checked]:bg-white data-[state=checked]:border-blue-500 data-[state=checked]:text-blue-500"
                                                     />
                                                     <Label htmlFor="male">Bác sĩ nam</Label>
                                                 </div>
@@ -240,7 +240,7 @@ const DoctorBooking = () => {
                                                         id="female"
                                                         onClick={() => handleGenderSelect("female")}
                                                         checked={selectedGender === "female"}
-                                                        className="border-gray-300 data-[state=checked]:bg-white data-[state=checked]:border-emerald-500 data-[state=checked]:text-emerald-500"
+                                                        className="border-gray-300 data-[state=checked]:bg-white data-[state=checked]:border-blue-500 data-[state=checked]:text-blue-500"
                                                     />
                                                     <Label htmlFor="female">Bác sĩ nữ</Label>
                                                 </div>

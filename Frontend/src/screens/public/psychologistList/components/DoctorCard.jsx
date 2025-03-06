@@ -22,13 +22,13 @@ const DoctorCard = ({ doctor }) => (
                 <div className="flex justify-center gap-4 my-2">
                     <div className="flex items-center gap-1">
                         <span className="text-sm text-gray-500">{doctor.appointments || 0}</span>
-                        <span className="text-sm text-emerald-500">
+                        <span className="text-sm text-blue-500">
                             <Calendar />
                         </span>
                     </div>
                     <div className="flex items-center gap-1">
                         <span className="text-sm text-gray-500">{doctor.rating}</span>
-                        <span className="text-sm text-emerald-500">
+                        <span className="text-sm text-blue-500">
                             <Star />
                         </span>
                     </div>
@@ -39,7 +39,7 @@ const DoctorCard = ({ doctor }) => (
 
         {/* Navigate to Doctor Profile */}
         <Link to={`/doctor/profile/${doctor.id}`}>
-            <Button className="w-full rounded-none bg-emerald-500 hover:bg-emerald-600">Đặt khám</Button>
+            <Button className="w-full rounded-none bg-blue-500 hover:bg-blue-600">Đặt khám</Button>
         </Link>
     </Card>
 );
