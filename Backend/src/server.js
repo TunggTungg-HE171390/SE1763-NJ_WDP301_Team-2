@@ -6,7 +6,7 @@ import instanceMongoDb from "./api/database/connect.mongodb.js";
 dotenv.config();
 
 const PORT = process.env.PORT;
-
+const HOSTNAME = "localhost";
 // Ensure MongoDB is connected before starting the server
 const startServer = async () => {
     await instanceMongoDb; // Wait for MongoDB connection
