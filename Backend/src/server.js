@@ -12,7 +12,7 @@ const HOSTNAME = "localhost"; // Sử dụng "localhost"
 const startServer = async () => {
     await instanceMongoDb; // Wait for MongoDB connection
 
-    app.listen(PORT, HOSTNAME, () => {
+    app.listen(PORT, () => {
         console.log(`🚀 Server running at: http://${HOSTNAME}:${PORT}`);
     });
 };
