@@ -21,7 +21,7 @@ import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import CreateNewPost from "./screens/staff/CreateNewBlogPost";
-import DoctorBooking from "./screens/public/psychologistList/DoctorBooking";
+import DoctorBooking from "./screens/public/psychologistList/DoctorBooking.jsx";
 import PsychologistProfile from "./screens/public/psychologistProfile/psychologistProfile";
 import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";

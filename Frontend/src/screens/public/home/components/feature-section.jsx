@@ -5,23 +5,23 @@ const FeaturesList = () => {
     const features = [
         {
             icon: <Clock className="w-5 h-5" />,
-            text: "Đặt lịch khám ưu tiên tại các cơ sở y tế trên toàn quốc, nói không với xếp hàng lấy số",
+            text: "Priority appointment booking at medical facilities nationwide, no more waiting in line for a number",
         },
         {
             icon: <Video className="w-5 h-5" />,
-            text: "Tư vấn trực tuyến 1:1 với bác sĩ thông qua video call mọi lúc mọi nơi",
+            text: "1:1 online consultation with doctors via video call anytime, anywhere",
         },
         {
             icon: <MessageCircle className="w-5 h-5" />,
-            text: "Miễn phí chat riêng bác sĩ, đảm bảo sự riêng tư, hỗ trợ kịp thời, chuyên môn cao",
+            text: "Free private chat with doctors, ensuring privacy, timely support, and high expertise",
         },
         {
             icon: <Phone className="w-5 h-5" />,
-            text: "Gọi bác sĩ khẩn cấp SOS hoạt động 24/7",
+            text: "Emergency SOS doctor calls available 24/7",
         },
         {
             icon: <Package className="w-5 h-5" />,
-            text: "Ngoài ra còn nhiều tính năng hữu ích như: Mua thuốc online giao ngay tại nhà, Quản lý Hồ sơ sức khỏe, Cộng đồng hỏi đáp sức khỏe, Nghe tiếng ho, Đếm bước chân...",
+            text: "Additionally, many useful features such as: Online medicine purchase with home delivery, Health record management, Health Q&A community, Cough sound detection, Step counting...",
         },
     ];
 
@@ -29,7 +29,7 @@ const FeaturesList = () => {
         <Card className="max-w-6xl mx-auto bg-emerald-50/50 border-none">
             <CardContent className="p-6">
                 <h3 className="text-lg font-medium text-emerald-800 mb-4">
-                    IVIE – Bác sĩ ơi là ứng dụng chăm sóc sức khỏe trực tuyến 24/7, với nhiều tính năng nổi bật
+                    IVIE – Doctor Oi is an online health care application available 24/7, with many outstanding features
                 </h3>
 
                 <ul className="space-y-4">

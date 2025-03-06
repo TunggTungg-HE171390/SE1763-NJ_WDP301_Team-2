@@ -26,7 +26,7 @@ const HeroSection = () => {
                                     <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
                                 <div className="text-2xl mb-2">Online Consultation</div>
-                                <div className="text-sm">Khám bệnh online at home</div>
+                                <div className="text-sm">Online medical consultation at home</div>
                             </CardContent>
                         </Card>
                         <Card className="p-4 text-center rounded-[15px] hover:shadow-lg transition-shadow hover:border-2 hover:border-blue-500">
@@ -36,7 +36,7 @@ const HeroSection = () => {
                                     <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
                                 <div className="text-2xl mb-2">Online Consultation</div>
-                                <div className="text-sm">Khám bệnh online at home</div>
+                                <div className="text-sm">Online medical consultation at home</div>
                             </CardContent>
                         </Card>
                         <Card className="p-4 text-center rounded-[15px] hover:shadow-lg transition-shadow hover:border-2 hover:border-blue-500">
@@ -46,7 +46,7 @@ const HeroSection = () => {
                                     <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
                                 <div className="text-2xl mb-2">Online Consultation</div>
-                                <div className="text-sm">Khám bệnh online at home</div>
+                                <div className="text-sm">Online medical consultation at home</div>
                             </CardContent>
                         </Card>
                         <Card className="p-4 text-center rounded-[15px] hover:shadow-lg transition-shadow hover:border-2 hover:border-blue-500">
@@ -56,7 +56,7 @@ const HeroSection = () => {
                                     <AvatarFallback>CN</AvatarFallback>
                                 </Avatar>
                                 <div className="text-2xl mb-2">Online Consultation</div>
-                                <div className="text-sm">Khám bệnh online at home</div>
+                                <div className="text-sm">Online medical consultation at home</div>
                             </CardContent>
                         </Card>
                     </div>

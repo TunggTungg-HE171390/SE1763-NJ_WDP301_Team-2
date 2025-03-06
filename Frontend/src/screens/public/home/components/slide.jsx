@@ -1,4 +1,5 @@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useState, useEffect } from "react";
 
 const slides = [
     {
@@ -25,11 +26,21 @@ const slides = [
 ];
 
 const PromoCarousel = () => {
+    const [currentSlide, setCurrentSlide] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+        }, 3000); // Change slide every 3 seconds
+
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <div className="w-full max-w-6xl mx-auto px-4">
             <div>
                 <h1 className="text-2xl font-bold text-[#104a93]">Attractive Offers</h1>
-                <p className="text-[#10409a] text-[20px] font-bold mb-6">Something something</p>
+                <p className="text-[#10409a] text-[20px] font-bold mb-6">Discover our latest promotions and offers</p>
             </div>
             <Carousel
                 opts={{
@@ -37,7 +48,7 @@ const PromoCarousel = () => {
                     loop: true,
                 }}
                 className="relative">
-                <CarouselContent className="flex">
+                <CarouselContent className="flex transition-transform duration-500 ease-in-out" style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
                     {slides.map((slide) => (
                         <CarouselItem key={slide.id} className="md:basis-1/2 basis-full">
                             <div className="relative rounded-lg overflow-hidden">
@@ -48,8 +59,8 @@ const PromoCarousel = () => {
                 </CarouselContent>
 
                 {/* Navigation Arrows */}
-                <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2" />
-                <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2" />
+                <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2" onClick={() => setCurrentSlide((prevSlide) => (prevSlide - 1 + slides.length) % slides.length)} />
+                <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2" onClick={() => setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length)} />
             </Carousel>
         </div>
     );
