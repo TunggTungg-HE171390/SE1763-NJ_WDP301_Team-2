@@ -35,6 +35,8 @@ import ViewAppointmentDetail from './screens/psychologist/viewAppointmentDetail/
 import BlogScreen from './screens/public/blog/blog.jsx';
 import BlogDetail from './screens/public/blog/Blogdetail.jsx';
 import ManageUsers from './screens/admin/ManageUsers.jsx';
+import UserProfile from './screens/common/userProfile/components/user-profile.jsx';
+
 // Create MUI theme
 const theme = createTheme({
   palette: {
@@ -142,6 +144,7 @@ function Layout() {
                         <Route path="/blog" element={< BlogScreen />} /> 
                         <Route path="/blogdetail/:id" element={<BlogDetail />} />
                         <Route path='manageusers' element={<ManageUsers />} />
+                        <Route path='user-profile/:id' element={<UserProfile />} />
 
                     </Routes>
                 </div>
