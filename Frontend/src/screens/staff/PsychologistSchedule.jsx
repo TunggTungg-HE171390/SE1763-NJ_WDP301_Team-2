@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { vi } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { schedulePsychologistId } from "../../api/appointment.api";
+import { schedulePsychologistId } from "../../api/availability.api";
 
 // Cấu hình với date-fns thay vì moment
 const localizer = dateFnsLocalizer({
@@ -16,7 +16,7 @@ const localizer = dateFnsLocalizer({
   parse,
   startOfWeek: (date) => startOfWeek(date, { weekStartsOn: 1 }), // Thiết lập tuần bắt đầu vào thứ 2
   getDay,
-  locales: { "en-US": enUS }, // Sử dụng locale "en-US" từ date-fns
+  locales: { "vi": vi },
 });
 
 export const PsychologistSchedule = () => {
@@ -32,25 +32,18 @@ export const PsychologistSchedule = () => {
         const psychologistSchedule = await schedulePsychologistId(psychologistId);
         const formattedEvents = psychologistSchedule.map(event => {
           const { startTime, endTime } = event.scheduleTime;
-          const patientName = event.patientProfile.patientName;
 
           let eventStyle = {};
 
-          if (event.status === "Pending") {
-            eventStyle = { backgroundColor: "orange", fontSize: "13px" };
-          } else if (event.status === "Confirmed") {
-            eventStyle = { backgroundColor: "green", fontSize: "13px"  };
-          } else if (event.status === "Completed") {
-            eventStyle = { fontSize: "13px"  };
-          } else if (event.status === "Cancelled") {
-            eventStyle = { backgroundColor: "red", fontSize: "13px"  };
+          if (event.isBooked == "Bận") { 
+            eventStyle = { backgroundColor: "orange", fontSize: "13px" }; 
           } else {
-            eventStyle = { backgroundColor: "#CC33FF", fontSize: "13px"  };
+            eventStyle = { backgroundColor: "green", fontSize: "13px" };
           }
 
           return {
             ...event,
-            title: `Meeting with ${patientName}`,
+            title: `Status ${event.isBooked ? "Booked" : "Available"}`,
             start: new Date(startTime),
             end: new Date(endTime),
             style: eventStyle,
