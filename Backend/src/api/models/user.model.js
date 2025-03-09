@@ -24,6 +24,11 @@ const PsychologistProfileSchema = new Schema(
             ref: "categories"
         },
         rating: { type: Number, required: true },
+        numberOfRatings: { type: Number, default: 0 },
+        appointmentsAttended: { type: Number, default: 0 },
+        consultationsCount: { type: Number, default: 0 },
+        medicalExperience: { type: [String], default: [] },
+        workHistory: { type: [String], default: [] },
     },
     { _id: false } // Prevent creating an ID for this subdocument
 );
@@ -95,10 +100,6 @@ const UserSchema = new Schema(
             required: false,
             default: null,
         },
-        verificationExpires: {
-            type: Date,
-            default: () => new Date(Date.now() + 15 * 60 * 1000),
-        },
         patient: {
             type: new Schema(
                 {
@@ -106,9 +107,9 @@ const UserSchema = new Schema(
                 },
                 { _id: false }
             ),
-            required: function () {
-                return this.role === "patient";
-            },
+            // required: function () {
+            //     return this.role === "patient";
+            // },
         },
         psychologist: {
             type: new Schema(
@@ -117,9 +118,9 @@ const UserSchema = new Schema(
                 },
                 { _id: false }
             ),
-            required: function () {
-                return this.role === "psychologist";
-            },
+            // required: function () {
+            //     return this.role === "psychologist";
+            // },
         },
     },
     {
@@ -128,31 +129,21 @@ const UserSchema = new Schema(
 );
 
 // Add validation hook to enforce structure
-UserSchema.pre("save", function (next) {
-    if (this.role === "patient" && !this.patient) {
-        return next(new Error("A patient must have a medical profile."));
-    }
+// UserSchema.pre("save", function (next) {
+//     if (this.role === "patient" && !this.patient) {
+//         return next(new Error("A patient must have a medical profile."));
+//     }
 
-    if (this.role === "psychologist" && !this.psychologist) {
-        return next(new Error("A psychologist must have a psychologist profile."));
-    }
+//     if (this.role === "psychologist" && !this.psychologist) {
+//         return next(new Error("A psychologist must have a psychologist profile."));
+//     }
 
-    if ((this.role === "admin" || this.role === "manager") && (this.patient || this.psychologist)) {
-        return next(new Error(`Users with role '${this.role}' cannot have patient or psychologist profiles.`));
-    }
+//     if ((this.role === "admin" || this.role === "manager") && (this.patient || this.psychologist)) {
+//         return next(new Error(`Users with role '${this.role}' cannot have patient or psychologist profiles.`));
+//     }
 
-    next();
-});
-
-// Hook to clear expired verification fields without deleting the user
-UserSchema.pre("save", function (next) {
-    if (this.verificationExpires && this.verificationExpires < new Date()) {
-        this.emailVerificationCode = null; // Clear email verification code
-        this.phoneVerificationCode = null; // Clear phone verification code
-        this.verificationExpires = null; // Reset expiration field
-    }
-    next();
-});
+//     next();
+// });
 
 // Create the User model
 const User = mongoose.model("users", UserSchema);

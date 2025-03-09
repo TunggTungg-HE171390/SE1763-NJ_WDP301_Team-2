@@ -21,7 +21,7 @@ Trân trọng,
 Tâm Giao.
   `,
 
-  MESSAGE002:(username, authCode) => `
+  MESSAGE002: (username, authCode) => `
   Chào ${username},
 
 Cảm ơn bạn đã dành thời gian hoàn thành Bài Test đánh giá trên Tâm Giao WEB. Chúng tôi trân trọng sự quan tâm và tin tưởng của bạn.
@@ -42,6 +42,31 @@ Một lần nữa, cảm ơn bạn đã tin tưởng và sử dụng dịch vụ
 Trân trọng,
 Tâm Giao.
 `,
+
+  MESSAGE003: (username, authCode) => `
+  Chào ${username},
+  Thông báo về lịch hẹn khám
+Chào Tung Tungg,
+${authCode}
+
+Vui lòng chuẩn bị trước 10 phút và đảm bảo kết nối internet ổn định cho buổi tư vấn trực tuyến.
+
+Một lần nữa, cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi. Chúc bạn luôn mạnh khỏe và hạnh phúc.
+Trân trọng,
+Tâm Giao.
+  `,
+
+  MESSAGE004: (username, authCode) => `
+  Chào ${username},
+  Thông báo về lịch hẹn khám
+  ${authCode}
+
+Vui lòng chuẩn bị trước 10 phút và đảm bảo kết nối internet ổn định cho buổi tư vấn trực tuyến. Nếu bạn có khó khăn về việc chuyển đổi lịch hẹn,
+liên hệ với chúng tôi qua email hoặc số điện thoại để được hỗ trợ.
+Một lần nữa, cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi. Chúc bạn luôn mạnh khỏe và hạnh phúc.
+Trân trọng,
+Tâm Giao.
+  `,
 
   MESSAGE_ERROR: "ERROR: Unknown action code.",
 };

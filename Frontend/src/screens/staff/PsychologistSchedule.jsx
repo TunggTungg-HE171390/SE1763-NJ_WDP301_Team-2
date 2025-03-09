@@ -43,7 +43,7 @@ export const PsychologistSchedule = () => {
 
           return {
             ...event,
-            title: `Status ${event.isBooked ? "Booked" : "Available"}`,
+            title: `Status ${event.isBooked ? "Rảnh" : "Bận"}`,
             start: new Date(startTime),
             end: new Date(endTime),
             style: eventStyle,

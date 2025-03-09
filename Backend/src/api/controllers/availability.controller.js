@@ -17,6 +17,40 @@ const createPsychologistAvailability = async () => {
     }
 };
 
+const getAvailabilitiesById = async (req, res) => {
+    try {
+        const { doctorId } = req.params; // Extract doctorId from URL params
+        const availabilities = await Availability.find({ psychologistId: doctorId });
+
+        if (!availabilities.length) {
+            return res.status(404).json({ message: "No availabilities found" });
+        }
+
+        res.status(200).json(availabilities);
+    } catch (error) {
+        console.error("Error fetching availabilities:", error);
+        res.status(500).json({ message: "Failed to fetch availabilities" });
+    }
+};
+
+const getAvailabilityById = async (req, res) => {
+    try {
+        const { scheduleId } = req.params; // Extract the availability ID from request parameters
+
+        // Find the availability by ID
+        const availability = await Availability.findById(scheduleId);
+
+        if (!availability) {
+            return res.status(404).json({ message: "Availability not found" });
+        }
+
+        res.status(200).json(availability);
+    } catch (error) {
+        console.error("Error fetching availability:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
 const findScheduleByPsychologistId = async (req, res, next) => {
     try {
         const scheduleByPsychologistId = await Availability.find({ psychologistId: req.params.psychologistId })
@@ -30,7 +64,7 @@ const findScheduleByPsychologistId = async (req, res, next) => {
                 endTime: psychologist.endTime,
                 date: psychologist.date,
             },
-            isBooked: psychologist.isBooked ? "Bận" : "Rảnh",
+            isBooked: psychologist.isBooked ? "Rảnh" : "Bận",
         }));
 
         res.json(psychologistData);
@@ -40,7 +74,4 @@ const findScheduleByPsychologistId = async (req, res, next) => {
     }
 };
 
-export default {
-    createPsychologistAvailability,
-    findScheduleByPsychologistId
-};
+export default { createPsychologistAvailability, getAvailabilitiesById, getAvailabilityById, findScheduleByPsychologistId };

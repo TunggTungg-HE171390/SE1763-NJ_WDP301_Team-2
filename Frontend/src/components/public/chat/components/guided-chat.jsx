@@ -3,41 +3,66 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 import { Send, Bot } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import * as API from "@/api";
 
 const questions = {
     start: {
-        text: "Hello! 😊 What would you like to know about?",
+        text: "Xin chào! 😊 Bạn muốn tìm hiểu gì về dịch vụ của chúng tôi?",
         options: [
-            { text: "🌿 Our mental health services", next: "services" },
-            { text: "🏥 How to book a consultation", next: "booking" },
-            { text: "📢 News & updates", next: "news" },
-            { text: "📨 Subscribe to our newsletter", next: "subscribe" },
+            { text: "🌿 Về dịch vụ tư vấn của chúng tôi", next: "services" },
+            { text: "🏥 Cách đặt lịch tư vấn", next: "booking" },
+            { text: "📢 Tin tức", next: "news" },
+            { text: "📨 Đăng ký nhận bản tin của chúng tôi", next: "subscribe" },
         ],
     },
     services: {
-        text: "We offer professional mental health counseling, therapy sessions, and fitness programs. Would you like to see more details?",
+        text: "Chúng tôi cung cấp dịch vụ tư vấn sức khỏe tâm lý chuyên nghiệp. Bạn có muốn xem thêm chi tiết không?",
         options: [
-            { text: "Yes, show me more!", next: "more_services" },
-            { text: "Go back", next: "start" },
+            { text: "Vâng, hãy cho tôi xem thêm!", next: "more_services" },
+            { text: "Quay lại", next: "start" },
         ],
     },
     more_services: {
-        text: "Here’s a link to our Services page: [Visit Services](#).",
-        options: [{ text: "Back to menu", next: "start" }],
+        text: (
+            <>
+                Đây là liên kết đến trang Dịch vụ của chúng tôi:{" "}
+                <Link to="/about-us" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    Truy cập Dịch vụ
+                </Link>
+                .
+            </>
+        ),
+        options: [{ text: "Quay lại menu", next: "start" }],
     },
     booking: {
-        text: "To book a consultation, visit our Booking page: [Book Now](#).",
-        options: [{ text: "Back to menu", next: "start" }],
+        text: (
+            <>
+                Để đặt lịch tư vấn, hãy truy cập trang Đặt lịch của chúng tôi:{" "}
+                <Link to="/doctor" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    Đặt lịch ngay
+                </Link>
+                .
+            </>
+        ),
+        options: [{ text: "Quay lại menu", next: "start" }],
     },
     news: {
-        text: "Check out our latest mental health articles and updates: [Latest News](#).",
-        options: [{ text: "Back to menu", next: "start" }],
+        text: (
+            <>
+                Xem các bài viết và cập nhật mới nhất về sức khỏe tâm thần của chúng tôi:{" "}
+                <Link to="/blog" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
+                    Tin tức mới nhất
+                </Link>
+                .
+            </>
+        ),
+        options: [{ text: "Quay lại menu", next: "start" }],
     },
     subscribe: {
-        text: "Please enter your email to receive our newsletter:",
+        text: "Vui lòng nhập email của bạn để nhận bản tin của chúng tôi:",
         inputField: true,
     },
 };
@@ -72,24 +97,21 @@ const GuidedChat = ({ closeChat, switchToFreedom }) => {
         try {
             await API.sendEmail({
                 email: userInput,
-                subject: "Subscribed to newsletter",
-                content: "Thank you for subscribing to our newsletter!",
+                subject: "Đã đăng ký nhận bản tin",
+                content: "Cảm ơn bạn đã đăng ký nhận bản tin của chúng tôi!",
             });
 
             setChatHistory((prev) => [
                 ...prev,
                 { from: "user", text: userInput },
-                { from: "bot", text: "Thank you! You are now subscribed." },
+                { from: "bot", text: "Cảm ơn bạn! Bạn đã đăng ký thành công." },
             ]);
 
             setIsEmailInputEnabled(false);
             setUserInput("");
         } catch (error) {
             console.error("Failed to send email:", error);
-            setChatHistory((prev) => [
-                ...prev,
-                { from: "bot", text: "Oops! Something went wrong. Please try again later." },
-            ]);
+            setChatHistory((prev) => [...prev, { from: "bot", text: "Ồ! Có lỗi xảy ra. Vui lòng thử lại sau." }]);
         }
     };
 
@@ -101,7 +123,7 @@ const GuidedChat = ({ closeChat, switchToFreedom }) => {
                         <AvatarImage src="https://github.com/shadcn.png" />
                         <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
-                    <p className="font-medium">Customer Support</p>
+                    <p className="font-medium">Hỗ trợ khách hàng</p>
                 </div>
                 <Button
                     variant="ghost"
@@ -151,7 +173,9 @@ const GuidedChat = ({ closeChat, switchToFreedom }) => {
                     </Button>
 
                     <Input
-                        placeholder={!isEmailInputEnabled ? "Guided mode, cannot chat" : "Enter your email..."}
+                        placeholder={
+                            !isEmailInputEnabled ? "Không thể nhắn tin." : "Nhập mail của bạn..."
+                        }
                         className="flex-1"
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}

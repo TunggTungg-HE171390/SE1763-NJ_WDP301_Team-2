@@ -11,7 +11,7 @@ function Homepage() {
     return (
         <div>
             <Helmet>
-                <title>Home</title>
+                <title>Tâm Giao</title>
             </Helmet>
             <div>
                 <ChatWidget />

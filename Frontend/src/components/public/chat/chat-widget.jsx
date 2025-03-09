@@ -24,7 +24,9 @@ const ChatWidget = () => {
                 <Card className="w-72 cursor-pointer hover:shadow-lg transition-shadow" onClick={openGuidedChat}>
                     <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                            <p className="text-sm text-gray-800">Hello 👋 Would you like to chat with us?</p>
+                            <p className="text-sm text-gray-800">
+                                Xin chào 👋 Bạn có muốn trò chuyện với chúng tôi không?
+                            </p>
                             <MessageCircle className="w-12 h-12 text-blue-500" />
                         </div>
                     </CardContent>

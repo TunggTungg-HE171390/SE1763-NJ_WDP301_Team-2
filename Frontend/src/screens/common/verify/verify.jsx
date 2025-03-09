@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import VerifyTokenForm from "./components/verify-token-form";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
+import { useLocation } from "react-router-dom";
 
 const images = [
     "https://marinwellnesscounseling.com/wp-content/uploads/2021/03/pexels-polina-zimmerman-3958461-scaled-1.jpeg",
@@ -13,6 +14,9 @@ const images = [
 const Verify = () => {
     const [currentImage, setCurrentImage] = useState(images[0]);
     const [fade, setFade] = useState(false);
+    const location = useLocation();
+
+    const isResetPassword = location.pathname.includes("forgotPassword");
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -32,7 +36,7 @@ const Verify = () => {
     return (
         <>
             <Helmet>
-                <title>Verify</title>
+                <title>{isResetPassword ? "Xác thực mã OTP để đặt lại mật khẩu" : "Xác thực mã OTP"}</title>
             </Helmet>
             <ToastReceiver />
             <div className="min-h-screen w-full fixed inset-0 flex items-center justify-center bg-cover bg-center">

@@ -25,10 +25,10 @@ const FormSchema = z.object({
             return emailPattern.test(value) || phonePattern.test(value);
         },
         {
-            message: "Invalid credentials",
+            message: "Sai thông tin đăng nhập",
         }
     ),
-    password: z.string().min(6, "Invalid credentials"),
+    password: z.string().min(6, "Sai thông tin đăng nhập"),
 });
 
 const LoginForm = () => {
@@ -54,11 +54,15 @@ const LoginForm = () => {
             localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify(user));
 
+            // Sau khi người dùng đăng nhập thành công
+            const contact = user.email || user.phone;
+            localStorage.setItem("contact", contact);
+
             // Store the toast message in session storage
             setToast({
-                title: "Success!",
-                description: "Login successfully!",
-                actionText: "Close",
+                title: "Thành công!",
+                description: "Đăng nhập thành công!",
+                actionText: "Đóng",
                 titleColor: "text-green-600",
                 className: "text-start",
             });
@@ -68,9 +72,9 @@ const LoginForm = () => {
         } catch (error) {
             toast({
                 variant: "destructive",
-                title: "Uh oh! Something went wrong.",
-                description: error.response?.data?.message || "There was a problem with your request.",
-                action: <ToastAction altText="Close">Try Again</ToastAction>,
+                title: "Uh oh! Đã có lỗi xảy ra.",
+                description: error.response?.data?.message || "Đã xảy ra sự cố với yêu cầu của bạn.",
+                action: <ToastAction altText="Close">Thử lại</ToastAction>,
             });
         }
     }
@@ -84,8 +88,8 @@ const LoginForm = () => {
                             <img src={TeamLogo} alt="Team Logo" className="w-[61px] h-[58px] py-1 mb-[15px]" />
                         </Link>
                     </div>
-                    <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
-                    <p className="text-sm text-gray-500">Login to your TrustTalk account</p>
+                    <CardTitle className="text-2xl font-bold">Chào mừng</CardTitle>
+                    <p className="text-sm text-gray-500">Đăng nhập vào tài khoản Tâm Giao của bạn</p>
                 </CardHeader>
                 <CardContent>
                     <Form {...form}>
@@ -96,7 +100,7 @@ const LoginForm = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="flex justify-between items-start">
-                                            <FormLabel className="text-start">Email or Phone Number</FormLabel>
+                                            <FormLabel className="text-start">Email hoặc Số điện thoại</FormLabel>
                                         </div>
                                         <FormControl>
                                             <Input placeholder="mail@example.com" {...field} />
@@ -112,12 +116,12 @@ const LoginForm = () => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <div className="flex justify-between items-center">
-                                            <FormLabel>Password</FormLabel>
-                                            <a
-                                                href="/forgot-password"
+                                            <FormLabel>Mật khẩu</FormLabel>
+                                            <Link
+                                                to="/forgotPassword"
                                                 className="text-[13px] text-gray-500 hover:text-[#4262FF]">
-                                                Forgot your password?
-                                            </a>
+                                                Quên mật khẩu?
+                                            </Link>
                                         </div>
                                         <FormControl>
                                             <Input type="password" {...field} />
@@ -128,7 +132,7 @@ const LoginForm = () => {
                             />
 
                             <Button type="submit" className="w-full bg-[#4262FF] hover:bg-[#3a56e0]">
-                                Login
+                                Đăng nhập
                             </Button>
 
                             <div className="relative">
@@ -136,7 +140,7 @@ const LoginForm = () => {
                                     <Separator className="w-full" />
                                 </div>
                                 <div className="relative flex justify-center text-xs uppercase">
-                                    <span className="bg-[#fcfcfc] px-2 text-gray-500">Or continue with</span>
+                                    <span className="bg-[#fcfcfc] px-2 text-gray-500">Hoặc tiếp tục với</span>
                                 </div>
                             </div>
 
@@ -156,10 +160,10 @@ const LoginForm = () => {
                             </div>
 
                             <div className="text-center text-sm text-gray-500">
-                                Don&apos;t have an account?{" "}
-                                <a href="/signup" className="font-semibold text-[#4262FF] hover:text-[#15298b]">
-                                    Sign up
-                                </a>
+                                Không có tài khoản?{" "}
+                                <Link to="/signup" className="font-semibold text-[#4262FF] hover:text-[#15298b]">
+                                    Đăng ký
+                                </Link>
                             </div>
                         </form>
                     </Form>

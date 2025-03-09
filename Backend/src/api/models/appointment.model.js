@@ -1,5 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 
+if (mongoose.models["appointments"]) {
+    delete mongoose.models["appointments"];
+}
+
 // Appointment schema
 const AppointmentSchema = new Schema(
     {
@@ -31,6 +35,10 @@ const AppointmentSchema = new Schema(
             type: String,
             enum: ["Pending", "Confirmed", "Completed", "Cancelled"],
             default: "Pending", // Default status is "Pending"
+        },
+        isRescheduled: {
+            type: Boolean,
+            default: false, 
         },
         note: {
             type: String,

@@ -8,10 +8,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import * as API from "@/api";
 
 const predefine =
-    "You are a healthcare chatbot specializing in mental health. If a question is unrelated, kindly inform the user and request a different topic. Now, answer this:";
+    "Bạn là một chatbot chăm sóc sức khỏe chuyên về sức khỏe tâm lý. Nếu câu hỏi không liên quan, vui lòng thông báo cho người dùng và yêu cầu một chủ đề khác. Bây giờ, hãy trả lời câu hỏi này:";
 
 const FreedomChat = ({ closeChat, switchToGuided }) => {
-    const [chatHistory, setChatHistory] = useState([{ from: "bot", text: "Hello! 😊 Feel free to ask me anything!" }]);
+    const [chatHistory, setChatHistory] = useState([{ from: "bot", text: "Xin chào! 😊 Hãy hỏi tôi bất cứ điều gì!" }]);
     const [userInput, setUserInput] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -31,10 +31,7 @@ const FreedomChat = ({ closeChat, switchToGuided }) => {
             setChatHistory((prev) => [...prev, botMessage]);
         } catch (error) {
             console.error("Error fetching bot response:", error);
-            setChatHistory((prev) => [
-                ...prev,
-                { from: "bot", text: "Oops! Something went wrong. Please try again. 🤖" },
-            ]);
+            setChatHistory((prev) => [...prev, { from: "bot", text: "Oops! Đã xảy ra lỗi. Vui lòng thử lại. 🤖" }]);
         } finally {
             setLoading(false);
         }
@@ -48,7 +45,7 @@ const FreedomChat = ({ closeChat, switchToGuided }) => {
                         <AvatarImage src="https://github.com/shadcn.png" />
                         <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
-                    <p className="font-medium">Assistant Chat Bot</p>
+                    <p className="font-medium">Chat Bot Hỗ trợ</p>
                 </div>
                 <Button variant="ghost" className="bg-inherit text-white rounded-full p-2 h-8 w-8" onClick={closeChat}>
                     ✕
@@ -76,7 +73,7 @@ const FreedomChat = ({ closeChat, switchToGuided }) => {
                         <MessageCircle className="h-5 w-5 text-white hover:text-[#3b82f6]" />
                     </Button>
                     <Input
-                        placeholder="Type a message..."
+                        placeholder="Nhập tin nhắn..."
                         className="flex-1"
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}

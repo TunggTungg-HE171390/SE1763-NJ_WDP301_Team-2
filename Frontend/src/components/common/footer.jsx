@@ -1,28 +1,29 @@
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
     return (
-        <footer className="mt-auto w-full bg-gray-900 text-white py-8 bottom-0 left-0 flex items-center justify-between ">
+        <footer className="mt-auto w-full bg-blue-600 border-t border-white text-white py-8 bottom-0 left-0 flex items-center justify-between">
             <div className="container mx-auto px-6">
                 {/* Top Section */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
                     {/* Column 1: About Us */}
                     <div>
-                        <h2 className="text-lg font-semibold">About Us</h2>
-                        <p className="mt-2 text-gray-400">
-                            We provide expert mental health and wellness consultations to help you live a better life.
+                        <h2 className="text-lg font-semibold">Về chúng tôi</h2>
+                        <p className="mt-2 text-white">
+                            Là một website hỗ trợ người dùng đặc biệt là giới trẻ giúp họ giải tỏa stress, vượt qua trầm
+                            cảm, tìm kiếm sự đồng cảm và hướng dẫn từ chuyên gia.
                         </p>
                     </div>
 
                     {/* Column 2: Head Office */}
                     <div className="flex justify-center">
                         <div>
-                            <h2 className="text-lg font-semibold">Head Office</h2>
-                            <ul className="mt-2 space-y-2 text-gray-400">
-                                <li>📍 Address: 123 Wellness Street, City, Country</li>
-                                <li>🏢 Business License: #ABC123456</li>
-                                <li>📞 Phone: +1 (123) 456-7890</li>
-                                <li>📧 Support Email: support@yourcompany.com</li>
+                            <h2 className="text-lg font-semibold">Trụ sở chính</h2>
+                            <ul className="mt-2 space-y-2 text-white">
+                                <li>📍 Địa chỉ: Khu CNC, Thạch Thất, Hà Nội</li>
+                                <li>📞 Số điện thoại: +84 (036) 961-6575</li>
+                                <li>📧 Email hỗ trợ: tamgiaomentalhealth@gmail.com</li>
                             </ul>
                         </div>
                     </div>
@@ -30,55 +31,57 @@ export default function Footer() {
                     {/* Column 3: Quick Links */}
                     <div className="flex justify-center">
                         <div>
-                            <h2 className="text-lg font-semibold">Quick Links</h2>
+                            <h2 className="text-lg font-semibold">Đường dẫn nhanh</h2>
                             <ul className="mt-2 space-y-2">
                                 <li>
-                                    <a href="/consultation" className="hover:underline text-gray-400">
-                                        Online Consultation
-                                    </a>
+                                    <Link to="/doctor" className="hover:underline text-white">
+                                        Tư vấn trực tuyến
+                                    </Link>
                                 </li>
                                 <li>
-                                    <a href="/services" className="hover:underline text-gray-400">
-                                        Service Packages
-                                    </a>
+                                    <Link to="#" className="hover:underline text-white">
+                                        Gói dịch vụ
+                                    </Link>
                                 </li>
                                 <li>
-                                    <a href="/blogs" className="hover:underline text-gray-400">
-                                        Blogs
-                                    </a>
+                                    <Link to="/blog" className="hover:underline text-white">
+                                        Bài viết
+                                    </Link>
                                 </li>
                                 <li>
-                                    <a href="/test" className="hover:underline text-gray-400">
-                                        Mental Health Test
-                                    </a>
+                                    <Link to="/CategoryTestSelected" className="hover:underline text-white">
+                                        Kiểm tra tâm lý
+                                    </Link>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-8 border-t border-gray-700 pt-4 mx-auto flex flex-col md:flex-row justify-between items-center">
+                <div className="mt-8 border-t border-white pt-4 mx-auto flex flex-col md:flex-row justify-between items-center">
                     {/* Social Media Links (1/3 of space) */}
                     <div className="flex-1 flex justify-start space-x-4 my-4 md:mt-0">
-                        <a href="https://facebook.com" className="text-gray-400 hover:text-blue-500">
+                        <Link
+                            href="https://www.facebook.com/profile.php?id=61572436850296"
+                            className="text-white hover:text-blue-500">
                             <FaFacebook size={24} />
-                        </a>
-                        <a href="https://twitter.com" className="text-gray-400 hover:text-blue-400">
+                        </Link>
+                        <Link href="https://twitter.com" className="text-white hover:text-blue-400">
                             <FaTwitter size={24} />
-                        </a>
-                        <a href="https://instagram.com" className="text-gray-400 hover:text-pink-500">
+                        </Link>
+                        <Link href="https://instagram.com" className="text-white hover:text-pink-500">
                             <FaInstagram size={24} />
-                        </a>
-                        <a href="https://linkedin.com" className="text-gray-400 hover:text-blue-600">
+                        </Link>
+                        <Link href="https://linkedin.com" className="text-white hover:text-blue-600">
                             <FaLinkedin size={24} />
-                        </a>
+                        </Link>
                     </div>
 
                     {/* Copyright & Policies (1/3 of space, evenly distributed inside) */}
                     <div className="flex-1 flex justify-center space-x-6">
-                        <div className="text-gray-400 ">© {new Date().getFullYear()} TrustTalk</div>
-                        <div className="text-gray-400">Terms & Services</div>
-                        <div className="text-gray-400">Privacy Policy</div>
+                        <div className="text-white ">© {new Date().getFullYear()} Tâm Giao</div>
+                        <div className="text-white">Điều khoản & Dịch vụ</div>
+                        <div className="text-white">Chính sách bảo mật</div>
                     </div>
 
                     {/* Empty Div to Maintain Structure (1/3 of space, aligns to the end) */}

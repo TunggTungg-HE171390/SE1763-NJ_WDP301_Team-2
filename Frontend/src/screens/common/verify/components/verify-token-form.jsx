@@ -8,33 +8,44 @@ import { setToast } from "@/components/common/toast/setToast";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import * as API from "@/api";
+import { useAuth } from "@/hooks/useAuth";
 
 const VerifyTokenForm = () => {
     const [otp, setOtp] = useState("");
     const { toast } = useToast();
     const navigate = useNavigate();
     const location = useLocation();
+    const { setUser } = useAuth();
 
     const contact = location.state?.contact || ""; // Passed from register page
 
     const onSubmit = async () => {
         try {
-            await API.verifyOTP({ contact, otp });
+            API.verifyOTP({ contact, otp });
+            console.log(contact);
+
+            // After OTP is verified, store user data in AuthContext
+            // setUser({ contact }); // You can store more user details here, like name, email, etc.
 
             setToast({
-                title: "Success!",
-                description: "Verification successful!",
-                actionText: "Close",
+                title: "Thành công!",
+                description: "Xác thực thành công!",
+                actionText: "Đóng",
                 titleColor: "text-green-600",
                 className: "text-start",
             });
 
-            navigate("/login");
+            if (location.state?.forgotPassword) {
+                navigate("/changePassword", { state: { contact } });
+            } else {
+                // Nếu không phải reset mật khẩu, điều hướng về trang login (hoặc trang khác)
+                navigate("/login");
+            }
         } catch (error) {
             toast({
                 variant: "destructive",
-                title: "Verification failed",
-                description: error.response?.data?.message || "Invalid OTP. Please try again.",
+                title: "Xác thực thất bại",
+                description: error.response?.data?.message || "Sai mã OTP. Vui lòng thử lại.",
             });
         }
     };
@@ -44,17 +55,17 @@ const VerifyTokenForm = () => {
             const response = API.resendOTP({ contact });
 
             setToast({
-                title: "OTP Resent!",
+                title: "Đã gửi lại mã OTP!",
                 description: response.data.message,
-                actionText: "Close",
+                actionText: "Đóng",
                 titleColor: "text-blue-600",
                 className: "text-start",
             });
         } catch (error) {
             toast({
                 variant: "destructive",
-                title: "Failed to resend OTP",
-                description: error.response?.data?.message || "Please try again.",
+                title: "Gửi lại mã OTP thất bại",
+                description: error.response?.data?.message || "Vui lòng thử lại.",
             });
         }
     };
@@ -68,8 +79,8 @@ const VerifyTokenForm = () => {
                             <img src={TeamLogo} alt="Team Logo" className="w-[61px] h-[58px] py-1 mb-[15px]" />
                         </Link>
                     </div>
-                    <CardTitle className="text-2xl font-bold">Verify</CardTitle>
-                    <p className="text-sm text-gray-500">Your code was sent to you via email</p>
+                    <CardTitle className="text-2xl font-bold">Xác thực</CardTitle>
+                    <p className="text-sm text-gray-500">Mã đã được gửi tới email của bạn</p>
                 </CardHeader>
                 <CardContent>
                     <div className="flex gap-2 justify-center mb-4">
@@ -91,11 +102,11 @@ const VerifyTokenForm = () => {
                         Verify
                     </Button>
                     <div className="text-center text-sm">
-                        Didn&apos;t receive code?{" "}
+                        Không nhận được mã?{" "}
                         <a
                             onClick={handleRequestAgain}
                             className="text-[#4262FF] hover:text-[#3a56e0] hover:underline cursor-pointer">
-                            Request again
+                            Gửi lại
                         </a>
                     </div>
                 </CardContent>

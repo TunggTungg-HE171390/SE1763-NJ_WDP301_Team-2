@@ -23,6 +23,9 @@ const CommentSchema = new Schema(
 // Main BlogPost schema
 const BlogPostSchema = new Schema(
     {
+        _id: {
+            type: mongoose.Schema.Types.ObjectId, // Chuyển từ ObjectId sang String
+        },
         title: {
             type: String,
             required: true,

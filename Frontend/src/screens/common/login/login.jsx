@@ -32,7 +32,7 @@ const Login = () => {
     return (
         <>
             <Helmet>
-                <title>Login</title>
+                <title>Đăng nhập</title>
             </Helmet>
             <ToastReceiver />
             <div className="min-h-screen w-full fixed inset-0 flex items-center justify-center bg-cover bg-center">
