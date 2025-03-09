@@ -134,11 +134,11 @@ const changeBooleanIsReschedule = async (req, res, next) => {
             appointment.isRescheduled = false;
             statusMessage = `✅ Yêu cầu đổi lịch hẹn của bạn với ${appointment.psychologistId.fullName} đã được chấp nhận.  
             Vui lòng kiểm tra lại lịch hẹn của bạn dưới đây:\n\n${reScheduleTime}`;
-            await mailService.sendEmail(appointment.patientId.email, appointment.patientId.fullName, statusMessage, actions.RESCHEDULE_APPOINTMENT_SUCCESS_PATIENT);
+            await mailService.sendEmail(appointment.patientId.email, appointment.patientId.fullName, statusMessage, actions.RESCHEDULE_APPOINTMENT_SUCCESS);
             console.log("Gui mail thanh cong tới Patient");
             statusMessage = `✅ Bệnh nhân ${appointment.patientId.fullName} đã yêu cầu đổi lịch hẹn với bạn.  
             Vui lòng kiểm tra lại lịch hẹn của bạn dưới đây:\n\n${reScheduleTime}`;
-            await mailService.sendEmail(appointment.psychologistId.email, appointment.psychologistId.fullName, status, actions.RESCHEDULE_APPOINTMENT_SUCCESS_PSYCHOLOGIST);
+            await mailService.sendEmail(appointment.psychologistId.email, appointment.psychologistId.fullName, status, actions.RESCHEDULE_APPOINTMENT_SUCCESS);
             console.log("Gui mail thanh cong tới Psychologist");
         } else if (status === "Cancelled") {
             appointment.status = "Confirmed";
