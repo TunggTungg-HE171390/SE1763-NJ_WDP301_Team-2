@@ -58,8 +58,6 @@ export function Header() {
     const { logout } = useContext(AuthContext);
     const [isAuthenticated, setIsAuthenticated] = useState(!!user);
     const userName = user?.fullName;
-    const userAvatar =
-        user?.avatar || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQiGH692JKGKQ6t9K1nxWdKRaDa8V387Yqe1w&s";
 
     useEffect(() => {
         setIsAuthenticated(!!user); // Update when user state changes
@@ -171,7 +169,6 @@ export function Header() {
                     <div className="flex flex-row items-center gap-2">
                         <p className="flex items-center mr-1 font-semibold">{user.fullName}</p>
                         <Avatar className="h-9 w-9">
-                            <AvatarImage src={userAvatar} alt={userName} />
                             <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <UserMenu userAvatar={user.avatar} userName={user.fullName} />

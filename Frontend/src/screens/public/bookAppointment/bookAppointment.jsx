@@ -252,7 +252,7 @@ const BookAppointment = () => {
 
                                 {/* Right Section - Price */}
                                 <div className="text-right flex flex-col items-end justify-start">
-                                    <span className="text-lg font-semibold text-blue-600">150.000 đ</span>
+                                    <span className="text-lg font-semibold text-blue-600">350.000 đ</span>
                                     <p className="text-sm text-gray-500">một phiên</p>
                                 </div>
                             </div>

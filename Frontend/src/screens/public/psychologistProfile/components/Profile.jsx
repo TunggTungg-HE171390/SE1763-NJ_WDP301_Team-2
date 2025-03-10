@@ -18,7 +18,7 @@ const Profile = ({ psychologist, profile }) => {
                         <div className="flex flex-row mt-2">
                             <div className="flex items-start">
                                 <div>
-                                    <p className="text-sm text-gray-600 text-start pb-3">150.000đ</p>
+                                    <p className="text-sm text-gray-600 text-start pb-3">350.000đ</p>
                                     <div className="mt-1 flex flex-wrap gap-2 max-w-[400px]">
                                         <Badge variant="outline" className="bg-slate-200 rounded-md">
                                             {profile.professionalLevel}
