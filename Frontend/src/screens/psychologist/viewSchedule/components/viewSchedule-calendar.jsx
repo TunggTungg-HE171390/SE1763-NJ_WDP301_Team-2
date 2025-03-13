@@ -61,8 +61,8 @@ const ViewScheduleCalendar = ({ schedules }) => {
     }
 
     const handleEventClick = (clickInfo) => {
-        // Navigate to appointment detail page when an event is clicked
-        navigate(`/psychologist/view-appointment-detail/${clickInfo.event.id}`);
+        // Navigate to schedule detail page when an event is clicked
+        navigate(`/psychologist/view-schedule-detail/${clickInfo.event.id}`);
     };
 
     return (

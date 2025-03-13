@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
-// Fix the import path to match the file name (removing "viewAppoiment-" prefix)
 import ViewScheduleCalendar from './components/viewSchedule-calendar';
 import { Container, Paper, Typography, Box, CircularProgress, Alert } from '@mui/material';
-// Fix đường dẫn import
 import scheduleApi from '../../../api/schedule.api';
 
 const ViewSchedule = () => {
@@ -14,7 +12,6 @@ const ViewSchedule = () => {
         const fetchSchedules = async () => {
             setLoading(true);
             try {
-                // Thay đổi từ appointmentService sang scheduleApi
                 const data = await scheduleApi.getSchedules();
                 setSchedules(data);
                 setError(null);
@@ -22,7 +19,6 @@ const ViewSchedule = () => {
                 console.error("Error fetching schedules:", err);
                 setError("Không thể tải danh sách lịch hẹn. Vui lòng thử lại sau.");
                 
-                // For development purposes, use mock data if API fails
                 if (process.env.NODE_ENV === 'development') {
                     console.warn("Using mock data for development");
                     setSchedules([
