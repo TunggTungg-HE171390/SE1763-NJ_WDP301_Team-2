@@ -38,7 +38,7 @@ const DoctorBooking = () => {
 
         fetchPsychologists();
     }, []);
-
+    
     useEffect(() => {
         const fetchPsychologists = async () => {
             try {

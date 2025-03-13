@@ -23,7 +23,7 @@ import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import CreateNewPost from "./screens/staff/CreateNewBlogPost";
-import DoctorBooking from "./screens/public/psychologistList/DoctorBooking";
+import DoctorBooking from "./screens/public/psychologistList/DoctorBooking.jsx";
 import PsychologistProfile from "./screens/public/psychologistProfile/psychologistProfile";
 import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";
@@ -38,6 +38,8 @@ import BlogScreen from "./screens/public/blog/blog.jsx";
 import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
 import ManageUsers from "./screens/admin/ManageUsers.jsx";
 import AboutUs from "./screens/common/aboutUs.jsx";
+import UserProfile from './screens/common/userProfile/components/user-profile.jsx';
+
 // Create MUI theme
 const theme = createTheme({
     palette: {
@@ -153,6 +155,8 @@ function Layout() {
                         <Route path="/about-us" element={<AboutUs />} />
                         <Route path="/changePassword" element={<ChangePassword />} />
                         <Route path="/forgotPassword" element={<ForgotPassword />} />
+                        <Route path='user-profile/:id' element={<UserProfile />} />
+
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
