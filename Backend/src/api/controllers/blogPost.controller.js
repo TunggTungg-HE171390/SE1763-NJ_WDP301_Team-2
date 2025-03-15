@@ -1,5 +1,7 @@
 import BlogPost from "../models/blogPost.model.js"; // Import BlogPost model
 import { body, validationResult } from "express-validator";
+import mongoose from "mongoose"; // Import mongoose
+import User from "../models/user.model.js"; // Import BlogPost model
 
 const getAllBlog = async (req, res) => {
     try {
@@ -11,96 +13,194 @@ const getAllBlog = async (req, res) => {
     }
 }
 
+const getBlogDetail = async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log("📌 Received request for Blog ID:", id);
 
-const getBlogDetail = [
-    async (req, res) => {
-        try {
-            const { id } = req.params;
-            const blogPost = await BlogPost.findById(id);
-            if (!blogPost) {
-                return res.status(404).json({ message: "Blog post not found" });
-            }
-            
-            res.status(200).json(blogPost);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
+        // Kiểm tra ID có hợp lệ không
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            console.log("❌ Invalid ObjectId format:", id);
+            return res.status(400).json({ message: "Invalid blog ID format" });
         }
+
+        // Truy vấn dữ liệu từ MongoDB
+        const blogPost = await BlogPost.findById(new mongoose.Types.ObjectId(id));
+
+        if (!blogPost) {
+            console.log("⚠️ Blog post not found:", { message: "Blog post not found", id });
+            return res.status(404).json({ message: "Blog post not found" });
+        }
+
+        console.log("✅ Blog post found:", blogPost);
+        res.status(200).json(blogPost);
+    } catch (error) {
+        console.error("🔥 Server error:", error);
+        res.status(500).json({ error: error.message });
     }
-];
+};
+
+
+const getComments = async (req, res) => {
+    try {
+        const { postId } = req.params;
+        if (!postId) return res.status(400).json({ error: "Thiếu postId." });
+
+        const blogPost = await BlogPost.findById(postId).select("comments");
+        if (!blogPost) return res.status(404).json({ error: "Bài viết không tồn tại." });
+
+        const comments = blogPost.comments || [];
+        if (!comments.length) return res.status(200).json({ message: "Không có bình luận nào." });
+
+        const formattedComments = await Promise.all(comments.map(async (comment) => {
+            const user = await User.findById(comment.userId).select("fullName profileImg").catch(() => null);
+
+            let formattedDate = "Không có thông tin";  // Default value if createdAt is invalid
+            if (comment.createAt) {
+                const createdAtDate = new Date(comment.createAt);
+                console.log("Ngày tạo (Date Object):", createdAtDate);  // Log giá trị ngày tháng
+                if (!isNaN(createdAtDate.getTime())) {  // Kiểm tra nếu ngày hợp lệ
+                    formattedDate = createdAtDate.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+                } else {
+                    formattedDate = "Ngày không hợp lệ"; // If createdAt is invalid
+                }
+            }
+
+            return {
+                userId: comment.userId,
+                fullName: user?.fullName || "Người dùng không tồn tại",
+                profileImg: user?.profileImg || "",
+                content: comment.content,
+                createdAt: formattedDate,  // Trả về ngày tháng đã xử lý
+            };
+        }));
+
+        res.status(200).json({ success: true, comments: formattedComments });
+    } catch (error) {
+        console.error("Lỗi lấy bình luận:", error);
+        res.status(500).json({ error: "Lỗi server, vui lòng thử lại sau." });
+    }
+};
+
+
+
+
+
+
 const addComment = async (req, res) => {
     try {
-        const { postId } = req.params; // ID của bài viết cần thêm bình luận
-        const { userId, username, comment } = req.body;
+        const { postId } = req.params; // Lấy ID bài viết từ URL
+        const { userId, username, content } = req.body; // Lấy dữ liệu từ request body
+
+        if (!userId || !username || !content) {
+            return res.status(400).json({ error: "Thiếu thông tin bình luận." });
+        }
 
         const blogPost = await BlogPost.findById(postId);
         if (!blogPost) {
-            return res.status(404).json({ error: "Bài viết không tồn tại" });
+            return res.status(404).json({ error: "Bài viết không tồn tại." });
         }
+
+        // Gán ngày tháng đã định dạng
+        const createdAt = new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
+
+        console.log("Ngày tạo bình luận (createdAt):", createdAt); // Log để kiểm tra ngày tháng
 
         const newComment = {
             userId,
             username,
-            comment,
-            createdAt: new Date(),
+            content,
+            createdAt, // Gán ngày tháng đã định dạng
         };
 
         blogPost.comments.push(newComment);
         await blogPost.save();
 
-        res.status(201).json(blogPost);
+        res.status(201).json({ success: true, comment: newComment });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
+        console.error("Lỗi máy chủ:", error);
+        res.status(500).json({ error: "Lỗi máy chủ, vui lòng thử lại sau." });
     }
 };
+
+
 const updateComment = async (req, res) => {
     try {
-        const { postId, commentId } = req.params;
-        const { comment } = req.body;
+        const { postId, userId } = req.params; 
+        const { content } = req.body;
 
+        console.log("📌 Nhận request:", { postId, userId });
+        console.log("📌 Nội dung mới:", content);
+
+        if (!content.trim()) {
+            return res.status(400).json({ error: "Nội dung bình luận không được để trống." });
+        }
+
+        // Tìm bài viết
         const blogPost = await BlogPost.findById(postId);
+        console.log("📌 Bài viết tìm thấy:", blogPost);
+
         if (!blogPost) {
-            return res.status(404).json({ error: "Bài viết không tồn tại" });
+            console.log("❌ Không tìm thấy bài viết:", postId);
+            return res.status(404).json({ error: "Bài viết không tồn tại." });
         }
 
-        const commentIndex = blogPost.comments.findIndex(c => c._id.toString() === commentId);
-        if (commentIndex === -1) {
-            return res.status(404).json({ error: "Bình luận không tồn tại" });
+        // Tìm bình luận theo userId thay vì commentId
+        const comment = blogPost.comments.find(cmt => cmt.userId.toString() === userId);
+        console.log("📌 Bình luận tìm thấy:", comment);
+
+        if (!comment) {
+            console.log("❌ Người dùng chưa có bình luận:", userId);
+            return res.status(404).json({ error: "Không tìm thấy bình luận của bạn." });
         }
 
-        blogPost.comments[commentIndex].comment = comment;
+        // Cập nhật nội dung và thời gian chỉnh sửa bình luận
+        comment.content = content;
+        comment.createdAt = new Date().toISOString(); // Cập nhật thời gian mới
         await blogPost.save();
 
-        res.status(200).json(blogPost);
+        console.log("✅ Bình luận đã cập nhật:", comment);
+        res.status(200).json({ success: true, comment });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
+        console.error("🔥 Lỗi máy chủ:", error);
+        res.status(500).json({ error: "Lỗi máy chủ, vui lòng thử lại sau." });
     }
 };
+
+
+
+
+
+
 const deleteComment = async (req, res) => {
     try {
-        const { postId, commentId } = req.params;
+        const { postId, userId } = req.params;
 
         const blogPost = await BlogPost.findById(postId);
         if (!blogPost) {
             return res.status(404).json({ error: "Bài viết không tồn tại" });
         }
 
-        const commentIndex = blogPost.comments.findIndex(c => c._id.toString() === commentId);
+        const commentIndex = blogPost.comments.findIndex(c => c.userId.toString() === userId);
         if (commentIndex === -1) {
-            return res.status(404).json({ error: "Bình luận không tồn tại" });
+            return res.status(404).json({ error: "Bình luận không tồn tại hoặc không thuộc về người dùng này" });
         }
 
         // Xóa bình luận khỏi mảng
         blogPost.comments.splice(commentIndex, 1);
         await blogPost.save();
 
-        res.status(200).json({ message: "Bình luận đã bị xóa", blogPost });
+        res.status(200).json({ 
+            success: true, 
+            message: "Bình luận đã bị xóa", 
+            comments: blogPost.comments  // Trả về danh sách bình luận sau khi xóa
+        });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: error.message });
+        console.error("🔥 Lỗi khi xóa bình luận:", error);
+        res.status(500).json({ error: "Lỗi máy chủ, vui lòng thử lại sau." });
     }
 };
+
 
 // Controller to create a new blog post with validation
 const createBlogPost = [
@@ -220,4 +320,4 @@ const getAllBlogPosts = async (req, res) => {
     }
 };
 
-export default { createBlogPost, updateBlogPost, getAllBlogPosts, getBlogPostById, getAllBlog, getBlogDetail,updateComment,addComment,deleteComment };
+export default { createBlogPost, updateBlogPost, getAllBlogPosts, getBlogPostById, getAllBlog, getBlogDetail,updateComment,addComment,deleteComment,getComments};

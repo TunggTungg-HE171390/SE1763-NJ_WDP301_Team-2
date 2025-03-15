@@ -24,7 +24,7 @@ const CommentSchema = new Schema(
 const BlogPostSchema = new Schema(
     {
         _id: {
-            type: String, // Chuyển từ ObjectId sang String
+            type: mongoose.Schema.Types.ObjectId, // Chuyển từ ObjectId sang String
         },
         title: {
             type: String,

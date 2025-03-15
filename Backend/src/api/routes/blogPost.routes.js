@@ -7,14 +7,16 @@ router.get("/allblogs", blogPostController.getAllBlog);
 
 router.get("/blogdetail/:id", blogPostController.getBlogDetail);
 
+router.get("/blog/:postId/comments", blogPostController.getComments);
+
 // Thêm bình luận vào bài viết
 router.post("/blog/:postId/comment", blogPostController.addComment);
 
 // Cập nhật bình luận trong bài viết
-router.put("/blog/:postId/comment/:commentId", blogPostController.updateComment);
+router.put("/posts/:postId/comments/:userId", blogPostController.updateComment);
 
 // Xóa bình luận trong bài viết
-router.delete("/blog/:postId/comment/:commentId", blogPostController.deleteComment)
+router.delete("/posts/:postId/comments/:userId", blogPostController.deleteComment)
 // Route POST để tạo bài viết mới
 router.post("/create", blogPostController.createBlogPost);
 
