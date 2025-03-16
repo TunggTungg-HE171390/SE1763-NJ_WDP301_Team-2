@@ -40,6 +40,10 @@ import ManageUsers from "./screens/admin/ManageUsers.jsx";
 import AboutUs from "./screens/common/aboutUs.jsx";
 import UserProfile from './screens/common/userProfile/components/user-profile.jsx';
 import ViewSchedule from "./screens/psychologist/viewAppointment/viewAppointment";
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import 'dayjs/locale/vi'; // Import Vietnamese locale for dayjs
 
 // Create MUI theme
 const theme = createTheme({
@@ -172,7 +176,9 @@ function App() {
             <ThemeProvider theme={theme}>
                 <CssBaseline />
                 <Router>
-                    <Layout />
+                    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+                        <Layout />
+                    </LocalizationProvider>
                 </Router>
             </ThemeProvider>
         </AuthProvider>

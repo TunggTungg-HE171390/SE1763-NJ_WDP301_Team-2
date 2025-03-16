@@ -103,6 +103,37 @@ const scheduleApi = {
       console.error(`Error deleting schedule ${id}:`, error);
       throw error;
     }
+  },
+
+  getSchedulesByTimePeriod: async (startDate, endDate) => {
+    if (isDevEnvironment) {
+      // If using mock API, filter the mock data by date range
+      const allSchedules = await mockScheduleApi.getSchedules();
+      return allSchedules.filter(schedule => {
+        const scheduleDate = new Date(schedule.date);
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        
+        // Reset time part for accurate date comparison
+        scheduleDate.setHours(0, 0, 0, 0);
+        start.setHours(0, 0, 0, 0);
+        end.setHours(0, 0, 0, 0);
+        
+        return scheduleDate >= start && scheduleDate <= end;
+      });
+    }
+    
+    try {
+      // Real API call would go here for production
+      const response = await fetch(`/api/schedules?startDate=${startDate}&endDate=${endDate}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch schedules for the specified time period');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching schedules by time period:', error);
+      throw error;
+    }
   }
 };
 

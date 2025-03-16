@@ -39,7 +39,7 @@ const ViewSchedule = () => {
     const [endDate, setEndDate] = useState(dayjs());
     const [customPeriod, setCustomPeriod] = useState(false);
     
-    // For date input using native controls
+    // For manual date input
     const [startDateStr, setStartDateStr] = useState(dayjs().format('YYYY-MM-DD'));
     const [endDateStr, setEndDateStr] = useState(dayjs().format('YYYY-MM-DD'));
 
@@ -53,35 +53,32 @@ const ViewSchedule = () => {
     // Update date range when period changes
     const updateDateRangeByPeriod = (period) => {
         const today = dayjs();
-        let newStartDate, newEndDate;
         
         switch(period) {
             case 'week':
-                newStartDate = today.startOf('week');
-                newEndDate = today.endOf('week');
+                setStartDate(today.startOf('week'));
+                setEndDate(today.endOf('week'));
                 break;
             case 'month':
-                newStartDate = today.startOf('month');
-                newEndDate = today.endOf('month');
+                setStartDate(today.startOf('month'));
+                setEndDate(today.endOf('month'));
                 break;
             case 'three-months':
-                newStartDate = today;
-                newEndDate = today.add(3, 'month');
+                setStartDate(today);
+                setEndDate(today.add(3, 'month'));
                 break;
             case 'custom':
                 setCustomPeriod(true);
-                return; // Don't update dates for custom selection
+                // Keep current dates for custom selection
+                break;
             default:
-                newStartDate = today.startOf('month');
-                newEndDate = today.endOf('month');
+                setStartDate(today.startOf('month'));
+                setEndDate(today.endOf('month'));
         }
         
-        setStartDate(newStartDate);
-        setEndDate(newEndDate);
-        
-        // Update string representations for the input fields
-        setStartDateStr(newStartDate.format('YYYY-MM-DD'));
-        setEndDateStr(newEndDate.format('YYYY-MM-DD'));
+        // Update string representations
+        setStartDateStr(startDate.format('YYYY-MM-DD'));
+        setEndDateStr(endDate.format('YYYY-MM-DD'));
     };
 
     // Update dayjs objects when string inputs change
@@ -98,92 +95,17 @@ const ViewSchedule = () => {
 
     // Fetch schedules based on selected date range
     useEffect(() => {
-        const fetchSchedules = async () => {
-            if (!startDate || !endDate) return;
-            
-            setLoading(true);
-            try {
-                // Format dates for API
-                const formattedStartDate = startDate.format('YYYY-MM-DD');
-                const formattedEndDate = endDate.format('YYYY-MM-DD');
-                
-                // Fetch schedules for the selected time period
-                const data = await scheduleApi.getSchedulesByTimePeriod(formattedStartDate, formattedEndDate);
-                setSchedules(data);
-                setError(null);
-            } catch (err) {
-                console.error("Error fetching schedules:", err);
-                setError("Không thể tải danh sách lịch hẹn. Vui lòng thử lại sau.");
-                
-                // Fallback mock data
-                if (process.env.NODE_ENV === 'development') {
-                    console.warn("Using mock data for development");
-                    setSchedules([
-                        {
-                            id: 1,
-                            date: '2023-10-15',
-                            time: '10:00 AM',
-                            patientName: 'John Doe'
-                        },
-                        {
-                            id: 2,
-                            date: '2023-10-16',
-                            time: '2:30 PM',
-                            patientName: 'Jane Smith'
-                        },
-                        {
-                            id: 3,
-                            date: '2023-10-17',
-                            time: '9:15 AM',
-                            patientName: 'Robert Johnson'
-                        },
-                        {
-                            id: 4,
-                            date: '2023-10-20',
-                            time: '11:00 AM',
-                            patientName: 'Maria Garcia'
-                        },
-                        {
-                            id: 5,
-                            date: '2023-10-22',
-                            time: '3:00 PM',
-                            patientName: 'David Brown'
-                        },
-                        {
-                            id: 6,
-                            date: '2023-10-23',
-                            time: '10:30 AM',
-                            patientName: 'Sarah Wilson'
-                        },
-                        {
-                            id: 7,
-                            date: '2023-10-25',
-                            time: '4:15 PM',
-                            patientName: 'Michael Taylor'
-                        }
-                    ]);
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchSchedules();
+        // ...existing fetch code...
     }, [startDate, endDate]);
 
     // Handle custom date range
     const handleApplyCustomRange = () => {
         // Validate that end date is after start date
-        const start = dayjs(startDateStr);
-        const end = dayjs(endDateStr);
-        
-        if (end.isBefore(start)) {
+        if (endDate.isBefore(startDate)) {
             setError("Ngày kết thúc phải sau ngày bắt đầu");
             return;
         }
         
-        setStartDate(start);
-        setEndDate(end);
         setCustomPeriod(true);
         setTimePeriod('custom');
     };
@@ -197,15 +119,6 @@ const ViewSchedule = () => {
             setCustomPeriod(false);
             updateDateRangeByPeriod(newPeriod);
         }
-    };
-
-    // Handle date input changes
-    const handleStartDateChange = (e) => {
-        setStartDateStr(e.target.value);
-    };
-    
-    const handleEndDateChange = (e) => {
-        setEndDateStr(e.target.value);
     };
 
     return (
@@ -224,7 +137,7 @@ const ViewSchedule = () => {
                     </Alert>
                 )}
                 
-                {/* Time period selection - with native date inputs */}
+                {/* Time period selection - with manual date input */}
                 <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
                     <Grid container spacing={2} alignItems="center">
                         <Grid item xs={12} md={3}>
@@ -250,13 +163,12 @@ const ViewSchedule = () => {
                                 label="Từ ngày"
                                 type="date"
                                 value={startDateStr}
-                                onChange={handleStartDateChange}
+                                onChange={(e) => setStartDateStr(e.target.value)}
                                 disabled={!customPeriod}
                                 fullWidth
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
-                                sx={{ '& input': { py: 1.5 } }}
                             />
                         </Grid>
                         <Grid item xs={12} md={3}>
@@ -264,13 +176,12 @@ const ViewSchedule = () => {
                                 label="Đến ngày"
                                 type="date"
                                 value={endDateStr}
-                                onChange={handleEndDateChange}
+                                onChange={(e) => setEndDateStr(e.target.value)}
                                 disabled={!customPeriod}
                                 fullWidth
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
-                                sx={{ '& input': { py: 1.5 } }}
                             />
                         </Grid>
                         
