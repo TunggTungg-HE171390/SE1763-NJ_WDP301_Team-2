@@ -154,16 +154,23 @@ const Schedule = ({ psychologist, profile }) => {
                     )}
                 </div>
 
-                <div className="pl-8">
+                <div className="px-8 py-4">
                     <h3 className="text-lg font-semibold uppercase mb-4 text-left">Kinh nghiệm và Lịch sử làm việc</h3>
-                    <ul className="text-base pl-6 text-left">
+                    <div className="text-lg px-6 text-left [line-height:2]">
+                        <div
+                            className="[&>ul]:list-disc [&>ul]:px-12"
+                            dangerouslySetInnerHTML={{ __html: profile.overallProfile }}
+                        />
+                    </div>
+
+                    {/* <ul className="text-base pl-6 text-left">
                         {profile.medicalExperience.concat(profile.workHistory).map((exp, index) => (
                             <li key={index} className="flex items-start mb-3">
                                 <span className="text-blue-500 mr-2">•</span>
                                 <span>{exp}</span>
                             </li>
                         ))}
-                    </ul>
+                    </ul> */}
                 </div>
             </CardContent>
         </Card>
@@ -176,6 +183,7 @@ Schedule.propTypes = {
         fullName: PropTypes.string.isRequired,
     }).isRequired,
     profile: PropTypes.shape({
+        overallProfile: PropTypes.string,
         professionalLevel: PropTypes.string,
         educationalLevel: PropTypes.string,
         specialization: PropTypes.string,

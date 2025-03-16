@@ -6,7 +6,7 @@ import TeamLogo from "@/assets/TeamLogo.svg";
 import PropTypes from "prop-types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     NavigationMenu,
     NavigationMenuContent,
@@ -24,7 +24,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, HelpCircle, LogOut } from "lucide-react";
+import { Calendar, Settings, HelpCircle, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 
 function ListItem({ className, title, children, href }) {
@@ -55,6 +55,7 @@ ListItem.propTypes = {
 
 export function Header() {
     const { user } = useAuth(); // Get authentication state
+    const navigate = useNavigate();
     const { logout } = useContext(AuthContext);
     const [isAuthenticated, setIsAuthenticated] = useState(!!user);
     const userName = user?.fullName;
@@ -77,12 +78,17 @@ export function Header() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mt-4" align="end">
-                <DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer" onSelect={() => navigate("/appointment-list")}>
+                    <Calendar className="mr-2 h-4 w-4" />
+                    <span>Lịch hẹn</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="cursor-pointer">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Cài đặt</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
                     <HelpCircle className="mr-2 h-4 w-4" />
                     <span>Câu hỏi thường gặp</span>
                 </DropdownMenuItem>

@@ -62,11 +62,11 @@ export function TestOutCome() {
                     {/* Disclaimer */}
                     <p className="text-sm text-gray-500">
                         Kết quả bài test này chỉ mang tính chất tham khảo, không có giá trị thay thế chẩn đoán y khoa
-                        bởi bác sĩ chuyên gia có chuyên môn.
+                        bởi tư vấn viên chuyên gia có chuyên môn.
                     </p>
                     <p className="text-sm text-gray-500">
                         Trong trường hợp có bất kỳ vấn đề băn khoăn câu hỏi về tình trạng sức khoẻ hiện tại, bạn có
-                        thể lựa chọn các Bác sĩ Sức khỏe tâm thần, Chuyên gia tâm lý để được thăm khám, tư vấn.
+                        thể lựa chọn các tư vấn viên Sức khỏe tâm thần, Chuyên gia tâm lý để được thăm khám, tư vấn.
                     </p>
                     <p className="text-sm text-gray-500">
                         Đối tác bảo trợ nội dung: Phòng khám | Tâm Giao Website

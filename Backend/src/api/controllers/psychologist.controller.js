@@ -1,10 +1,11 @@
 import User from "../models/user.model.js";
 import Appointment from "../models/appointment.model.js";
 import Availability from "../models/availability.model.js";
+import { createPaymentLink } from "../services/payOS.service.js";
 import mongoose from "mongoose";
 import multer from "multer";
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer().none();
 
 export const getPsychologistList = async (req, res) => {
     try {
@@ -78,24 +79,21 @@ export const getPsychologistById = async (req, res) => {
 };
 
 export const saveAppointment = async (req, res) => {
-    // Use multer to handle multipart form data
-    upload.fields([
-        { name: "symptoms", maxCount: 1 },
-        { name: "images", maxCount: 3 },
-    ])(req, res, async (err) => {
+    upload(req, res, async (err) => {
         if (err) {
-            return res.status(400).json({ message: "Error handling file upload", error: err });
+            return res.status(400).json({ message: "Error parsing form data", error: err });
         }
-        try {
-            const { userId, psychologistId, scheduleId, symptoms } = req.body;
 
-            if (!userId || !psychologistId || !scheduleId || !symptoms) {
+        try {
+            const { patientId, psychologistId, scheduleId, symptoms } = req.body;
+
+            if (!patientId || !psychologistId || !scheduleId || !symptoms) {
                 return res.status(400).json({ message: "Missing required fields" });
             }
 
             // Validate ObjectIds
             if (
-                !mongoose.Types.ObjectId.isValid(userId) ||
+                !mongoose.Types.ObjectId.isValid(patientId) ||
                 !mongoose.Types.ObjectId.isValid(psychologistId) ||
                 !mongoose.Types.ObjectId.isValid(scheduleId)
             ) {
@@ -108,10 +106,25 @@ export const saveAppointment = async (req, res) => {
                 return res.status(404).json({ message: "Schedule not found" });
             }
 
+            // Check if the schedule is already booked
+            if (availability.isBooked) {
+                return res.status(400).json({ message: "Schedule already booked" });
+            }
+
+            // Mark schedule as booked
+            availability.isBooked = true;
+            await availability.save();
+
+            const psychologist = await User.findById(psychologistId);
+            if (!psychologist) {
+                return res.status(404).json({ message: "Psychologist not found" });
+            }
+
             // Create new appointment
             const newAppointment = new Appointment({
-                patientId: userId,
+                patientId: patientId,
                 psychologistId,
+                availabilityId: availability.id,
                 scheduledTime: {
                     date: availability.date,
                     startTime: availability.startTime,
@@ -124,9 +137,30 @@ export const saveAppointment = async (req, res) => {
             // Save to database
             const savedAppointment = await newAppointment.save();
 
+            // Set expiration time (5 minutes from now)
+            const expiredAt = Math.floor(Date.now() / 1000) + 5 * 60; // Unix Timestamp
+
+            const paymentBody = {
+                amount: 5000,
+                description: "Tu van truc tuyen",
+                items: [
+                    {
+                        name: `Buổi tư vấn với tư vấn viên ${psychologist.fullName}`,
+                        quantity: 1,
+                        price: 5000,
+                    },
+                ],
+                expiredAt,
+            };
+
+            const paymentInfo = await createPaymentLink(paymentBody);
+            savedAppointment.paymentInformation = paymentInfo;
+            await savedAppointment.save();
+
             res.status(201).json({
                 message: "Appointment booked successfully!",
                 appointmentId: savedAppointment._id,
+                expiredAt,
             });
         } catch (error) {
             console.error("Error saving appointment:", error);
@@ -139,7 +173,7 @@ export const getAppointmentById = async (req, res) => {
     const { appointmentId } = req.params; // Get the appointment ID from request params
 
     try {
-        // Find the appointment by ID
+        // Find the appointment by ID and populate related fields
         const appointment = await Appointment.findById(appointmentId).populate("patientId psychologistId");
 
         // If appointment not found, return an error
@@ -147,7 +181,10 @@ export const getAppointmentById = async (req, res) => {
             return res.status(404).json({ message: "Appointment not found" });
         }
 
-        // Return the found appointment
+        // Extract orderCode from paymentInformation if it exists
+        const orderCode = appointment.paymentInformation?.orderCode || null;
+
+        // Return the found appointment along with the order code
         res.status(200).json(appointment);
     } catch (error) {
         // Handle any errors that occur during the query
@@ -172,7 +209,6 @@ export const getAppointmentList = async (req, res) => {
                 strictPopulate: false,
             })
             .sort({ "scheduledTime.date": 1 });
-
 
         res.status(200).json(appointments);
     } catch (error) {

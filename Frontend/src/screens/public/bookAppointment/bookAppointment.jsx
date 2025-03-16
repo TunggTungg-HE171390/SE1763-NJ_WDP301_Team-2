@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { RichTextEditor } from "@mantine/rte";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,8 @@ import { ToastAction } from "@/components/ui/toast";
 import { Helmet } from "react-helmet-async";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import * as API from "@/api";
-import { useLocation, useNavigate } from "react-router-dom";
-import { setToast } from "@/components/common/toast/setToast";
+import { useLocation } from "react-router-dom";
+// import { setToast } from "@/components/common/toast/setToast";
 
 const appointmentSchema = z.object({
     symptoms: z.string().min(17, "Vui lòng nhập ít nhất 10 ký tự"),
@@ -78,29 +78,30 @@ const BookAppointment = () => {
 
     const onSubmit = async () => {
         try {
-            const formData = new FormData();
-            formData.append("userId", user._id);
-            formData.append("psychologistId", psychologistId);
-            formData.append("scheduleId", scheduleId);
-            formData.append("symptoms", symptoms);
-
-            console.log(formData.get("userId")); // Should log user._id
-            console.log(formData.get("psychologistId")); // Should log psychologistId
-            console.log(formData.get("scheduleId")); // Should log scheduleId
-            console.log(formData.get("symptoms")); // Should log symptoms
-
-            const response = await API.saveAppointment(formData);
-
-            setToast({
-                title: "Đặt lịch thành công!",
-                description: "Bạn đã đặt lịch hẹn thành công.",
-                actionText: "Đóng",
-                titleColor: "text-green-600",
-                className: "text-start",
+            const responsePending = await API.countPendingAppointment({
+                userId: user._id,
+                maxPendingLimit: 2,
             });
 
-            if (response.data?.appointmentId) {
-                navigate(`/finish-booking?appointmentId=${response.data.appointmentId}`);
+            if (responsePending.data.canBookMore) {
+                const formData = new FormData();
+                formData.append("patientId", user._id);
+                formData.append("psychologistId", psychologistId);
+                formData.append("scheduleId", scheduleId);
+                formData.append("symptoms", symptoms);
+
+                const response = await API.saveAppointment(formData);
+                const { appointmentId, expiredAt } = response.data;
+                await API.waitForPayment({ appointmentId, scheduleId, expiredAt });
+
+                navigate(`/checkout-booking?appointmentId=${appointmentId}`);
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Lỗi đặt lịch",
+                    description: `Bạn đã có ${responsePending.data.pendingCount} lịch đang chờ thanh toán. Vui lòng thanh toán trước!`,
+                    action: <ToastAction altText="Close">Thử lại</ToastAction>,
+                });
             }
         } catch (error) {
             toast({
@@ -128,19 +129,7 @@ const BookAppointment = () => {
                     <div className="flex justify-between relative">
                         <div className="text-center">
                             <div className="w-10 h-10 rounded-full bg-blue-600 mx-auto flex items-center justify-center text-white">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M5 13l4 4L19 7"
-                                    />
-                                </svg>
+                                <span>1</span>
                             </div>
                             <p className="mt-2 text-sm text-blue-600 font-medium">Thông tin đặt khám</p>
                         </div>
@@ -258,7 +247,7 @@ const BookAppointment = () => {
                             </div>
                         ) : (
                             <div className="text-center text-gray-500">
-                                <p>Không thể tải dữ liệu bác sĩ.</p>
+                                <p>Không thể tải dữ liệu tư vấn viên.</p>
                                 <p>Vui lòng thử lại sau.</p>
                             </div>
                         )}
@@ -285,9 +274,9 @@ const BookAppointment = () => {
                             )}
                         </CardContent>
                     </Card>
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-md">
-                        ĐẶT KHÁM
-                    </Button>
+                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-md">
+                        Đặt lịch hẹn
+                    </button>
                 </form>
             </div>
         </>

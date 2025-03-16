@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { Form, FormControl, FormField, FormLabel, FormItem, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,10 @@ const FormSchema = z
     });
 
 const RegisterForm = () => {
+    const { executeRecaptcha } = useGoogleReCaptcha();
     const navigate = useNavigate();
+    const { toast } = useToast();
+
     const form = useForm({
         resolver: zodResolver(FormSchema),
         defaultValues: {
@@ -52,14 +56,19 @@ const RegisterForm = () => {
         },
     });
 
-    const { toast } = useToast();
-
     const onSubmit = async (data) => {
+        if (!executeRecaptcha) {
+            toast({ variant: "destructive", title: "Error", description: "reCAPTCHA not ready" });
+            return;
+        }
+
         try {
-            API.registerUser({
+            const token = await executeRecaptcha("register");
+            await API.registerUser({
                 contact: data.contact,
                 name: data.name,
                 password: data.password,
+                recaptchaToken: token,
             });
 
             // Store the toast message in session storage

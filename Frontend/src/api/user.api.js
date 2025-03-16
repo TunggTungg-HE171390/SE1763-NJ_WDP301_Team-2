@@ -17,7 +17,7 @@ export const resetPassword = async ({ contact, otp, newPassword }) => {
 };
 
 export const changePassword = async ({ contact, newPassword }) => {
-  return apiClient.post("/auth/change-password", { contact, newPassword });
+  return await apiClient.post("/auth/change-password", { contact, newPassword });
 };
 
 export const verifyOTP = async (credentials) => {

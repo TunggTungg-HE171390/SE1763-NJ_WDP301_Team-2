@@ -1,5 +1,5 @@
-// import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { HashRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+// import { HashRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Helmet, HelmetProvider } from "react-helmet-async";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
@@ -38,6 +38,9 @@ import BlogScreen from "./screens/public/blog/blog.jsx";
 import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
 import ManageUsers from "./screens/admin/ManageUsers.jsx";
 import AboutUs from "./screens/common/aboutUs.jsx";
+import PaymentPage from "./screens/public/paymentAppointment/PaymentPage.jsx";
+import Temporary from "./screens/public/paymentAppointment/temp.jsx";
+import AppointmentList from "./screens/public/appointmentList/appointmentList.jsx";
 // Create MUI theme
 const theme = createTheme({
     palette: {
@@ -153,6 +156,9 @@ function Layout() {
                         <Route path="/about-us" element={<AboutUs />} />
                         <Route path="/changePassword" element={<ChangePassword />} />
                         <Route path="/forgotPassword" element={<ForgotPassword />} />
+                        <Route path="/checkout-booking" element={<PaymentPage />} />
+                        <Route path="/tempo" element={<Temporary />} />
+                        <Route path="/appointment-list" element={<AppointmentList />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
