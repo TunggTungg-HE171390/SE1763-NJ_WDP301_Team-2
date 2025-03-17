@@ -32,7 +32,7 @@ import ChangePassword from "./screens/user/changePassword/changePassword";
 import BookAppointment from "./screens/public/bookAppointment/bookAppointment";
 import FinishBooking from "./screens/public/finishBooking/finishBooking";
 import UpdatePost from "./screens/staff/UpdatePost";
-import ViewAppointment from "./screens/psychologist/viewAppointment/viewAppointment";
+import ViewAppointment from "./screens/patient/viewAppointment/viewAppointment";
 import ViewAppointmentDetail from "./screens/psychologist/viewAppointmentDetail/viewAppointmentDetail";
 import BlogScreen from "./screens/public/blog/blog.jsx";
 import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
@@ -161,6 +161,10 @@ function Layout() {
                         <Route path="/changePassword" element={<ChangePassword />} />
                         <Route path="/forgotPassword" element={<ForgotPassword />} />
                         <Route path='user-profile/:id' element={<UserProfile />} />
+                        <Route
+                            path="/patient/view-appointment-detail/:appointmentId"
+                            element={<ViewAppointment />}
+                        />
 
                     </Routes>
                 </div>

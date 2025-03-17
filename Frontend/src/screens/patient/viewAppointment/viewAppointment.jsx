@@ -27,7 +27,9 @@ import {
     CheckCircle,
     Assessment,
     Healing,
-    Psychology
+    Psychology,
+    NoteAlt,
+    MedicalServices
 } from '@mui/icons-material';
 import appointmentApi from '../../../api/appointment.api';
 import { useAuth } from '../../../components/auth/authContext'; // Updated import path
@@ -268,7 +270,7 @@ const PatientViewAppointmentDetail = () => {
                         </Card>
 
                         {/* Professional assessment and treatment plan - only for completed appointments */}
-                        {appointment.status.toLowerCase() === 'completed' && appointment.professionalAssessment && (
+                        {appointment.status.toLowerCase() === 'completed' && (
                             <>
                                 <Typography variant="h5" fontWeight={600} sx={{ mt: 4, mb: 2 }}>
                                     Kết quả đánh giá
@@ -276,31 +278,84 @@ const PatientViewAppointmentDetail = () => {
                                 
                                 <Card sx={{ mb: 3 }}>
                                     <CardContent sx={{ p: 3 }}>
-                                        <Box sx={{ mb: 2 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                                <Assessment color="primary" />
-                                                <Box component="h4" sx={{ fontWeight: 600, m: 0 }}>
-                                                    Nhận xét chuyên môn
+                                        {appointment.professionalAssessment && (
+                                            <Box sx={{ mb: 2 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                                    <Assessment color="primary" />
+                                                    <Box component="h4" sx={{ fontWeight: 600, m: 0 }}>
+                                                        Nhận xét chuyên môn
+                                                    </Box>
+                                                </Box>
+                                                <Box component="p" sx={{ m: 0 }}>
+                                                    {appointment.professionalAssessment}
                                                 </Box>
                                             </Box>
-                                            <Box component="p" sx={{ m: 0 }}>
-                                                {appointment.professionalAssessment}
-                                            </Box>
-                                        </Box>
+                                        )}
                                         
-                                        <Divider sx={{ my: 3 }} />
+                                        {appointment.professionalAssessment && appointment.treatmentPlan && (
+                                            <Divider sx={{ my: 3 }} />
+                                        )}
                                         
-                                        <Box sx={{ mb: 2 }}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                                <Healing color="primary" />
-                                                <Box component="h4" sx={{ fontWeight: 600, m: 0 }}>
-                                                    Phương pháp điều trị
+                                        {appointment.treatmentPlan && (
+                                            <Box sx={{ mb: 2 }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                                    <Healing color="primary" />
+                                                    <Box component="h4" sx={{ fontWeight: 600, m: 0 }}>
+                                                        Phương pháp điều trị
+                                                    </Box>
+                                                </Box>
+                                                <Box component="p" sx={{ m: 0 }}>
+                                                    {appointment.treatmentPlan}
                                                 </Box>
                                             </Box>
-                                            <Box component="p" sx={{ m: 0 }}>
-                                                {appointment.treatmentPlan || "Chưa có thông tin về phương pháp điều trị"}
+                                        )}
+                                        
+                                        {/* New Section - Medical Notes */}
+                                        {appointment.notes && (
+                                            <>
+                                                <Divider sx={{ my: 3 }} />
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                                        <NoteAlt color="primary" />
+                                                        <Box component="h4" sx={{ fontWeight: 600, m: 0 }}>
+                                                            Ghi chú
+                                                        </Box>
+                                                    </Box>
+                                                    <Box component="p" sx={{ m: 0 }}>
+                                                        {appointment.notes}
+                                                    </Box>
+                                                </Box>
+                                            </>
+                                        )}
+                                        
+                                        {/* New Section - Medical Information */}
+                                        {appointment.medicalInformation && (
+                                            <>
+                                                <Divider sx={{ my: 3 }} />
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                                        <MedicalServices color="primary" />
+                                                        <Box component="h4" sx={{ fontWeight: 600, m: 0 }}>
+                                                            Thông tin bệnh án
+                                                        </Box>
+                                                    </Box>
+                                                    <Box component="p" sx={{ m: 0 }}>
+                                                        {appointment.medicalInformation}
+                                                    </Box>
+                                                </Box>
+                                            </>
+                                        )}
+                                        
+                                        {/* Empty state when no information is available */}
+                                        {!appointment.professionalAssessment && !appointment.treatmentPlan && 
+                                         !appointment.notes && !appointment.medicalInformation && (
+                                            <Box sx={{ textAlign: 'center', py: 3 }}>
+                                                <MedicalInformation sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
+                                                <Typography color="text.secondary">
+                                                    Chưa có thông tin đánh giá cho cuộc hẹn này
+                                                </Typography>
                                             </Box>
-                                        </Box>
+                                        )}
                                     </CardContent>
                                 </Card>
                             </>
