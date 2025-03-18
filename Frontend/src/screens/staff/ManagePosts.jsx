@@ -3,25 +3,72 @@ import { Button, Container, Row, Col, Card, Table, Pagination } from "react-boot
 import { getAllPosts, updateBlogPost } from "../../api/blogPosts.api"; // Đảm bảo import đúng
 import { useBootstrap } from "@/hooks/useBootstrap";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const ManagePosts = () => {
   useBootstrap();
 
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true); // Thêm trạng thái loading
+  const [error, setError] = useState(null); // Add error state
   const [currentPage, setCurrentPage] = useState(1);
   const [postsPerPage] = useState(10);
   const navigate = useNavigate();
+
+  // Add a direct test request to verify API is working
+  const testDirectApiAccess = async () => {
+    try {
+      console.log("Testing direct API access...");
+      const response = await axios.get("http://localhost:3000/api/blogposts");
+      console.log("Direct API test successful:", response.data);
+      return true;
+    } catch (err) {
+      console.error("Direct API test failed:", err);
+      return false;
+    }
+  };
 
   // Lấy tất cả bài viết từ API
   useEffect(() => {
     const fetchPosts = async () => {
       try {
+        console.log("Fetching posts from API...");
+        console.log("API URL from env:", import.meta.env.VITE_API_URL);
+        
+        // Test direct API access first
+        const directAccessWorking = await testDirectApiAccess();
+        
+        if (!directAccessWorking) {
+          console.warn("Direct API access failed, but still trying through apiClient...");
+        }
+        
         const data = await getAllPosts(); // Gọi API từ file riêng
-        console.log("Posts fetched:", data);
-        setPosts(data);
+        console.log("Posts fetched successfully:", data);
+        
+        if (Array.isArray(data)) {
+          setPosts(data);
+        } else if (data && typeof data === 'object') {
+          // Handle case where API might return an object with data property
+          const postsArray = Array.isArray(data.posts) ? data.posts : 
+                            Array.isArray(data.data) ? data.data : [];
+          console.log("Extracted posts array:", postsArray);
+          setPosts(postsArray);
+        } else {
+          setPosts([]);
+          setError("Received invalid data format from API");
+        }
       } catch (error) {
         console.error("Error fetching posts:", error);
+        let errorMessage = "Failed to load blog posts. Please try again later.";
+        
+        if (error.response) {
+          errorMessage += ` (Status: ${error.response.status})`;
+          console.error("Response details:", error.response.data);
+        } else if (error.request) {
+          errorMessage = "Unable to reach the server. Please check your connection.";
+        }
+        
+        setError(errorMessage);
       } finally {
         setIsLoading(false); // Xử lý khi đã xong việc gọi API
       }
@@ -72,6 +119,8 @@ const ManagePosts = () => {
       <Card className="p-4 shadow-sm">
         {isLoading ? (
           <p>Loading...</p>
+        ) : error ? (
+          <div className="alert alert-danger">{error}</div>
         ) : (
           <>
             <Table striped bordered hover responsive>

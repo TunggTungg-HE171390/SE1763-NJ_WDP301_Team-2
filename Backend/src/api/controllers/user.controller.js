@@ -21,6 +21,64 @@ const findAllUsers = async (req, res, next) => {
     }
 };
 
+const getUserById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        // Tìm người dùng theo ID
+        const user = await User.findById(id).lean();
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Định dạng lại dữ liệu trước khi trả về
+        const formattedUser = {
+            _id: user._id,
+            _idObject: `ObjectId('${user._id.toString()}')`,
+            _idString: user._id.toString(),
+            email: user.email || null,
+            fullName: user.fullName || null,
+            gender: user.gender || null,
+            address: user.address || null,
+            dob: user.dob || null,
+            role: user.role || null,
+            profileImg: user.profileImg || null,
+        };
+
+        res.json(formattedUser);
+    } catch (error) {
+        console.error("Error fetching user by ID: ", error);
+        next(error);
+    }
+};
+
+const updateUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { fullName, gender, address, dob, role, profileImg } = req.body;
+
+        // Tìm và cập nhật thông tin người dùng
+        const updatedUser = await User.findByIdAndUpdate(
+            id,
+            { fullName, gender, address, dob, role, profileImg },
+            { new: true, runValidators: true } // Trả về dữ liệu sau khi cập nhật, kiểm tra validate
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json({
+            message: "User updated successfully",
+            user: updatedUser,
+        });
+    } catch (error) {
+        console.error("Error updating user:", error);
+        next(error);
+    }
+};
+
 // Register a new user
 export const registerUser = async (req, res) => {
     try {
@@ -422,4 +480,7 @@ export default {
     sendEmail,
     forgotPassword,
     changePassword,
+    updateUser,
+    updateUser,
+    getUserById,
 };

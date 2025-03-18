@@ -1,4 +1,5 @@
 import { Users, Building2, HeartPulse, MessageSquareText } from "lucide-react";
+// import { useState, useEffect } from "react";
 
 const StatsSection = () => {
     const stats = [
@@ -10,20 +11,20 @@ const StatsSection = () => {
         },
         {
             value: "0",
-            label: "Cơ sở y tế hàng đầu",
-            subLabel: "Hợp tác với",
+            label: "Top medical facilities",
+            subLabel: "Partnering with",
             icon: <Building2 className="w-12 h-12" />,
         },
         {
             value: "2",
-            label: "Khách hàng",
-            subLabel: "Hỗ trợ",
+            label: "Customers",
+            subLabel: "Supporting",
             icon: <HeartPulse className="w-12 h-12" />,
         },
         {
             value: "0",
-            label: "Câu hỏi mỗi ngày",
-            subLabel: "Giải đáp miễn phí",
+            label: "Questions per day",
+            subLabel: "Free answers",
             icon: <MessageSquareText className="w-12 h-12" />,
         },
     ];

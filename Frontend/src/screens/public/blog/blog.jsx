@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import apiClient from "@/api/apiClient";
 import { Eye, Heart, Share2 } from "lucide-react";
+import { displayEnvironmentInfo, testApiConnectivity } from "@/utils/debugHelper";
+import { getAllPosts } from "../../../api/blogPosts.api";
 
 export default function BlogScreen() {
     useBootstrap();
@@ -31,6 +33,27 @@ export default function BlogScreen() {
             }
         };
         fetchArticles();
+    }, []);
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            // Log environment info for debugging
+            displayEnvironmentInfo();
+
+            try {
+                // Test API connectivity
+                const testResult = await testApiConnectivity(`${import.meta.env.VITE_API_URL}/blogposts`);
+                console.log("API connectivity test:", testResult);
+
+                const data = await getAllPosts();
+                // Process data...
+            } catch (error) {
+                console.error("Blog fetch error:", error);
+                // Handle error...
+            }
+        };
+
+        fetchPosts();
     }, []);
 
     const handleLike = async (articleId) => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, Typography, Box } from '@mui/material';
@@ -7,8 +7,9 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
-const ViewScheduleCalendar = ({ schedules }) => {
+const ViewScheduleCalendar = ({ schedules, initialView = 'dayGridMonth', initialDate = new Date() }) => {
     const navigate = useNavigate();
+    const calendarRef = useRef(null);
     
     // Transform schedules data for FullCalendar
     const events = schedules.map(schedule => ({
@@ -61,8 +62,8 @@ const ViewScheduleCalendar = ({ schedules }) => {
     }
 
     const handleEventClick = (clickInfo) => {
-        // Navigate to appointment detail page when an event is clicked
-        navigate(`/psychologist/view-appointment-detail/${clickInfo.event.id}`);
+        // Navigate to schedule detail page when an event is clicked
+        navigate(`/psychologist/view-schedule-detail/${clickInfo.event.id}`);
     };
 
     return (
@@ -73,13 +74,15 @@ const ViewScheduleCalendar = ({ schedules }) => {
                 </Typography>
                 <Box sx={{ height: 700 }}>
                     <FullCalendar
+                        ref={calendarRef}
                         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                         headerToolbar={{
                             left: 'prev,next today',
                             center: 'title',
                             right: 'dayGridMonth,timeGridWeek,timeGridDay'
                         }}
-                        initialView="dayGridMonth"
+                        initialView={initialView}
+                        initialDate={initialDate}
                         editable={false}
                         selectable={true}
                         selectMirror={true}
@@ -112,6 +115,8 @@ ViewScheduleCalendar.propTypes = {
             patientName: PropTypes.string.isRequired,
         })
     ).isRequired,
+    initialView: PropTypes.string,
+    initialDate: PropTypes.instanceOf(Date)
 };
 
 export default ViewScheduleCalendar;

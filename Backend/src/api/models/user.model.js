@@ -33,6 +33,7 @@ const PsychologistProfileSchema = new Schema(
 // Main User schema
 const UserSchema = new Schema(
     {
+
         email: {
             type: String,
             unique: true,

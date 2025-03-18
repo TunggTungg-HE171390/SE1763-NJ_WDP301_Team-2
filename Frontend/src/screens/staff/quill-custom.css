@@ -1,0 +1,72 @@
+/* Fix for undefined labels in ReactQuill dropdowns */
+.ql-picker-label::before {
+    content: attr(data-value) !important;
+}
+
+/* Fix for header dropdown */
+.ql-picker.ql-header .ql-picker-label::before {
+    content: 'Normal' !important;
+}
+
+.ql-picker.ql-header .ql-picker-label[data-value="1"]::before {
+    content: 'Heading 1' !important;
+}
+
+.ql-picker.ql-header .ql-picker-label[data-value="2"]::before {
+    content: 'Heading 2' !important;
+}
+
+/* Fix for alignment dropdown - modify this section */
+.ql-picker.ql-align .ql-picker-label::before {
+    content: '\E800' !important;
+    font-family: "Quill-Icons";
+}
+
+.ql-picker.ql-align .ql-picker-label[data-value="center"]::before {
+    content: 'Center' !important;
+}
+
+.ql-picker.ql-align .ql-picker-label[data-value="right"]::before {
+    content: 'Right' !important;
+}
+
+.ql-picker.ql-align .ql-picker-label[data-value="justify"]::before {
+    content: 'Justify' !important;
+}
+
+/* Fix for alignment picker items */
+.ql-picker.ql-align .ql-picker-item:not([data-value])::before {
+    content: 'Left' !important;
+}
+
+.ql-picker.ql-align .ql-picker-item[data-value="center"]::before {
+    content: 'Center' !important;
+}
+
+.ql-picker.ql-align .ql-picker-item[data-value="right"]::before {
+    content: 'Right' !important;
+}
+
+.ql-picker.ql-align .ql-picker-item[data-value="justify"]::before {
+    content: 'Justify' !important;
+}
+
+/* Ensure proper display of alignment icons */
+.ql-align .ql-picker-options .ql-picker-item {
+    padding-left: 30px !important;
+    position: relative;
+}
+
+.ql-align .ql-picker-options .ql-picker-item::before {
+    position: absolute;
+    left: 8px;
+}
+
+/* Ensure the editor container has proper height */
+.quill-editor-container {
+    min-height: 300px;
+}
+
+.quill-editor-container .ql-container {
+    min-height: 250px;
+}

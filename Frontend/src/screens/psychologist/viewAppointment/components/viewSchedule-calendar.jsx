@@ -7,6 +7,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
+// Rename component to match file name
 const ViewScheduleCalendar = ({ schedules }) => {
     const navigate = useNavigate();
     

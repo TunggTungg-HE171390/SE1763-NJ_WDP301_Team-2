@@ -23,7 +23,7 @@ import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import PropTypes from "prop-types";
 import ToastReceiver from "@/components/common/toast/toast-receiver";
 import CreateNewPost from "./screens/staff/CreateNewBlogPost";
-import DoctorBooking from "./screens/public/psychologistList/DoctorBooking";
+import DoctorBooking from "./screens/public/psychologistList/DoctorBooking.jsx";
 import PsychologistProfile from "./screens/public/psychologistProfile/psychologistProfile";
 import ManagePosts from "./screens/staff/ManagePosts";
 import CreateTestScreen from "./screens/admin/CreateTestScreen";
@@ -32,7 +32,7 @@ import ChangePassword from "./screens/user/changePassword/changePassword";
 import BookAppointment from "./screens/public/bookAppointment/bookAppointment";
 import FinishBooking from "./screens/public/finishBooking/finishBooking";
 import UpdatePost from "./screens/staff/UpdatePost";
-import ViewAppointment from "./screens/psychologist/viewAppointment/viewAppointment";
+import ViewAppointment from "./screens/patient/viewAppointment/viewAppointment";
 import ViewAppointmentDetail from "./screens/psychologist/viewAppointmentDetail/viewAppointmentDetail";
 import BlogScreen from "./screens/public/blog/blog.jsx";
 import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
@@ -41,6 +41,13 @@ import AboutUs from "./screens/common/aboutUs.jsx";
 import PaymentPage from "./screens/public/paymentAppointment/PaymentPage.jsx";
 import Temporary from "./screens/public/paymentAppointment/temp.jsx";
 import AppointmentList from "./screens/public/appointmentList/appointmentList.jsx";
+import UserProfile from "./screens/common/userProfile/components/user-profile.jsx";
+import ViewSchedule from "./screens/psychologist/viewAppointment/viewAppointment";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+// import dayjs from "dayjs";
+import "dayjs/locale/vi"; // Import Vietnamese locale for dayjs
+
 // Create MUI theme
 const theme = createTheme({
     palette: {
@@ -140,7 +147,7 @@ function Layout() {
                         <Route path="/create-post" element={<CreateNewPost />} />
                         <Route path="/update-post/:postId" element={<UpdatePost />} />
                         <Route path="/manage-posts" element={<ManagePosts />} />
-                        <Route path="/psychologist/view-appointments" element={<ViewAppointment />} />
+                        <Route path="/psychologist/view-schedule" element={<ViewSchedule />} />
                         <Route
                             path="/psychologist/view-appointment-detail/:appointmentId"
                             element={<ViewAppointmentDetail />}
@@ -159,6 +166,8 @@ function Layout() {
                         <Route path="/checkout-booking" element={<PaymentPage />} />
                         <Route path="/tempo" element={<Temporary />} />
                         <Route path="/appointment-list" element={<AppointmentList />} />
+                        <Route path="user-profile/:id" element={<UserProfile />} />
+                        <Route path="/patient/view-appointment-detail/:appointmentId" element={<ViewAppointment />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
@@ -173,7 +182,9 @@ function App() {
             <ThemeProvider theme={theme}>
                 <CssBaseline />
                 <Router>
-                    <Layout />
+                    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
+                        <Layout />
+                    </LocalizationProvider>
                 </Router>
             </ThemeProvider>
         </AuthProvider>

@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import appointmentApi from '../../../api/appointment.api';
+import { useAuth } from '../../../components/auth/authContext'; // Updated import path
 
 const ViewAppointmentDetail = () => {
     const { appointmentId } = useParams();
@@ -24,11 +25,20 @@ const ViewAppointmentDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
+    const { user } = useAuth(); // Get current user
     
     // State for weekly calendar
     const [weekDates, setWeekDates] = useState([]);
     const [selectedDate, setSelectedDate] = useState(null);
     const [dailyAppointments, setDailyAppointments] = useState([]);
+
+    // Check if user is authorized (psychologist or staff)
+    useEffect(() => {
+        // Redirect patients to the patient version of appointment detail
+        if (user && user.role === 'patient') {
+            navigate(`/patient/view-appointment-detail/${appointmentId}`);
+        }
+    }, [user, appointmentId, navigate]);
 
     // Generate week dates based on the appointment date
     useEffect(() => {
@@ -107,6 +117,12 @@ const ViewAppointmentDetail = () => {
                 if (data) {
                     setAppointment(data);
                     setError(null);
+                    
+                    // Set week dates based on appointment date
+                    const appointmentDate = new Date(data.date);
+                    const currentWeekDates = getWeekDates(appointmentDate);
+                    setWeekDates(currentWeekDates);
+                    setSelectedDate(appointmentDate.toISOString().split('T')[0]);
                 } else {
                     setError("Không tìm thấy thông tin cuộc hẹn");
                 }
@@ -245,7 +261,7 @@ const ViewAppointmentDetail = () => {
                 <Typography variant="h5" color="error">{error}</Typography>
                 <Button 
                     component={Link} 
-                    to="/psychologist/view-appointments" 
+                    to="/psychologist/view-schedule" 
                     variant="contained" 
                     color="primary" 
                     sx={{ mt: 3 }}
@@ -261,7 +277,7 @@ const ViewAppointmentDetail = () => {
             <Box sx={{ mb: 3 }}>
                 <Button 
                     component={Link} 
-                    to="/psychologist/view-appointments" 
+                    to="/psychologist/view-schedule" 
                     variant="outlined" 
                     startIcon={<ArrowBackIcon />}
                 >
