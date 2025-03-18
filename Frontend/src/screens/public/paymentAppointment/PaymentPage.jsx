@@ -75,7 +75,7 @@ const BookingSuccess = () => {
                         await new Promise((resolve) => setTimeout(resolve, 5000));
 
                         // Continue execution
-                        await API.confirmPayment({ appointmentId });
+                        // await API.confirmPayment({ appointmentId });
                         navigate(`/finish-booking?appointmentId=${appointmentId}`);
                     } else if (responsePayment.data.status === "EXPIRED") {
                         console.log("❌ Payment expired, redirecting...");
@@ -86,7 +86,7 @@ const BookingSuccess = () => {
                 } catch (error) {
                     console.error("Error checking payment status:", error);
                 }
-            }, 5000); // Check every 10 seconds
+            }, 10000); // Check every 10 seconds
         }
 
         return () => {

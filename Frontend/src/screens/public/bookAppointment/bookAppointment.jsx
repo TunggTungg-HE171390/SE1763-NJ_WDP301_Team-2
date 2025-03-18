@@ -27,6 +27,7 @@ const BookAppointment = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [psychologist, setPsychologist] = useState(null);
     const [schedule, setSchedule] = useState(null);
     const [symptoms, setSymptoms] = useState("");
@@ -77,6 +78,9 @@ const BookAppointment = () => {
     }, [scheduleId]);
 
     const onSubmit = async () => {
+        if (isSubmitting) return; // Prevent duplicate submissions
+        setIsSubmitting(true);
+
         try {
             const responsePending = await API.countPendingAppointment({
                 userId: user._id,
@@ -110,6 +114,8 @@ const BookAppointment = () => {
                 description: error.response?.data?.message || "Có lỗi xảy ra khi đặt lịch. Vui lòng thử lại!",
                 action: <ToastAction altText="Close">Thử lại</ToastAction>,
             });
+        } finally {
+            setIsSubmitting(false); // Re-enable the button
         }
     };
 
@@ -274,8 +280,12 @@ const BookAppointment = () => {
                             )}
                         </CardContent>
                     </Card>
-                    <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-md">
-                        Đặt lịch hẹn
+                    <button
+                        className={`w-full py-4 rounded-md text-white ${
+                            isSubmitting ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                        }`}
+                        disabled={isSubmitting}>
+                        {isSubmitting ? "Đang xử lý..." : "Đặt lịch hẹn"}
                     </button>
                 </form>
             </div>

@@ -1,426 +1,464 @@
-import { Helmet } from "react-helmet-async";
-import ToastReceiver from "@/components/common/toast/toast-receiver";
-import { useState } from "react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React, { useEffect, useState } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
-    ArrowDownIcon,
-    ArrowUpIcon,
-    SearchIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    ChevronsLeftIcon,
-    ChevronsRightIcon,
-    MoreHorizontalIcon,
-} from "lucide-react";
+    Container,
+    Paper,
+    Typography,
+    Box,
+    CircularProgress,
+    Button,
+    Chip,
+    Divider,
+    Grid,
+    Alert,
+    Snackbar,
+    Card,
+    CardContent,
+    Avatar,
+} from "@mui/material";
+import {
+    CalendarMonth,
+    AccessTime,
+    Person,
+    MedicalInformation,
+    Phone,
+    Email,
+    ArrowBack,
+    CheckCircle,
+    Assessment,
+    Healing,
+    Psychology,
+    NoteAlt,
+    MedicalServices,
+} from "@mui/icons-material";
+import * as API from "@/api";
+import { useAuth } from "@/hooks/useAuth";
 
-const AppointmentsList = () => {
-    // Sample data for appointments - expanded for pagination demo
-    const [appointments, setAppointments] = useState([
-        {
-            id: 1,
-            doctorName: "Dr. Sarah Johnson",
-            date: "2025-03-15",
-            startTime: "09:00",
-            endTime: "09:30",
-            status: "Confirmed",
-        },
-        {
-            id: 2,
-            doctorName: "Dr. Michael Chen",
-            date: "2025-03-16",
-            startTime: "14:00",
-            endTime: "14:45",
-            status: "Pending",
-        },
-        {
-            id: 3,
-            doctorName: "Dr. Emily Rodriguez",
-            date: "2025-03-18",
-            startTime: "10:30",
-            endTime: "11:00",
-            status: "Completed",
-        },
-        {
-            id: 4,
-            doctorName: "Dr. Robert Patel",
-            date: "2025-03-20",
-            startTime: "16:15",
-            endTime: "16:45",
-            status: "Cancelled",
-        },
-        {
-            id: 5,
-            doctorName: "Dr. Sarah Johnson",
-            date: "2025-03-21",
-            startTime: "11:00",
-            endTime: "11:30",
-            status: "Confirmed",
-        },
-        {
-            id: 6,
-            doctorName: "Dr. Lisa Wong",
-            date: "2025-03-22",
-            startTime: "13:30",
-            endTime: "14:00",
-            status: "Confirmed",
-        },
-        {
-            id: 7,
-            doctorName: "Dr. James Smith",
-            date: "2025-03-23",
-            startTime: "15:45",
-            endTime: "16:15",
-            status: "Pending",
-        },
-        {
-            id: 8,
-            doctorName: "Dr. Maria Garcia",
-            date: "2025-03-24",
-            startTime: "08:30",
-            endTime: "09:15",
-            status: "Confirmed",
-        },
-        {
-            id: 9,
-            doctorName: "Dr. David Kim",
-            date: "2025-03-25",
-            startTime: "11:30",
-            endTime: "12:00",
-            status: "Completed",
-        },
-        {
-            id: 10,
-            doctorName: "Dr. Angela Martinez",
-            date: "2025-03-26",
-            startTime: "14:30",
-            endTime: "15:00",
-            status: "Confirmed",
-        },
-        {
-            id: 11,
-            doctorName: "Dr. William Brown",
-            date: "2025-03-27",
-            startTime: "09:45",
-            endTime: "10:15",
-            status: "Cancelled",
-        },
-        {
-            id: 12,
-            doctorName: "Dr. Jennifer Lee",
-            date: "2025-03-28",
-            startTime: "16:00",
-            endTime: "16:30",
-            status: "Pending",
-        },
-    ]);
+const AppointmentList = () => {
+    const { appointmentId } = useParams();
+    const navigate = useNavigate();
+    const [appointment, setAppointment] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [toast, setToast] = useState({ open: false, message: "", severity: "info" });
+    const { user } = useAuth();
 
-    // Sorting state
-    const [sortConfig, setSortConfig] = useState({
-        key: "date",
-        direction: "ascending",
-    });
+    // Get appointment history for this patient with this psychologist
+    const [appointmentHistory, setAppointmentHistory] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
 
-    // Search state
-    const [searchTerm, setSearchTerm] = useState("");
+    useEffect(() => {
+        const fetchAppointmentDetail = async () => {
+            if (!appointmentId) return;
 
-    // Pagination state
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(5);
+            setLoading(true);
+            try {
+                const data = await appointmentApi.getAppointmentById(appointmentId);
+                if (data) {
+                    // Check if this appointment belongs to the current user
+                    if (user && user.id !== data.patientId) {
+                        setError("Bạn không có quyền xem thông tin của cuộc hẹn này");
+                        return;
+                    }
 
-    // Handle sorting
-    const requestSort = (key) => {
-        let direction = "ascending";
-        if (sortConfig.key === key && sortConfig.direction === "ascending") {
-            direction = "descending";
+                    setAppointment(data);
+                    setError(null);
+
+                    // Fetch appointment history
+                    if (data.psychologistId) {
+                        fetchAppointmentHistory(data.psychologistId);
+                    }
+                } else {
+                    setError("Không tìm thấy thông tin cuộc hẹn");
+                }
+            } catch (err) {
+                console.error("Error fetching appointment:", err);
+                setError(err.message || "Có lỗi xảy ra khi lấy thông tin cuộc hẹn");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAppointmentDetail();
+    }, [appointmentId, user]);
+
+    const fetchAppointmentHistory = async (psychologistId) => {
+        setLoadingHistory(true);
+        try {
+            const history = await appointmentApi.getPatientAppointmentsWithPsychologist(user.id, psychologistId);
+
+            // Sort by date descending
+            const sortedHistory = history
+                .filter((app) => app.id !== parseInt(appointmentId)) // Exclude current appointment
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            setAppointmentHistory(sortedHistory);
+        } catch (err) {
+            console.error("Error fetching appointment history:", err);
+            setToast({
+                open: true,
+                message: "Không thể tải lịch sử cuộc hẹn",
+                severity: "error",
+            });
+        } finally {
+            setLoadingHistory(false);
         }
-        setSortConfig({ key, direction });
     };
 
-    // Apply sorting to appointments
-    const sortedAppointments = [...appointments].sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-            return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-            return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        return 0;
-    });
-
-    // Apply search filter
-    const filteredAppointments = sortedAppointments.filter((appointment) => {
-        return (
-            appointment.doctorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            appointment.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            appointment.date.includes(searchTerm)
-        );
-    });
-
-    // Calculate pagination
-    const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredAppointments.slice(indexOfFirstItem, indexOfLastItem);
-
-    // Page change handlers
-    const goToPage = (pageNumber) => {
-        setCurrentPage(Math.max(1, Math.min(pageNumber, totalPages)));
-    };
-
-    const goToFirstPage = () => goToPage(1);
-    const goToLastPage = () => goToPage(totalPages);
-    const goToPreviousPage = () => goToPage(currentPage - 1);
-    const goToNextPage = () => goToPage(currentPage + 1);
-
-    // Helper function to get status color
     const getStatusColor = (status) => {
         switch (status.toLowerCase()) {
             case "confirmed":
-                return "text-blue-600 bg-blue-100";
+                return "success";
             case "pending":
-                return "text-yellow-600 bg-yellow-100";
-            case "completed":
-                return "text-green-600 bg-green-100";
+                return "warning";
             case "cancelled":
-                return "text-red-600 bg-red-100";
+                return "error";
+            case "rescheduled":
+                return "info";
+            case "completed":
+                return "success";
             default:
-                return "text-gray-600 bg-gray-100";
+                return "default";
         }
     };
 
-    // Format date to be more readable
-    const formatDate = (dateString) => {
-        const options = { weekday: "short", year: "numeric", month: "short", day: "numeric" };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    };
+    if (loading && !appointment) {
+        return (
+            <Container maxWidth="lg" sx={{ mt: 12, mb: 4, textAlign: "center" }}>
+                <CircularProgress size={40} />
+                <Typography variant="h5" sx={{ mt: 2 }}>
+                    Đang tải thông tin cuộc hẹn...
+                </Typography>
+            </Container>
+        );
+    }
 
-    // Handle view details action
-    const handleViewDetails = (appointmentId) => {
-        console.log("View details for appointment", appointmentId);
-        // This would typically open a modal or navigate to a details page
-        alert(`View details for appointment #${appointmentId}`);
-    };
+    if (error && !appointment) {
+        return (
+            <Container maxWidth="lg" sx={{ mt: 12, mb: 4, textAlign: "center" }}>
+                <Typography variant="h5" color="error">
+                    {error}
+                </Typography>
+                <Button
+                    component={Link}
+                    to="/patient/view-appointments"
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 3 }}>
+                    Quay lại danh sách cuộc hẹn
+                </Button>
+            </Container>
+        );
+    }
 
     return (
-        <>
-            <Helmet>
-                <title>Cuộc hẹn của bạn</title>
-            </Helmet>
-            <ToastReceiver />
-            <div className="p-6 bg-blue-50 min-h-screen">
-                <Card className="border-blue-200">
-                    <CardHeader className="bg-blue-600 text-white rounded-t-lg">
-                        <CardTitle className="text-2xl font-bold"></CardTitle>
-                        <CardDescription className="text-blue-100"></CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-6">
-                        <div className="flex items-center mb-6">
-                            <div className="relative flex-grow">
-                                <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-blue-400" />
-                                <Input
-                                    placeholder="Search appointments..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 border-blue-200 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
-                        </div>
+        <Container maxWidth="lg" sx={{ mt: 12, mb: 4 }}>
+            <Box sx={{ mb: 3 }}>
+                <Button component={Link} to="/patient/view-appointments" variant="outlined" startIcon={<ArrowBack />}>
+                    Quay lại lịch hẹn
+                </Button>
+            </Box>
 
-                        <div className="rounded-md border border-blue-200 overflow-hidden">
-                            <Table>
-                                <TableHeader className="bg-blue-50">
-                                    <TableRow className="border-b-2 border-blue-200">
-                                        <TableHead className="w-12 text-left">#</TableHead>
-                                        <TableHead
-                                            className="text-center cursor-pointer hover:bg-blue-100"
-                                            onClick={() => requestSort("doctorName")}>
-                                            Tư vấn viên
-                                            {sortConfig.key === "doctorName" && (
-                                                <span className="ml-2">
-                                                    {sortConfig.direction === "ascending" ? (
-                                                        <ArrowUpIcon className="h-4 w-4 inline" />
-                                                    ) : (
-                                                        <ArrowDownIcon className="h-4 w-4 inline" />
-                                                    )}
-                                                </span>
-                                            )}
-                                        </TableHead>
-                                        <TableHead
-                                            className="text-center cursor-pointer hover:bg-blue-100"
-                                            onClick={() => requestSort("date")}>
-                                            Ngày
-                                            {sortConfig.key === "date" && (
-                                                <span className="ml-2">
-                                                    {sortConfig.direction === "ascending" ? (
-                                                        <ArrowUpIcon className="h-4 w-4 inline" />
-                                                    ) : (
-                                                        <ArrowDownIcon className="h-4 w-4 inline" />
-                                                    )}
-                                                </span>
-                                            )}
-                                        </TableHead>
-                                        <TableHead
-                                            className="text-center cursor-pointer hover:bg-blue-100"
-                                            onClick={() => requestSort("startTime")}>
-                                            Thời gian bắt đầu
-                                            {sortConfig.key === "startTime" && (
-                                                <span className="ml-2">
-                                                    {sortConfig.direction === "ascending" ? (
-                                                        <ArrowUpIcon className="h-4 w-4 inline" />
-                                                    ) : (
-                                                        <ArrowDownIcon className="h-4 w-4 inline" />
-                                                    )}
-                                                </span>
-                                            )}
-                                        </TableHead>
-                                        <TableHead
-                                            className="text-center cursor-pointer hover:bg-blue-100"
-                                            onClick={() => requestSort("endTime")}>
-                                            Thời gian kết thúc
-                                            {sortConfig.key === "endTime" && (
-                                                <span className="ml-2">
-                                                    {sortConfig.direction === "ascending" ? (
-                                                        <ArrowUpIcon className="h-4 w-4 inline" />
-                                                    ) : (
-                                                        <ArrowDownIcon className="h-4 w-4 inline" />
-                                                    )}
-                                                </span>
-                                            )}
-                                        </TableHead>
-                                        <TableHead
-                                            className="text-center cursor-pointer hover:bg-blue-100"
-                                            onClick={() => requestSort("status")}>
-                                            Trạng thái
-                                            {sortConfig.key === "status" && (
-                                                <span className="ml-2">
-                                                    {sortConfig.direction === "ascending" ? (
-                                                        <ArrowUpIcon className="h-4 w-4 inline" />
-                                                    ) : (
-                                                        <ArrowDownIcon className="h-4 w-4 inline" />
-                                                    )}
-                                                </span>
-                                            )}
-                                        </TableHead>
-                                        <TableHead className="text-center">Chức năng</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {currentItems.length > 0 ? (
-                                        currentItems.map((appointment, index) => (
-                                            <TableRow
-                                                key={appointment.id}
-                                                className="hover:bg-blue-50 border-b border-blue-100 last:border-b-0">
-                                                <TableCell className="font-medium text-gray-500">
-                                                    {indexOfFirstItem + index + 1}
-                                                </TableCell>
-                                                <TableCell className="font-medium">{appointment.doctorName}</TableCell>
-                                                <TableCell>{formatDate(appointment.date)}</TableCell>
-                                                <TableCell>{appointment.startTime}</TableCell>
-                                                <TableCell>{appointment.endTime}</TableCell>
-                                                <TableCell>
-                                                    <span
-                                                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                                                            appointment.status
-                                                        )}`}>
-                                                        {appointment.status}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell className="text-center">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => handleViewDetails(appointment.id)}
-                                                        className="h-8 w-8 text-blue-600 hover:bg-blue-100 rounded-full">
-                                                        <MoreHorizontalIcon className="h-5 w-5" />
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                                                No appointments found
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </div>
+            <Grid container spacing={3}>
+                {/* Main Appointment Detail */}
+                <Grid item xs={12} md={8}>
+                    <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+                        <Typography variant="h4" fontWeight={600} gutterBottom>
+                            Chi tiết cuộc hẹn
+                        </Typography>
 
-                        {/* Pagination Controls */}
-                        <div className="mt-6 flex items-center justify-between">
-                            <div className="text-sm text-blue-600">
-                                Hiển thị {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredAppointments.length)}{" "}
-                                trên {filteredAppointments.length} cuộc hẹn
-                            </div>
+                        <Card sx={{ mb: 3 }}>
+                            <CardContent sx={{ p: 3 }}>
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        mb: 2,
+                                    }}>
+                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                                        <Psychology color="primary" />
+                                        <Box component="h3" sx={{ fontSize: "1.25rem", fontWeight: 500, m: 0 }}>
+                                            {appointment.psychologistName}
+                                        </Box>
+                                    </Box>
+                                    <Chip
+                                        label={appointment.status}
+                                        color={getStatusColor(appointment.status)}
+                                        sx={{ fontWeight: "bold" }}
+                                    />
+                                </Box>
 
-                            <div className="flex items-center space-x-2">
-                                {/* Items per page selector */}
-                                <div className="flex items-center mr-4">
-                                    <span className="text-sm text-gray-600 mr-2">Số cuộc hẹn:</span>
-                                    <select
-                                        value={itemsPerPage}
-                                        onChange={(e) => {
-                                            setItemsPerPage(Number(e.target.value));
-                                            setCurrentPage(1); // Reset to first page when changing items per page
+                                <Divider sx={{ my: 2 }} />
+
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} md={6}>
+                                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                                            <CalendarMonth color="primary" sx={{ mt: 0.5 }} />
+                                            <Box>
+                                                <Box
+                                                    component="p"
+                                                    sx={{ color: "text.secondary", fontSize: "0.875rem", m: 0 }}>
+                                                    Ngày hẹn
+                                                </Box>
+                                                <Box component="p" sx={{ m: 0 }}>
+                                                    {new Date(appointment.date).toLocaleDateString("vi-VN", {
+                                                        weekday: "long",
+                                                        year: "numeric",
+                                                        month: "long",
+                                                        day: "numeric",
+                                                    })}
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                    </Grid>
+
+                                    <Grid item xs={12} md={6}>
+                                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                                            <AccessTime color="primary" sx={{ mt: 0.5 }} />
+                                            <Box>
+                                                <Box
+                                                    component="p"
+                                                    sx={{ color: "text.secondary", fontSize: "0.875rem", m: 0 }}>
+                                                    Thời gian
+                                                </Box>
+                                                <Box component="p" sx={{ m: 0 }}>
+                                                    {appointment.time} ({appointment.duration} phút)
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                    </Grid>
+
+                                    <Grid item xs={12} md={6}>
+                                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                                            <MedicalInformation color="primary" sx={{ mt: 0.5 }} />
+                                            <Box>
+                                                <Box
+                                                    component="p"
+                                                    sx={{ color: "text.secondary", fontSize: "0.875rem", m: 0 }}>
+                                                    Lý do thăm khám
+                                                </Box>
+                                                <Box component="p" sx={{ m: 0 }}>
+                                                    {appointment.reason}
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                    </Grid>
+
+                                    <Grid item xs={12} md={6}>
+                                        <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+                                            <Person color="primary" sx={{ mt: 0.5 }} />
+                                            <Box>
+                                                <Box
+                                                    component="p"
+                                                    sx={{ color: "text.secondary", fontSize: "0.875rem", m: 0 }}>
+                                                    Bác sĩ tâm lý
+                                                </Box>
+                                                <Box component="p" sx={{ m: 0 }}>
+                                                    {appointment.psychologistName}
+                                                </Box>
+                                            </Box>
+                                        </Box>
+                                    </Grid>
+                                </Grid>
+
+                                {appointment.cancelReason && (
+                                    <Box sx={{ mt: 3, p: 2, bgcolor: "#FFEBEE", borderRadius: 1 }}>
+                                        <Typography variant="subtitle2" color="#C62828" fontWeight="bold">
+                                            Lý do hủy:
+                                        </Typography>
+                                        <Typography variant="body2">{appointment.cancelReason}</Typography>
+                                    </Box>
+                                )}
+
+                                {appointment.rescheduleReason && (
+                                    <Box sx={{ mt: 3, p: 2, bgcolor: "#E1F5FE", borderRadius: 1 }}>
+                                        <Typography variant="subtitle2" color="#0277BD" fontWeight="bold">
+                                            Lý do đổi lịch:
+                                        </Typography>
+                                        <Typography variant="body2">{appointment.rescheduleReason}</Typography>
+                                    </Box>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Professional assessment and treatment plan - only for completed appointments */}
+                        {appointment.status.toLowerCase() === "completed" && (
+                            <>
+                                <Typography variant="h5" fontWeight={600} sx={{ mt: 4, mb: 2 }}>
+                                    Kết quả đánh giá
+                                </Typography>
+
+                                <Card sx={{ mb: 3 }}>
+                                    <CardContent sx={{ p: 3 }}>
+                                        {appointment.professionalAssessment && (
+                                            <Box sx={{ mb: 2 }}>
+                                                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                                                    <Assessment color="primary" />
+                                                    <Box component="h4" sx={{ fontWeight: 600, m: 0 }}>
+                                                        Nhận xét chuyên môn
+                                                    </Box>
+                                                </Box>
+                                                <Box component="p" sx={{ m: 0 }}>
+                                                    {appointment.professionalAssessment}
+                                                </Box>
+                                            </Box>
+                                        )}
+
+                                        {appointment.professionalAssessment && appointment.treatmentPlan && (
+                                            <Divider sx={{ my: 3 }} />
+                                        )}
+
+                                        {appointment.treatmentPlan && (
+                                            <Box sx={{ mb: 2 }}>
+                                                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                                                    <Healing color="primary" />
+                                                    <Box component="h4" sx={{ fontWeight: 600, m: 0 }}>
+                                                        Phương pháp điều trị
+                                                    </Box>
+                                                </Box>
+                                                <Box component="p" sx={{ m: 0 }}>
+                                                    {appointment.treatmentPlan}
+                                                </Box>
+                                            </Box>
+                                        )}
+
+                                        {/* New Section - Medical Notes */}
+                                        {appointment.notes && (
+                                            <>
+                                                <Divider sx={{ my: 3 }} />
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                                                        <NoteAlt color="primary" />
+                                                        <Box component="h4" sx={{ fontWeight: 600, m: 0 }}>
+                                                            Ghi chú
+                                                        </Box>
+                                                    </Box>
+                                                    <Box component="p" sx={{ m: 0 }}>
+                                                        {appointment.notes}
+                                                    </Box>
+                                                </Box>
+                                            </>
+                                        )}
+
+                                        {/* New Section - Medical Information */}
+                                        {appointment.medicalInformation && (
+                                            <>
+                                                <Divider sx={{ my: 3 }} />
+                                                <Box sx={{ mb: 2 }}>
+                                                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                                                        <MedicalServices color="primary" />
+                                                        <Box component="h4" sx={{ fontWeight: 600, m: 0 }}>
+                                                            Thông tin bệnh án
+                                                        </Box>
+                                                    </Box>
+                                                    <Box component="p" sx={{ m: 0 }}>
+                                                        {appointment.medicalInformation}
+                                                    </Box>
+                                                </Box>
+                                            </>
+                                        )}
+
+                                        {/* Empty state when no information is available */}
+                                        {!appointment.professionalAssessment &&
+                                            !appointment.treatmentPlan &&
+                                            !appointment.notes &&
+                                            !appointment.medicalInformation && (
+                                                <Box sx={{ textAlign: "center", py: 3 }}>
+                                                    <MedicalInformation
+                                                        sx={{ fontSize: 48, color: "text.disabled", mb: 2 }}
+                                                    />
+                                                    <Typography color="text.secondary">
+                                                        Chưa có thông tin đánh giá cho cuộc hẹn này
+                                                    </Typography>
+                                                </Box>
+                                            )}
+                                    </CardContent>
+                                </Card>
+                            </>
+                        )}
+                    </Paper>
+                </Grid>
+
+                {/* Appointment History */}
+                <Grid item xs={12} md={4}>
+                    <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
+                        <Typography variant="h5" fontWeight={600} gutterBottom>
+                            Lịch sử cuộc hẹn
+                        </Typography>
+
+                        {loadingHistory ? (
+                            <Box sx={{ display: "flex", justifyContent: "center", my: 3 }}>
+                                <CircularProgress size={30} />
+                            </Box>
+                        ) : appointmentHistory.length > 0 ? (
+                            <Box sx={{ mt: 2 }}>
+                                {appointmentHistory.map((app) => (
+                                    <Card
+                                        key={app.id}
+                                        sx={{
+                                            mb: 2,
+                                            boxShadow: 1,
+                                            cursor: "pointer",
+                                            "&:hover": { boxShadow: 3 },
                                         }}
-                                        className="text-sm border border-blue-200 rounded p-1">
-                                        <option value={5}>5</option>
-                                        <option value={10}>10</option>
-                                        <option value={25}>25</option>
-                                    </select>
-                                </div>
+                                        onClick={() => navigate(`/patient/view-appointment-detail/${app.id}`)}>
+                                        <CardContent sx={{ p: 2 }}>
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    justifyContent: "space-between",
+                                                    alignItems: "center",
+                                                    mb: 1,
+                                                }}>
+                                                <Typography variant="subtitle1" fontWeight={500}>
+                                                    {new Date(app.date).toLocaleDateString("vi-VN")}
+                                                </Typography>
+                                                <Chip
+                                                    label={app.status}
+                                                    size="small"
+                                                    color={getStatusColor(app.status)}
+                                                />
+                                            </Box>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {app.time} • {app.duration} phút
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ mt: 1 }}>
+                                                {app.reason}
+                                            </Typography>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </Box>
+                        ) : (
+                            <Box
+                                sx={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    p: 3,
+                                    bgcolor: "background.paper",
+                                }}>
+                                <CalendarMonth color="disabled" sx={{ fontSize: 40, mb: 1 }} />
+                                <Typography variant="body1" color="text.secondary">
+                                    Chưa có cuộc hẹn nào trước đây
+                                </Typography>
+                            </Box>
+                        )}
+                    </Paper>
+                </Grid>
+            </Grid>
 
-                                {/* Page navigation buttons */}
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={goToFirstPage}
-                                    disabled={currentPage === 1}
-                                    className="h-8 w-8 border-blue-200 text-blue-600">
-                                    <ChevronsLeftIcon className="h-4 w-4" />
-                                </Button>
-
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={goToPreviousPage}
-                                    disabled={currentPage === 1}
-                                    className="h-8 w-8 border-blue-200 text-blue-600">
-                                    <ChevronLeftIcon className="h-4 w-4" />
-                                </Button>
-
-                                <span className="text-sm text-gray-600 mx-2">
-                                    Trang {currentPage} / {totalPages}
-                                </span>
-
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={goToNextPage}
-                                    disabled={currentPage === totalPages}
-                                    className="h-8 w-8 border-blue-200 text-blue-600">
-                                    <ChevronRightIcon className="h-4 w-4" />
-                                </Button>
-
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={goToLastPage}
-                                    disabled={currentPage === totalPages}
-                                    className="h-8 w-8 border-blue-200 text-blue-600">
-                                    <ChevronsRightIcon className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-        </>
+            <Snackbar open={toast.open} autoHideDuration={6000} onClose={() => setToast({ ...toast, open: false })}>
+                <Alert
+                    onClose={() => setToast({ ...toast, open: false })}
+                    severity={toast.severity}
+                    sx={{ width: "100%" }}>
+                    {toast.message}
+                </Alert>
+            </Snackbar>
+        </Container>
     );
 };
 
-export default AppointmentsList;
+export default AppointmentList;
