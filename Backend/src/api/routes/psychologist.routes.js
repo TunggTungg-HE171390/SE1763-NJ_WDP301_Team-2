@@ -1,34 +1,33 @@
 import express from "express";
 import psychologistController from "../controllers/psychologist.controller.js";
 import availabilityController from "../controllers/availability.controller.js";
-import UserController from "../controllers/user.controller.js";
 import { authenticateUser, authorizeRole } from "../middlewares/auth.middleware.js";
 
 const psychologistRouter = express.Router();
 
-// Add route to get all psychologists
-psychologistRouter.get("/all", UserController.getAllPsychologists);
+// Update route handlers to use psychologistController instead of UserController
+psychologistRouter.get("/all", psychologistController.getAllPsychologists);
 
 // Routes for staff to update psychologist profiles
 psychologistRouter.put(
   "/:id/experience",
   // authenticateUser,  // Uncomment when ready for authentication
   // authorizeRole(['admin', 'staff']),  // Uncomment when ready for authorization
-  UserController.updatePsychologistExperience
+  psychologistController.updatePsychologistExperience
 );
 
 psychologistRouter.put(
   "/:id/work-history",
   // authenticateUser,  // Uncomment when ready for authentication
   // authorizeRole(['admin', 'staff']),  // Uncomment when ready for authorization
-  UserController.updatePsychologistWorkHistory
+  psychologistController.updatePsychologistWorkHistory
 );
 
 psychologistRouter.put(
   "/:id/profile",
   // authenticateUser,  // Uncomment when ready for authentication
   // authorizeRole(['admin', 'staff']),  // Uncomment when ready for authorization
-  UserController.updatePsychologistProfile
+  psychologistController.updatePsychologistProfile
 );
 
 // Existing routes
