@@ -8,7 +8,6 @@ import testHistoryRouter from "./testHistory.router.js";
 import psychologistRouter from "./psychologist.routes.js";
 import adminRouter from "./admin.router.js";
 
-
 const router = express.Router();
 router.use("/blogposts", blogPostRoutes);
 router.use("/psychologist", psychologistRouter);
@@ -18,5 +17,9 @@ router.use("/question", questionRouter);
 router.use("/test", testRouter);
 router.use("/test-history", testHistoryRouter);
 router.use("/admin", adminRouter);
+router.use("/users", userRouter);
+
+// Remove this duplicate route as we'll add it to the psychologist router
+// router.get("/psychologists", UserController.getAllPsychologists);
 
 export default router;

@@ -39,7 +39,7 @@ import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
 import ManageUsers from "./screens/admin/ManageUsers.jsx";
 import AboutUs from "./screens/common/aboutUs.jsx";
 import UserProfile from './screens/common/userProfile/components/user-profile.jsx';
-import ViewSchedule from "./screens/psychologist/viewAppointment/viewAppointment";
+import ViewSchedule from "./screens/psychologist/viewSchedule/viewSchedule";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
@@ -147,6 +147,11 @@ function Layout() {
                         <Route path="/psychologist/view-schedule" element={<ViewSchedule />} />
                         <Route
                             path="/psychologist/view-appointment-detail/:appointmentId"
+                            element={<ViewAppointmentDetail />}
+                        />
+                        <Route path="/staff/view-schedule" element={<ViewSchedule />} />
+                        <Route
+                            path="/staff/view-appointment-detail/:appointmentId"
                             element={<ViewAppointmentDetail />}
                         />
                         <Route path="/create-post" element={<CreateNewPost />} />

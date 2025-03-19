@@ -3,8 +3,9 @@ import UserController from "../controllers/user.controller.js";
 import { authenticateUser } from "../middlewares/auth.middleware.js";
 
 const userRouter = express.Router();
-userRouter.use("/user-profile/:id",UserController.getUserById);
-userRouter.use("/user-profile/:id",UserController.updateUser);
+
+userRouter.get("/user-profile/:id", UserController.getUserById);
+userRouter.put("/user-profile/:id", UserController.updateUser);
 userRouter.post("/register", UserController.registerUser);
 userRouter.post("/login", UserController.loginUser);    
 userRouter.post("/forgot-password", UserController.forgotPassword);

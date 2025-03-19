@@ -430,6 +430,43 @@ export const changePassword = async (req, res) => {
   }
 };
 
+// Enhanced version for staff usage
+export const getAllPsychologists = async (req, res) => {
+  try {
+    // Find all users with role "psychologist"
+    const psychologists = await User.find({ role: "psychologist" }).lean();
+    
+    if (!psychologists || psychologists.length === 0) {
+      return res.status(404).json({ message: "No psychologists found" });
+    }
+
+    // Format the response data with more details for staff
+    const formattedPsychologists = psychologists.map(user => ({
+      _id: user._id,
+      email: user.email || null,
+      fullName: user.fullName || null,
+      gender: user.gender || null,
+      address: user.address || null,
+      phone: user.phone || null,
+      dob: user.dob || null,
+      profileImg: user.profileImg || null,
+      status: user.status || "Active",
+      createdAt: user.createdAt,
+      psychologistProfile: user.psychologist?.psychologistProfile || null,
+      isEmailVerified: user.isEmailVerified || false,
+      isPhoneVerified: user.isPhoneVerified || false
+    }));
+
+    res.status(200).json({ 
+      message: "Psychologists retrieved successfully", 
+      count: formattedPsychologists.length,
+      psychologists: formattedPsychologists 
+    });
+  } catch (error) {
+    console.error("Error fetching psychologists: ", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 export default {
   registerUser,
@@ -444,4 +481,5 @@ export default {
   changePassword,
   updateUser,
   getUserById,
+  getAllPsychologists, // Add the new function to the exports
 };
