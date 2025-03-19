@@ -39,13 +39,14 @@ import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
 import ManageUsers from "./screens/admin/ManageUsers.jsx";
 import AboutUs from "./screens/common/aboutUs.jsx";
 import UserProfile from './screens/common/userProfile/components/user-profile.jsx';
-import ViewSchedule from "./screens/psychologist/viewSchedule/viewSchedule";
+import ViewSchedule from "./screens/staff/viewSchedule/viewSchedule";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi'; // Import Vietnamese locale for dayjs
 import ManagePsychologists from "./screens/staff/ManagePsychologists";
 import PsychologistDetail from "./screens/staff/PsychologistDetail";
+import ManagePsychologistSchedule from "./screens/staff/ManagePsychologistSchedule";
 
 // Create MUI theme
 const theme = createTheme({
@@ -142,21 +143,21 @@ function Layout() {
                         <Route path="/login" element={<PublicRoute element={<Login />} />} />
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
-                        <Route path="/manage-posts" element={<ManagePosts />} />
-                        <Route path="/create-post" element={<CreateNewPost />} />
-                        <Route path="/update-post/:postId" element={<UpdatePost />} />
-                        <Route path="/manage-posts" element={<ManagePosts />} />
-                        <Route path="/psychologist/view-schedule" element={<ViewSchedule />} />
-                        <Route
-                            path="/psychologist/view-appointment-detail/:appointmentId"
-                            element={<ViewAppointmentDetail />}
-                        />
-                        <Route path="/staff/view-schedule" element={<ViewSchedule />} />
-                        <Route
-                            path="/staff/view-appointment-detail/:appointmentId"
-                            element={<ViewAppointmentDetail />}
-                        />
-                        <Route path="/create-post" element={<CreateNewPost />} />
+                        
+                        {/* Psychologist routes */}
+                        <Route path="/psychologist/view-schedule" element={<ViewSchedule userRole="psychologist" />} />
+                        <Route path="/psychologist/view-appointment-detail/:appointmentId" element={<ViewAppointmentDetail />} />
+                        
+                        {/* Staff routes */}
+                        <Route path="/staff/view-schedule" element={<ViewSchedule userRole="staff" />} />
+                        <Route path="/staff/view-appointment-detail/:appointmentId" element={<ViewAppointmentDetail />} />
+                        <Route path="/staff/manage-psychologists" element={<ManagePsychologists />} />
+                        <Route path="/staff/psychologist-detail/:id" element={<PsychologistDetail />} />
+                        <Route path="/staff/manage-psychologist-schedule/:id" element={<ManagePsychologistSchedule />} />
+                        <Route path="/staff/manage-posts" element={<ManagePosts />} />
+                        <Route path="/staff/create-post" element={<CreateNewPost />} />
+                        <Route path="/staff/update-post/:postId" element={<UpdatePost />} />
+                        
                         <Route path="/doctor" element={<DoctorBooking />} />
                         <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
                         <Route path="/book-appointment" element={<BookAppointment />} />
@@ -172,11 +173,6 @@ function Layout() {
                             path="/patient/view-appointment-detail/:appointmentId"
                             element={<ViewAppointment />}
                         />
-                        {/* Add the new route for managing psychologists */}
-                        <Route path="/staff/manage-psychologists" element={<ManagePsychologists />} />
-                        {/* Add the new route for psychologist details */}
-                        <Route path="/staff/psychologist-detail/:id" element={<PsychologistDetail />} />
-
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
