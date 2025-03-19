@@ -44,6 +44,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import 'dayjs/locale/vi'; // Import Vietnamese locale for dayjs
+import ManagePsychologists from "./screens/staff/ManagePsychologists";
+import PsychologistDetail from "./screens/staff/PsychologistDetail";
 
 // Create MUI theme
 const theme = createTheme({
@@ -170,6 +172,10 @@ function Layout() {
                             path="/patient/view-appointment-detail/:appointmentId"
                             element={<ViewAppointment />}
                         />
+                        {/* Add the new route for managing psychologists */}
+                        <Route path="/staff/manage-psychologists" element={<ManagePsychologists />} />
+                        {/* Add the new route for psychologist details */}
+                        <Route path="/staff/psychologist-detail/:id" element={<PsychologistDetail />} />
 
                     </Routes>
                 </div>

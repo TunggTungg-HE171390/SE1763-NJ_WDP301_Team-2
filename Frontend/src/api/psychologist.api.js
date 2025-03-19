@@ -31,3 +31,18 @@ export const saveAppointment = async (formData) => {
 export const getAppointmentById = async (id) => {
     return await apiClient.get(`/psychologist/appointment/${id}`);
 };
+
+// New function to get all psychologists (for staff management)
+export const getAllPsychologists = async () => {
+    return await apiClient.get("/users/get-by-role/psychologist");
+};
+
+// New function to update psychologist status
+export const updatePsychologistStatus = async (id, status) => {
+    return await apiClient.patch(`/users/${id}/status`, { status });
+};
+
+// New function to get psychologist by ID (detailed info)
+export const getPsychologistDetails = async (id) => {
+    return await apiClient.get(`/users/psychologist/${id}/details`);
+};
