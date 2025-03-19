@@ -22,10 +22,13 @@ import {
   Search as SearchIcon,
   Edit as EditIcon, 
   Visibility as VisibilityIcon,
-  Event as EventIcon
+  Event as EventIcon,
+  Schedule as ScheduleIcon
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { getAllPsychologists } from '../../api/psychologist.api';
+import { analyzeApiResponse } from '../../utils/apiResponseLogger';
+import { extractArrayData, processPsychologistData } from '../../utils/dataExtractor';
 
 const ManagePsychologists = () => {
   const [psychologists, setPsychologists] = useState([]);
@@ -42,73 +45,32 @@ const ManagePsychologists = () => {
   const fetchPsychologists = async () => {
     setLoading(true);
     try {
+      console.log("Fetching psychologists from database...");
       const response = await getAllPsychologists();
-      setPsychologists(response.data);
+      
+      // Use the response analyzer to debug
+      analyzeApiResponse(response, "Psychologists API Response");
+      
+      // Extract data array using our utility
+      const rawData = extractArrayData(response);
+      
+      // Process the data into a consistent format
+      const processedData = processPsychologistData(rawData);
+      
+      console.log("Processed psychologist data:", processedData);
+      
+      // Update state with processed data
+      setPsychologists(processedData);
       setError(null);
+      
+      // Check for empty data after processing
+      if (processedData.length === 0) {
+        console.log("No psychologists found after processing");
+      }
     } catch (err) {
       console.error('Error fetching psychologists:', err);
       setError('Không thể tải danh sách chuyên gia tâm lý. Vui lòng thử lại sau.');
-      
-      // For development/demo purposes only
-      if (process.env.NODE_ENV === 'development') {
-        setPsychologists([
-          {
-            _id: '1',
-            fullname: 'Nguyễn Văn A',
-            email: 'nguyenvana@example.com',
-            phone: '0901234567',
-            specialization: 'Tâm lý lâm sàng',
-            experience: 8,
-            status: 'active',
-            avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-            rating: 4.8
-          },
-          {
-            _id: '2',
-            fullname: 'Trần Thị B',
-            email: 'tranthib@example.com',
-            phone: '0912345678',
-            specialization: 'Tâm lý trẻ em',
-            experience: 5,
-            status: 'active',
-            avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-            rating: 4.5
-          },
-          {
-            _id: '3',
-            fullname: 'Lê Văn C',
-            email: 'levanc@example.com',
-            phone: '0923456789',
-            specialization: 'Tâm lý học đường',
-            experience: 10,
-            status: 'inactive',
-            avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
-            rating: 4.9
-          },
-          {
-            _id: '4',
-            fullname: 'Phạm Thị D',
-            email: 'phamthid@example.com',
-            phone: '0934567890',
-            specialization: 'Tâm lý gia đình',
-            experience: 7,
-            status: 'active',
-            avatar: 'https://randomuser.me/api/portraits/women/22.jpg',
-            rating: 4.7
-          },
-          {
-            _id: '5',
-            fullname: 'Hoàng Văn E',
-            email: 'hoangvane@example.com',
-            phone: '0945678901',
-            specialization: 'Tâm lý lão khoa',
-            experience: 12,
-            status: 'active',
-            avatar: 'https://randomuser.me/api/portraits/men/36.jpg',
-            rating: 4.6
-          }
-        ]);
-      }
+      setPsychologists([]);
     } finally {
       setLoading(false);
     }
@@ -127,14 +89,16 @@ const ManagePsychologists = () => {
     setSearch(e.target.value);
   };
 
-  // Filter psychologists based on search term
+  // Filter psychologists based on search term - handle potential missing fields
   const filteredPsychologists = psychologists.filter(psy => {
+    if (!psy) return false;
+    
     const searchTerm = search.toLowerCase();
     return (
-      psy.fullname?.toLowerCase().includes(searchTerm) ||
-      psy.email?.toLowerCase().includes(searchTerm) ||
-      psy.specialization?.toLowerCase().includes(searchTerm) ||
-      psy.phone?.includes(searchTerm)
+      (psy.fullname || '').toLowerCase().includes(searchTerm) ||
+      (psy.email || '').toLowerCase().includes(searchTerm) ||
+      (psy.specialization || '').toLowerCase().includes(searchTerm) ||
+      (psy.phone || '').includes(searchTerm)
     );
   });
 
@@ -204,8 +168,8 @@ const ManagePsychologists = () => {
                         <TableCell>
                           <Box
                             component="img"
-                            src={psy.avatar || "https://via.placeholder.com/40"}
-                            alt={psy.fullname}
+                            src={psy.avatar || psy.profileImg || "https://via.placeholder.com/40"}
+                            alt={psy.fullname || psy.fullName}
                             sx={{ 
                               width: 40, 
                               height: 40, 
@@ -214,18 +178,28 @@ const ManagePsychologists = () => {
                             }}
                           />
                         </TableCell>
-                        <TableCell>{psy.fullname}</TableCell>
+                        <TableCell>{psy.fullname || psy.fullName}</TableCell>
                         <TableCell>{psy.email}</TableCell>
                         <TableCell>{psy.phone}</TableCell>
-                        <TableCell>{psy.specialization}</TableCell>
-                        <TableCell>{psy.experience} năm</TableCell>
                         <TableCell>
-                          {psy.rating?.toFixed(1) || 'N/A'} / 5 
+                          {psy.specialization || 
+                           (psy.psychologist && psy.psychologist.psychologistProfile?.specialization) || 
+                           'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          {psy.experience || 
+                           (psy.psychologist && psy.psychologist.psychologistProfile?.experience) || 
+                           'N/A'} {psy.experience ? 'năm' : ''}
+                        </TableCell>
+                        <TableCell>
+                          {(psy.rating?.toFixed(1) || 
+                            (psy.psychologist && psy.psychologist.psychologistProfile?.rating?.toFixed(1)) ||
+                            'N/A')} / 5
                         </TableCell>
                         <TableCell>
                           <Chip 
-                            label={psy.status === 'active' ? 'Hoạt động' : 'Không hoạt động'} 
-                            color={psy.status === 'active' ? 'success' : 'default'}
+                            label={psy.status === 'Active' ? 'Hoạt động' : 'Không hoạt động'} 
+                            color={psy.status === 'Active' ? 'success' : 'default'}
                             size="small"
                           />
                         </TableCell>
@@ -233,7 +207,7 @@ const ManagePsychologists = () => {
                           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                             <IconButton 
                               component={Link} 
-                              to={`/staff/psychologist-detail/${psy._id}`} // Updated this line
+                              to={`/staff/psychologist-detail/${psy._id}`}
                               color="primary"
                               size="small"
                               title="Xem chi tiết"
@@ -254,11 +228,23 @@ const ManagePsychologists = () => {
                             <IconButton 
                               component={Link}
                               to={`/staff/view-schedule?doctor=${psy._id}`}
+                              state={{ from: 'managePsychologists' }}
                               color="secondary"
                               size="small"
                               title="Xem lịch làm việc"
                             >
                               <EventIcon />
+                            </IconButton>
+
+                            <IconButton 
+                              component={Link}
+                              to={`/staff/manage-psychologist-schedule/${psy._id}`}
+                              state={{ from: 'managePsychologists' }}
+                              color="success"
+                              size="small"
+                              title="Quản lý lịch trống"
+                            >
+                              <ScheduleIcon />
                             </IconButton>
                           </Box>
                         </TableCell>
