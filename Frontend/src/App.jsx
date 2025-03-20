@@ -47,6 +47,8 @@ import 'dayjs/locale/vi'; // Import Vietnamese locale for dayjs
 import ManagePsychologists from "./screens/staff/ManagePsychologists";
 import PsychologistDetail from "./screens/staff/PsychologistDetail";
 import ManagePsychologistSchedule from "./screens/staff/ManagePsychologistSchedule";
+import EditPsychologistExperience from "./screens/staff/EditPsychologistExperience";
+import EditPsychologistWorkHistory from "./screens/staff/EditPsychologistWorkHistory";
 
 // Create MUI theme
 const theme = createTheme({
@@ -154,6 +156,8 @@ function Layout() {
                         <Route path="/staff/manage-psychologists" element={<ManagePsychologists />} />
                         <Route path="/staff/psychologist-detail/:id" element={<PsychologistDetail />} />
                         <Route path="/staff/manage-psychologist-schedule/:id" element={<ManagePsychologistSchedule />} />
+                        <Route path="/staff/edit-psychologist-experience/:id" element={<EditPsychologistExperience />} />
+                        <Route path="/staff/edit-psychologist-work-history/:id" element={<EditPsychologistWorkHistory />} />
                         <Route path="/staff/manage-posts" element={<ManagePosts />} />
                         <Route path="/staff/create-post" element={<CreateNewPost />} />
                         <Route path="/staff/update-post/:postId" element={<UpdatePost />} />
