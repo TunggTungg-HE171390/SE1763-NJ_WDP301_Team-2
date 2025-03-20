@@ -5,8 +5,16 @@ import { authenticateUser, authorizeRole } from "../middlewares/auth.middleware.
 
 const psychologistRouter = express.Router();
 
-// Update route handlers to use psychologistController instead of UserController
+// First, place all specific routes with fixed paths
 psychologistRouter.get("/all", psychologistController.getAllPsychologists);
+psychologistRouter.get("/get-psychologist-list", psychologistController.getPsychologistList);
+psychologistRouter.get("/get-specialization-list", psychologistController.getUniqueSpecializations);
+psychologistRouter.post("/save-appointment", psychologistController.saveAppointment);
+
+// Then place routes with dynamic parameters
+psychologistRouter.get("/scheduleList/:doctorId", availabilityController.getAvailabilitiesById);
+psychologistRouter.get("/schedule/:scheduleId", availabilityController.getAvailabilityById);
+psychologistRouter.get("/appointment/:appointmentId", psychologistController.getAppointmentById);
 
 // Routes for staff to update psychologist profiles
 psychologistRouter.put(
@@ -30,13 +38,7 @@ psychologistRouter.put(
   psychologistController.updatePsychologistProfile
 );
 
-// Existing routes
-psychologistRouter.get("/get-psychologist-list", psychologistController.getPsychologistList);
-psychologistRouter.get("/get-specialization-list", psychologistController.getUniqueSpecializations);
+// This should be last to avoid conflicting with other routes
 psychologistRouter.get("/:doctorId", psychologistController.getPsychologistById);
-psychologistRouter.get("/scheduleList/:doctorId", availabilityController.getAvailabilitiesById);
-psychologistRouter.get("/schedule/:scheduleId", availabilityController.getAvailabilityById);
-psychologistRouter.post("/save-appointment", psychologistController.saveAppointment);
-psychologistRouter.get("/appointment/:appointmentId", psychologistController.getAppointmentById);
 
 export default psychologistRouter;

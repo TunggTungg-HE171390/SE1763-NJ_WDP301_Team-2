@@ -12,7 +12,8 @@ export const getSpecializationList = async () => {
 export const getPsychologist = async (id) => {
     console.log(`Fetching psychologist data for ID: ${id}`);
     try {
-        return await apiClient.get(`/users/psychologist/${id}`);
+        // Use the correct endpoint from psychologist.routes.js
+        return await apiClient.get(`/psychologist/${id}`);
     } catch (error) {
         console.error(`Error fetching psychologist data: ${error.message}`);
         throw error;

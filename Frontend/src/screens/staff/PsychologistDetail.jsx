@@ -19,7 +19,6 @@ import {
   Rating,
   Card,
   CardContent,
-  IconButton,
   Tab,
   Tabs
 } from '@mui/material';
@@ -34,9 +33,7 @@ import {
   CalendarMonth as CalendarMonthIcon,
   EventNote as EventNoteIcon,
   Edit as EditIcon,
-  Star as StarIcon,
-  StarBorder as StarBorderIcon,
-  Comment as CommentIcon
+  StarBorder as StarBorderIcon
 } from '@mui/icons-material';
 import { getPsychologistDetails, getPsychologist } from '../../api/psychologist.api';
 
@@ -52,32 +49,43 @@ const PsychologistDetail = () => {
     const fetchPsychologistDetails = async () => {
       setLoading(true);
       try {
-        // First attempt to use the detailed endpoint
-        let response;
-        try {
-          response = await getPsychologistDetails(id);
-        } catch (detailError) {
-          console.log("Could not fetch from details endpoint, trying basic endpoint...");
-          // Fallback to the basic psychologist endpoint if detailed one fails
-          response = await getPsychologist(id);
-        }
+        // Try to get data from the API
+        console.log("Fetching psychologist with ID:", id);
+        let response = await getPsychologist(id);
+        console.log("API Response:", response);
 
-        if (response && response.data) {
-          setPsychologist(response.data);
+        // Check for different possible response formats
+        let psychologistData = null;
+        
+        if (response?.data?.success && response.data.data) {
+          // Format: { success: true, data: {...} }
+          psychologistData = response.data.data;
+        } else if (response?.data?.data) {
+          // Format: { data: {...} }
+          psychologistData = response.data.data;
+        } else if (response?.data) {
+          // Format: direct data object
+          psychologistData = response.data;
+        }
+        
+        if (psychologistData) {
+          console.log("Processed psychologist data:", psychologistData);
+          setPsychologist(psychologistData);
           setError(null);
         } else {
-          throw new Error("Invalid response format");
+          throw new Error("Invalid or empty response format");
         }
       } catch (err) {
         console.error('Error fetching psychologist details:', err);
         setError('Không thể tải thông tin chuyên gia tâm lý. Vui lòng thử lại sau.');
-        setPsychologist(null); // Don't set mock data
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPsychologistDetails();
+    if (id) {
+      fetchPsychologistDetails();
+    }
   }, [id]);
 
   const handleChangeTab = (event, newValue) => {
@@ -109,6 +117,9 @@ const PsychologistDetail = () => {
     );
   }
 
+  // Extract psychologist profile data for easier access
+  const profile = psychologist.psychologist?.psychologistProfile || {};
+
   return (
     <Container maxWidth="lg" sx={{ mt: 12, mb: 4 }}>
       <Button
@@ -127,32 +138,32 @@ const PsychologistDetail = () => {
           <Paper elevation={2} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
               <Avatar
-                src={psychologist.avatar || "https://via.placeholder.com/150"}
-                alt={psychologist.fullname}
+                src={psychologist.profileImg || "https://via.placeholder.com/150"}
+                alt={psychologist.fullName}
                 sx={{ width: 150, height: 150, mb: 2 }}
               />
               <Typography variant="h5" fontWeight="bold" align="center">
-                {psychologist.fullname}
+                {psychologist.fullName}
               </Typography>
               <Typography variant="body1" color="text.secondary" align="center">
-                {psychologist.specialization}
+                {profile.specialization || "Chưa cập nhật chuyên môn"}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
                 <Rating 
-                  value={psychologist.rating || 0} 
+                  value={profile.rating || 0} 
                   precision={0.1} 
                   readOnly 
                   size="small" 
                   emptyIcon={<StarBorderIcon fontSize="inherit" />}
                 />
                 <Typography variant="body2" sx={{ ml: 1 }}>
-                  {psychologist.rating?.toFixed(1) || 'N/A'}
+                  {profile.rating ? `${profile.rating.toFixed(1)} (${profile.numberOfRatings || 0} đánh giá)` : 'Chưa có đánh giá'}
                 </Typography>
               </Box>
               <Box sx={{ mt: 2 }}>
                 <Chip 
-                  label={psychologist.status === 'active' ? 'Hoạt động' : 'Không hoạt động'} 
-                  color={psychologist.status === 'active' ? 'success' : 'default'}
+                  label={psychologist.status === 'Active' ? 'Hoạt động' : 'Không hoạt động'} 
+                  color={psychologist.status === 'Active' ? 'success' : 'default'}
                   sx={{ fontWeight: 'medium' }}
                 />
               </Box>
@@ -167,7 +178,7 @@ const PsychologistDetail = () => {
                 </ListItemIcon>
                 <ListItemText
                   primary="Email"
-                  secondary={psychologist.email}
+                  secondary={psychologist.email || "Chưa cập nhật"}
                 />
               </ListItem>
               <ListItem sx={{ px: 0, py: 1 }}>
@@ -176,7 +187,7 @@ const PsychologistDetail = () => {
                 </ListItemIcon>
                 <ListItemText
                   primary="Số điện thoại"
-                  secondary={psychologist.phone}
+                  secondary={psychologist.phone || "Chưa cập nhật"}
                 />
               </ListItem>
               <ListItem sx={{ px: 0, py: 1 }}>
@@ -185,7 +196,7 @@ const PsychologistDetail = () => {
                 </ListItemIcon>
                 <ListItemText
                   primary="Giới tính"
-                  secondary={psychologist.gender}
+                  secondary={psychologist.gender || "Chưa cập nhật"}
                 />
               </ListItem>
               <ListItem sx={{ px: 0, py: 1 }}>
@@ -194,7 +205,7 @@ const PsychologistDetail = () => {
                 </ListItemIcon>
                 <ListItemText
                   primary="Ngày sinh"
-                  secondary={new Date(psychologist.dateOfBirth).toLocaleDateString('vi-VN')}
+                  secondary={psychologist.dob ? new Date(psychologist.dob).toLocaleDateString('vi-VN') : "Chưa cập nhật"}
                 />
               </ListItem>
               <ListItem sx={{ px: 0, py: 1 }}>
@@ -203,16 +214,16 @@ const PsychologistDetail = () => {
                 </ListItemIcon>
                 <ListItemText
                   primary="Địa chỉ"
-                  secondary={psychologist.address}
+                  secondary={psychologist.address || "Chưa cập nhật"}
                 />
               </ListItem>
               <ListItem sx={{ px: 0, py: 1 }}>
                 <ListItemIcon sx={{ minWidth: 40 }}>
-                  <WorkIcon color="primary" />
+                  <SchoolIcon color="primary" />
                 </ListItemIcon>
                 <ListItemText
-                  primary="Kinh nghiệm"
-                  secondary={`${psychologist.experience} năm`}
+                  primary="Trình độ"
+                  secondary={profile.professionalLevel || profile.educationalLevel || "Chưa cập nhật"}
                 />
               </ListItem>
             </List>
@@ -253,153 +264,167 @@ const PsychologistDetail = () => {
                 onChange={handleChangeTab} 
                 variant="fullWidth"
               >
-                <Tab label="Thông tin" id="tab-0" />
-                <Tab label="Học vấn & Chứng chỉ" id="tab-1" />
-                <Tab label="Đánh giá" id="tab-2" />
+                <Tab label="Kinh nghiệm làm việc" id="tab-0" />
+                <Tab label="Lịch sử công việc" id="tab-1" />
+                <Tab label="Thông tin khác" id="tab-2" />
               </Tabs>
             </Box>
 
-            {/* Bio Tab */}
+            {/* Medical Experience Tab */}
             <Box role="tabpanel" hidden={activeTab !== 0} sx={{ p: 3 }}>
               {activeTab === 0 && (
                 <>
                   <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    Tiểu sử
+                    Kinh nghiệm chuyên môn
                   </Typography>
-                  <Typography variant="body1" paragraph>
-                    {psychologist.bio || 'Không có thông tin tiểu sử.'}
-                  </Typography>
-
-                  <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mt: 3 }}>
-                    Lịch làm việc
-                  </Typography>
-                  {psychologist.workingHours && psychologist.workingHours.length > 0 ? (
+                  
+                  {profile.medicalExperience && profile.medicalExperience.length > 0 ? (
                     <List>
-                      {psychologist.workingHours.map((schedule, index) => (
-                        <ListItem key={index} sx={{ py: 1 }}>
-                          <ListItemIcon>
-                            <CalendarMonthIcon color="primary" />
-                          </ListItemIcon>
-                          <ListItemText 
-                            primary={schedule.day} 
-                            secondary={schedule.hours} 
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  ) : (
-                    <Typography variant="body1">
-                      Không có thông tin lịch làm việc.
-                    </Typography>
-                  )}
-                </>
-              )}
-            </Box>
-
-            {/* Education Tab */}
-            <Box role="tabpanel" hidden={activeTab !== 1} sx={{ p: 3 }}>
-              {activeTab === 1 && (
-                <>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    Học vấn
-                  </Typography>
-                  {psychologist.education && psychologist.education.length > 0 ? (
-                    <List>
-                      {psychologist.education.map((edu, index) => (
-                        <ListItem key={index} sx={{ py: 1 }}>
-                          <ListItemIcon>
-                            <SchoolIcon color="primary" />
-                          </ListItemIcon>
-                          <ListItemText 
-                            primary={edu.degree} 
-                            secondary={`${edu.institution} - ${edu.year}`} 
-                          />
-                        </ListItem>
-                      ))}
-                    </List>
-                  ) : (
-                    <Typography variant="body1">
-                      Không có thông tin học vấn.
-                    </Typography>
-                  )}
-
-                  <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mt: 3 }}>
-                    Chứng chỉ
-                  </Typography>
-                  {psychologist.certifications && psychologist.certifications.length > 0 ? (
-                    <List>
-                      {psychologist.certifications.map((cert, index) => (
+                      {profile.medicalExperience.map((exp, index) => (
                         <ListItem key={index} sx={{ py: 1 }}>
                           <ListItemIcon>
                             <WorkIcon color="primary" />
                           </ListItemIcon>
-                          <ListItemText 
-                            primary={cert.name} 
-                            secondary={`${cert.issuedBy} - ${cert.year}`} 
-                          />
+                          <ListItemText primary={exp} />
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography variant="body1" paragraph>
+                      Chưa cập nhật thông tin kinh nghiệm chuyên môn.
+                    </Typography>
+                  )}
+                  
+                  <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button 
+                      variant="outlined" 
+                      color="primary"
+                      component={Link}
+                      to={`/staff/edit-psychologist-experience/${psychologist._id}`}
+                    >
+                      Cập nhật kinh nghiệm
+                    </Button>
+                  </Box>
+                </>
+              )}
+            </Box>
+
+            {/* Work History Tab */}
+            <Box role="tabpanel" hidden={activeTab !== 1} sx={{ p: 3 }}>
+              {activeTab === 1 && (
+                <>
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>
+                    Lịch sử công việc
+                  </Typography>
+                  
+                  {profile.workHistory && profile.workHistory.length > 0 ? (
+                    <List>
+                      {profile.workHistory.map((history, index) => (
+                        <ListItem key={index} sx={{ py: 1 }}>
+                          <ListItemIcon>
+                            <WorkIcon color="primary" />
+                          </ListItemIcon>
+                          <ListItemText primary={history} />
                         </ListItem>
                       ))}
                     </List>
                   ) : (
                     <Typography variant="body1">
-                      Không có thông tin chứng chỉ.
+                      Chưa cập nhật thông tin lịch sử công việc.
                     </Typography>
                   )}
+                  
+                  <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button 
+                      variant="outlined" 
+                      color="primary"
+                      component={Link}
+                      to={`/staff/edit-psychologist-work-history/${psychologist._id}`}
+                    >
+                      Cập nhật lịch sử công việc
+                    </Button>
+                  </Box>
                 </>
               )}
             </Box>
 
-            {/* Reviews Tab */}
+            {/* Additional Info Tab */}
             <Box role="tabpanel" hidden={activeTab !== 2} sx={{ p: 3 }}>
               {activeTab === 2 && (
                 <>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                    <Typography variant="h6" fontWeight="bold">
-                      Đánh giá từ bệnh nhân
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
-                      <Rating 
-                        value={psychologist.rating || 0} 
-                        precision={0.1} 
-                        readOnly 
-                        size="small" 
-                      />
-                      <Typography variant="body1" sx={{ ml: 1, fontWeight: 'medium' }}>
-                        {psychologist.rating?.toFixed(1) || 'N/A'}/5
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  {psychologist.reviews && psychologist.reviews.length > 0 ? (
-                    psychologist.reviews.map((review) => (
-                      <Card key={review.id} variant="outlined" sx={{ mb: 2 }}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Card variant="outlined">
                         <CardContent>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                            <Typography variant="subtitle1" fontWeight="medium">
-                              {review.user}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {new Date(review.date).toLocaleDateString('vi-VN')}
-                            </Typography>
-                          </Box>
-                          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                            <Rating 
-                              value={review.rating} 
-                              readOnly 
-                              size="small" 
-                            />
-                          </Box>
-                          <Typography variant="body2">
-                            {review.comment}
+                          <Typography variant="h6" fontWeight="bold" gutterBottom>
+                            Thống kê hoạt động
                           </Typography>
+                          <List dense>
+                            <ListItem>
+                              <ListItemText 
+                                primary="Số buổi đã tham gia" 
+                                secondary={profile.appointmentsAttended || 0} 
+                              />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText 
+                                primary="Số lượt tư vấn" 
+                                secondary={profile.consultationsCount || 0} 
+                              />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText 
+                                primary="Số lượt đánh giá" 
+                                secondary={profile.numberOfRatings || 0} 
+                              />
+                            </ListItem>
+                          </List>
                         </CardContent>
                       </Card>
-                    ))
-                  ) : (
-                    <Typography variant="body1" sx={{ textAlign: 'center', py: 4 }}>
-                      Chưa có đánh giá nào.
-                    </Typography>
-                  )}
+                    </Grid>
+                    
+                    <Grid item xs={12} md={6}>
+                      <Card variant="outlined">
+                        <CardContent>
+                          <Typography variant="h6" fontWeight="bold" gutterBottom>
+                            Thông tin xác thực
+                          </Typography>
+                          <List dense>
+                            <ListItem>
+                              <ListItemText 
+                                primary="Email đã xác thực" 
+                                secondary={
+                                  <Chip 
+                                    label={psychologist.isEmailVerified ? "Đã xác thực" : "Chưa xác thực"} 
+                                    color={psychologist.isEmailVerified ? "success" : "default"}
+                                    size="small"
+                                  />
+                                } 
+                              />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText 
+                                primary="Số điện thoại đã xác thực" 
+                                secondary={
+                                  <Chip 
+                                    label={psychologist.isPhoneVerified ? "Đã xác thực" : "Chưa xác thực"} 
+                                    color={psychologist.isPhoneVerified ? "success" : "default"}
+                                    size="small"
+                                  />
+                                } 
+                              />
+                            </ListItem>
+                            <ListItem>
+                              <ListItemText 
+                                primary="Ngày cập nhật" 
+                                secondary={psychologist.updatedAt ? new Date(psychologist.updatedAt).toLocaleString('vi-VN') : "Chưa có thông tin"} 
+                              />
+                            </ListItem>
+                          </List>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  </Grid>
                 </>
               )}
             </Box>
