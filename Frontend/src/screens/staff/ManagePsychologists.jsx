@@ -95,10 +95,11 @@ const ManagePsychologists = () => {
     
     const searchTerm = search.toLowerCase();
     return (
-      (psy.fullname || '').toLowerCase().includes(searchTerm) ||
+      (psy.fullName || '').toLowerCase().includes(searchTerm) ||
       (psy.email || '').toLowerCase().includes(searchTerm) ||
       (psy.specialization || '').toLowerCase().includes(searchTerm) ||
-      (psy.phone || '').includes(searchTerm)
+      (psy.phone || '').includes(searchTerm) ||
+      (psy.professionalLevel || '').toLowerCase().includes(searchTerm)
     );
   });
 
@@ -150,12 +151,12 @@ const ManagePsychologists = () => {
               <Table sx={{ minWidth: 650 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: 'primary.50' }}>
-                    <TableCell>Avatar</TableCell>
+                    <TableCell>Ảnh đại diện</TableCell>
                     <TableCell>Tên chuyên gia</TableCell>
                     <TableCell>Email</TableCell>
                     <TableCell>Số điện thoại</TableCell>
                     <TableCell>Chuyên môn</TableCell>
-                    <TableCell>Kinh nghiệm</TableCell>
+                    <TableCell>Trình độ</TableCell>
                     <TableCell>Đánh giá</TableCell>
                     <TableCell>Trạng thái</TableCell>
                     <TableCell align="center">Thao tác</TableCell>
@@ -168,8 +169,8 @@ const ManagePsychologists = () => {
                         <TableCell>
                           <Box
                             component="img"
-                            src={psy.avatar || psy.profileImg || "https://via.placeholder.com/40"}
-                            alt={psy.fullname || psy.fullName}
+                            src={psy.profileImg || "https://via.placeholder.com/40"}
+                            alt={psy.fullName}
                             sx={{ 
                               width: 40, 
                               height: 40, 
@@ -178,23 +179,15 @@ const ManagePsychologists = () => {
                             }}
                           />
                         </TableCell>
-                        <TableCell>{psy.fullname || psy.fullName}</TableCell>
+                        <TableCell>{psy.fullName}</TableCell>
                         <TableCell>{psy.email}</TableCell>
                         <TableCell>{psy.phone}</TableCell>
+                        <TableCell>{psy.specialization || "Chưa cập nhật"}</TableCell>
+                        <TableCell>{psy.professionalLevel || psy.educationalLevel || "Chưa cập nhật"}</TableCell>
                         <TableCell>
-                          {psy.specialization || 
-                           (psy.psychologist && psy.psychologist.psychologistProfile?.specialization) || 
-                           'N/A'}
-                        </TableCell>
-                        <TableCell>
-                          {psy.experience || 
-                           (psy.psychologist && psy.psychologist.psychologistProfile?.experience) || 
-                           'N/A'} {psy.experience ? 'năm' : ''}
-                        </TableCell>
-                        <TableCell>
-                          {(psy.rating?.toFixed(1) || 
-                            (psy.psychologist && psy.psychologist.psychologistProfile?.rating?.toFixed(1)) ||
-                            'N/A')} / 5
+                          {psy.rating > 0 ? 
+                            `${psy.rating.toFixed(1)} / 5 (${psy.numberOfRatings || 0})` : 
+                            "Chưa có đánh giá"}
                         </TableCell>
                         <TableCell>
                           <Chip 

@@ -10,34 +10,29 @@
 export const extractArrayData = (response) => {
   if (!response) return [];
   
-  // Case 1: Response is already an array
+  // Case 1: Response with success, count, and data array structure (match our current API)
+  if (response.success && response.data && Array.isArray(response.data)) {
+    return response.data;
+  }
+  
+  // Case 2: Response with psychologists array
+  if (response.psychologists && Array.isArray(response.psychologists)) {
+    return response.psychologists;
+  }
+  
+  // Case 3: Response is already an array
   if (Array.isArray(response)) {
     return response;
   }
   
-  // Case 2: Response.data is an array
+  // Case 4: Response.data is an array
   if (response.data && Array.isArray(response.data)) {
     return response.data;
   }
   
-  // Case 3: Response.data.data is an array (common in many APIs)
+  // Case 5: Response.data.data is an array (common in many APIs)
   if (response.data && response.data.data && Array.isArray(response.data.data)) {
     return response.data.data;
-  }
-  
-  // Case 4: Response is an object with potential array values
-  if (typeof response === 'object') {
-    if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
-      // Try to extract from object values
-      const values = Object.values(response.data);
-      if (values.length > 0 && Array.isArray(values[0])) {
-        return values[0]; // First array found
-      }
-      
-      if (values.length > 0 && typeof values[0] === 'object') {
-        return values; // Return values as array of objects
-      }
-    }
   }
   
   // No valid data format found
@@ -60,37 +55,22 @@ export const processPsychologistData = (rawData = []) => {
     if (!psy) return null;
     
     return {
-      _id: psy._id || psy.id,
-      fullname: psy.fullname || psy.fullName || psy.name || 'Không có tên',
+      _id: psy._id || psy.id || '',
+      fullName: psy.fullName || psy.fullname || psy.name || 'Không có tên',
       email: psy.email || '',
       phone: psy.phone || psy.phoneNumber || '',
-      specialization: extractSpecialization(psy),
-      experience: extractExperience(psy),
-      rating: extractRating(psy),
-      avatar: psy.avatar || psy.profileImg || psy.image || null,
-      status: psy.status || 'Active'
+      profileImg: psy.profileImg || psy.avatar || psy.image || null,
+      status: psy.status || 'Active',
+      // Extract psychologist profile data
+      specialization: psy.psychologist?.psychologistProfile?.specialization || '',
+      professionalLevel: psy.psychologist?.psychologistProfile?.professionalLevel || '',
+      educationalLevel: psy.psychologist?.psychologistProfile?.educationalLevel || '',
+      rating: psy.psychologist?.psychologistProfile?.rating || 0,
+      numberOfRatings: psy.psychologist?.psychologistProfile?.numberOfRatings || 0,
+      experienceDetails: psy.psychologist?.psychologistProfile?.medicalExperience || [],
+      workHistory: psy.psychologist?.psychologistProfile?.workHistory || []
     };
   }).filter(Boolean); // Remove any null entries
 };
 
-// Helper functions to extract nested properties
-function extractSpecialization(psy) {
-  if (psy.specialization) return psy.specialization;
-  if (psy.psychologist?.psychologistProfile?.specialization) 
-    return psy.psychologist.psychologistProfile.specialization;
-  return 'Chuyên gia tâm lý';
-}
-
-function extractExperience(psy) {
-  if (psy.experience) return psy.experience;
-  if (psy.psychologist?.psychologistProfile?.experience) 
-    return psy.psychologist.psychologistProfile.experience;
-  return null;
-}
-
-function extractRating(psy) {
-  if (psy.rating) return psy.rating;
-  if (psy.psychologist?.psychologistProfile?.rating) 
-    return psy.psychologist.psychologistProfile.rating;
-  return null;
-}
+// Helper functions removed as they're no longer needed with the flatter structure

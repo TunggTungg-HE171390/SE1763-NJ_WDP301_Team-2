@@ -39,37 +39,21 @@ export const getAppointmentById = async (id) => {
     return await apiClient.get(`/psychologist/appointment/${id}`);
 };
 
-// Update getAllPsychologists function to handle the response better
+// Get all psychologists (for staff management)
 export const getAllPsychologists = async () => {
     try {
-        console.log("Fetching all psychologists from database");
+        console.log("Fetching all psychologists from API");
+        const response = await apiClient.get("/psychologist/get-psychologist-list");
         
-        // Force cache refresh by adding a timestamp parameter
-        const timestamp = new Date().getTime();
-        const response = await apiClient.get(`/psychologist/get-psychologist-list?_t=${timestamp}`);
+        console.log("Raw API response:", response);
         
-        console.log("Raw Axios psychologist response:", response);
-        
-        // Log specific information about the data structure
-        if (response && response.data) {
-            console.log("Response data type:", typeof response.data);
-            console.log("Is array:", Array.isArray(response.data));
-            
-            // Additional logging to better understand the structure
-            if (typeof response.data === 'object' && !Array.isArray(response.data)) {
-                console.log("Object keys:", Object.keys(response.data));
-                
-                // Check for nested data structures
-                if (response.data.data) {
-                    console.log("Has nested data property:", typeof response.data.data);
-                    console.log("Nested data is array:", Array.isArray(response.data.data));
-                }
-            }
-        } else {
-            console.log("Response does not contain data property");
+        if (!response || !response.data) {
+            console.warn("Received empty response from psychologist API");
+            return { success: false, data: [] };
         }
         
-        return response;
+        // Return the raw response data to be processed by our data extractor
+        return response.data;
     } catch (error) {
         console.error("Error fetching psychologists:", error.message);
         throw error;
