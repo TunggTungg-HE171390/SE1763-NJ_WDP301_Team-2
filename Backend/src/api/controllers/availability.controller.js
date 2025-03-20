@@ -1,4 +1,5 @@
-import Availability from "../models/availability.model.js"; // Assuming the schema is saved in models/PsychologistAvailability.js
+import Availability from "../models/availability.model.js";
+import mongoose from "mongoose";
 
 const createPsychologistAvailability = async (req, res) => {
     try {
@@ -26,17 +27,72 @@ const createPsychologistAvailability = async (req, res) => {
 
 const getAvailabilitiesById = async (req, res) => {
     try {
-        const { doctorId } = req.params; // Extract doctorId from URL params
-        const availabilities = await Availability.find({ psychologistId: doctorId });
-
-        if (!availabilities.length) {
-            return res.status(404).json({ message: "No availabilities found" });
+        const { doctorId } = req.params;
+        
+        if (!doctorId) {
+            console.log("Missing doctorId parameter");
+            return res.status(400).json({ message: "Doctor ID is required" });
         }
-
-        res.status(200).json(availabilities);
+        
+        console.log(`Fetching availabilities for doctor ID: ${doctorId}`);
+        
+        // First check if there are any availabilities in the DB
+        console.log("Checking database for availabilities with doctorId:", doctorId);
+        
+        // Direct string comparison query
+        let availabilities = await Availability.find({ 
+            psychologistId: doctorId 
+        });
+        console.log(`Found ${availabilities.length} availabilities with direct string match`);
+        
+        // If no results, retrieve all availabilities and try other matching techniques
+        if (availabilities.length === 0) {
+            // Get a sample to check what's in the database
+            const allAvailabilities = await Availability.find({}).limit(10);
+            
+            if (allAvailabilities.length > 0) {
+                console.log("Sample availabilities in DB:");
+                allAvailabilities.forEach(a => {
+                    console.log({
+                        id: a._id.toString(),
+                        psychologistId: typeof a.psychologistId === 'object' ? 
+                            a.psychologistId.toString() : a.psychologistId,
+                        date: a.date
+                    });
+                });
+                
+                // Try retrieving by directly accessing the items we found
+                const matchingIds = allAvailabilities
+                    .filter(a => {
+                        if (!a.psychologistId) return false;
+                        
+                        // Convert ObjectId to string if needed
+                        const psyId = typeof a.psychologistId === 'object' ? 
+                            a.psychologistId.toString() : a.psychologistId;
+                            
+                        return psyId === doctorId;
+                    })
+                    .map(a => a._id);
+                
+                if (matchingIds.length > 0) {
+                    console.log(`Found ${matchingIds.length} matching IDs by direct comparison`);
+                    availabilities = await Availability.find({ 
+                        _id: { $in: matchingIds } 
+                    });
+                    console.log(`Retrieved ${availabilities.length} availabilities by ID lookup`);
+                    
+                    // Return these found availabilities
+                    return res.status(200).json(availabilities);
+                }
+            } else {
+                console.log("No availabilities found in the database");
+            }
+        }
+        
+        return res.status(200).json(availabilities);
     } catch (error) {
         console.error("Error fetching availabilities:", error);
-        res.status(500).json({ message: "Failed to fetch availabilities" });
+        res.status(500).json({ message: "Failed to fetch availabilities", error: error.message });
     }
 };
 

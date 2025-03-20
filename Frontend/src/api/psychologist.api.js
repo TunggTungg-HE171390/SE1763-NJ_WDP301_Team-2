@@ -21,7 +21,32 @@ export const getPsychologist = async (id) => {
 };
 
 export const getScheduleListByDoctorId = async (id) => {
-    return await apiClient.get(`psychologist/scheduleList/${id}`);
+    try {
+        console.log(`Fetching schedule list for doctor ID: ${id}`);
+        
+        // Make sure the URL path is correct
+        const response = await apiClient.get(`/psychologist/scheduleList/${id}`);
+        
+        console.log("Schedule API Response Status:", response.status);
+        
+        // Return directly if it's already an array
+        if (response.data && Array.isArray(response.data)) {
+            console.log(`Found ${response.data.length} schedule entries in response`);
+            return response.data;
+        } 
+        // Handle other potential response formats
+        else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+            console.log(`Found ${response.data.data.length} schedule entries in nested data`);
+            return response.data.data;
+        } 
+        else {
+            console.warn("Unexpected response format:", typeof response.data);
+            return [];
+        }
+    } catch (error) {
+        console.error(`Error fetching schedule list: ${error.message}`);
+        return [];
+    }
 };
 
 export const getScheduleById = async (id) => {
@@ -73,6 +98,28 @@ export const getPsychologistDetails = async (id) => {
         return await apiClient.get(`/users/psychologist/${id}/details`);
     } catch (error) {
         console.error(`Error fetching detailed psychologist data: ${error.message}`);
+        throw error;
+    }
+};
+
+// Update psychologist's medical experience
+export const updatePsychologistExperience = async (id, data) => {
+    console.log(`Updating experience for psychologist with ID: ${id}`, data);
+    try {
+        return await apiClient.put(`/psychologist/${id}/experience`, data);
+    } catch (error) {
+        console.error(`Error updating psychologist experience: ${error.message}`);
+        throw error;
+    }
+};
+
+// Update psychologist's work history
+export const updatePsychologistWorkHistory = async (id, data) => {
+    console.log(`Updating work history for psychologist with ID: ${id}`, data);
+    try {
+        return await apiClient.put(`/psychologist/${id}/work-history`, data);
+    } catch (error) {
+        console.error(`Error updating psychologist work history: ${error.message}`);
         throw error;
     }
 };

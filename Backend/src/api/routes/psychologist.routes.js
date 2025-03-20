@@ -5,18 +5,18 @@ import { authenticateUser, authorizeRole } from "../middlewares/auth.middleware.
 
 const psychologistRouter = express.Router();
 
-// First, place all specific routes with fixed paths
+// First, all specific routes with clear prefixes
 psychologistRouter.get("/all", psychologistController.getAllPsychologists);
 psychologistRouter.get("/get-psychologist-list", psychologistController.getPsychologistList);
 psychologistRouter.get("/get-specialization-list", psychologistController.getUniqueSpecializations);
 psychologistRouter.post("/save-appointment", psychologistController.saveAppointment);
 
-// Then place routes with dynamic parameters
+// Make sure scheduleList route is BEFORE the generic /:doctorId route
 psychologistRouter.get("/scheduleList/:doctorId", availabilityController.getAvailabilitiesById);
 psychologistRouter.get("/schedule/:scheduleId", availabilityController.getAvailabilityById);
 psychologistRouter.get("/appointment/:appointmentId", psychologistController.getAppointmentById);
 
-// Routes for staff to update psychologist profiles
+// Then the update routes
 psychologistRouter.put(
   "/:id/experience",
   // authenticateUser,  // Uncomment when ready for authentication
@@ -38,7 +38,7 @@ psychologistRouter.put(
   psychologistController.updatePsychologistProfile
 );
 
-// This should be last to avoid conflicting with other routes
+// Always put generic parameter routes LAST
 psychologistRouter.get("/:doctorId", psychologistController.getPsychologistById);
 
 export default psychologistRouter;
