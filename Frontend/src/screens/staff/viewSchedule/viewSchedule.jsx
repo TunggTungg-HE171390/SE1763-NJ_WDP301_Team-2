@@ -234,6 +234,22 @@ const ViewSchedule = ({ userRole = 'staff' }) => {
     }
   };
 
+  // Add a function to handle viewing appointment details
+  const handleViewAppointment = (schedule) => {
+    // Check if appointmentId exists
+    if (schedule.appointmentId) {
+      // Navigate to appointment details with the appointment ID 
+      if (userRole === 'staff') {
+        navigate(`/staff/view-appointment-detail/${schedule.appointmentId}`);
+      } else if (userRole === 'psychologist') {
+        navigate(`/psychologist/view-appointment-detail/${schedule.appointmentId}`);
+      }
+    } else {
+      // If no appointmentId but the slot is booked, show a message
+      alert('Không tìm thấy thông tin chi tiết buổi hẹn này.');
+    }
+  };
+
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 12, mb: 4, display: 'flex', justifyContent: 'center' }}>
@@ -440,9 +456,12 @@ const ViewSchedule = ({ userRole = 'staff' }) => {
                                           variant="outlined"
                                           size="small"
                                           color="info"
-                                          onClick={() => navigate(`/staff/view-appointment-detail/${schedule.appointmentId || 'unknown'}`)}
+                                          onClick={() => handleViewAppointment(schedule)}
+                                          disabled={!schedule.appointmentId && schedule.isBooked}
                                         >
-                                          Xem chi tiết
+                                          {!schedule.appointmentId && schedule.isBooked 
+                                            ? "Không có chi tiết" 
+                                            : "Xem chi tiết"}
                                         </Button>
                                       </Tooltip>
                                     )}
@@ -548,9 +567,12 @@ const ViewSchedule = ({ userRole = 'staff' }) => {
                                 variant="outlined"
                                 size="small"
                                 color="info"
-                                onClick={() => navigate(`/staff/view-appointment-detail/${schedule.appointmentId || 'unknown'}`)}
+                                onClick={() => handleViewAppointment(schedule)}
+                                disabled={!schedule.appointmentId}
                               >
-                                Xem chi tiết buổi hẹn
+                                {!schedule.appointmentId 
+                                  ? "Không có chi tiết" 
+                                  : "Xem chi tiết buổi hẹn"}
                               </Button>
                             )}
                           </Grid>
