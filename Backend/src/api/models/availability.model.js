@@ -20,9 +20,15 @@ const AvailabilitySlotSchema = new Schema(
             type: Date,
             required: true, // Store the exact end time for the availability
         },
-        isBooked: {
-            type: Boolean,
-            default: false, // Default is false, meaning the time slot is available
+        status: {
+            type: String,
+            enum: ["Available", "Pending", "Booked"],
+            default: "Available",
+        },
+        appointmentId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Appointment",
+            default: null,
         },
     },
     {
