@@ -33,7 +33,7 @@ import BookAppointment from "./screens/public/bookAppointment/bookAppointment";
 import FinishBooking from "./screens/public/finishBooking/finishBooking";
 import UpdatePost from "./screens/staff/UpdatePost";
 import ViewAppointment from "./screens/patient/viewAppointment/viewAppointment";
-import ViewAppointmentDetail from "./screens/psychologist/viewAppointmentDetail/viewAppointmentDetail";
+import AppointmentDetail from "./screens/staff/AppointmentDetail";
 import BlogScreen from "./screens/public/blog/blog.jsx";
 import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
 import ManageUsers from "./screens/admin/ManageUsers.jsx";
@@ -49,6 +49,7 @@ import PsychologistDetail from "./screens/staff/PsychologistDetail";
 import ManagePsychologistSchedule from "./screens/staff/ManagePsychologistSchedule";
 import EditPsychologistExperience from "./screens/staff/EditPsychologistExperience";
 import EditPsychologistWorkHistory from "./screens/staff/EditPsychologistWorkHistory";
+import ManageAppointments from "./screens/staff/ManageAppointments";
 
 // Create MUI theme
 const theme = createTheme({
@@ -148,11 +149,13 @@ function Layout() {
                         
                         {/* Psychologist routes */}
                         <Route path="/psychologist/view-schedule" element={<ViewSchedule userRole="psychologist" />} />
-                        <Route path="/psychologist/view-appointment-detail/:appointmentId" element={<ViewAppointmentDetail />} />
+                        <Route path="/psychologist/view-appointment-detail/:appointmentId" element={<AppointmentDetail />} />
                         
                         {/* Staff routes */}
                         <Route path="/staff/view-schedule" element={<ViewSchedule userRole="staff" />} />
-                        <Route path="/staff/view-appointment-detail/:appointmentId" element={<ViewAppointmentDetail />} />
+                        <Route path="/staff/view-appointment-detail/:appointmentId" element={<AppointmentDetail />} />
+                        <Route path="/staff/appointment-details/:appointmentId" element={<AppointmentDetail />} />
+                        <Route path="/staff/manage-appointments" element={<ManageAppointments />} />
                         <Route path="/staff/manage-psychologists" element={<ManagePsychologists />} />
                         <Route path="/staff/psychologist-detail/:id" element={<PsychologistDetail />} />
                         <Route path="/staff/manage-psychologist-schedule/:id" element={<ManagePsychologistSchedule />} />
