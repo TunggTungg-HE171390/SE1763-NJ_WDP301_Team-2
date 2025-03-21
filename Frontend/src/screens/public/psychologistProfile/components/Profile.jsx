@@ -35,11 +35,15 @@ const Profile = ({ psychologist, profile }) => {
                             <div className="flex flex-col space-y-2 pl-[4rem]">
                                 <div className="flex items-center">
                                     <CalendarDays className="h-4 w-4 text-blue-500 mr-1" />
-                                    <span className="font-semibold">Cuộc hẹn đã tham gia: {profile.appointmentsAttended}</span>
+                                    <span className="font-semibold">
+                                        Cuộc hẹn đã tham gia: {profile.appointmentsAttended}
+                                    </span>
                                 </div>
                                 <div className="flex items-center">
                                     <CalendarDays className="h-4 w-4 text-blue-500 mr-1" />
-                                    <span className="font-semibold">Số người đã tư vấn: {profile.consultationsCount}</span>
+                                    <span className="font-semibold">
+                                        Số người đã tư vấn: {profile.consultationsCount}
+                                    </span>
                                 </div>
                                 <div className="flex items-center">
                                     <Star className="h-4 w-4 text-yellow-500 mr-1" />

@@ -32,7 +32,6 @@ import ChangePassword from "./screens/user/changePassword/changePassword";
 import BookAppointment from "./screens/public/bookAppointment/bookAppointment";
 import FinishBooking from "./screens/public/finishBooking/finishBooking";
 import UpdatePost from "./screens/staff/UpdatePost";
-import ViewAppointment from "./screens/patient/viewAppointment/viewAppointment";
 import ViewAppointmentDetail from "./screens/psychologist/viewAppointmentDetail/viewAppointmentDetail";
 import BlogScreen from "./screens/public/blog/blog.jsx";
 import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
@@ -40,11 +39,12 @@ import ManageUsers from "./screens/admin/ManageUsers.jsx";
 import AboutUs from "./screens/common/aboutUs.jsx";
 import PaymentPage from "./screens/public/paymentAppointment/PaymentPage.jsx";
 import Temporary from "./screens/public/paymentAppointment/temp.jsx";
-import AppointmentList from "./screens/public/appointmentList/appointmentList.jsx";
 import UserProfile from "./screens/common/userProfile/components/user-profile.jsx";
 import ViewSchedule from "./screens/psychologist/viewAppointment/viewAppointment";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import ViewAppointmentList from "./screens/public/appointmentList/AppointmentManagement.jsx";
+import ViewUserAppointmentDetail from "./screens/public/appointmentDetail/viewAppointmentDetail.jsx";
 // import dayjs from "dayjs";
 import "dayjs/locale/vi"; // Import Vietnamese locale for dayjs
 
@@ -165,9 +165,9 @@ function Layout() {
                         <Route path="/forgotPassword" element={<ForgotPassword />} />
                         <Route path="/checkout-booking" element={<PaymentPage />} />
                         <Route path="/tempo" element={<Temporary />} />
-                        <Route path="/appointment-list" element={<AppointmentList />} />
                         <Route path="user-profile/:id" element={<UserProfile />} />
-                        <Route path="/patient/view-appointment-detail/:appointmentId" element={<ViewAppointment />} />
+                        <Route path="/user/view-appointment-list" element={<ViewAppointmentList />} />
+                        <Route path="/user/view-appointment-detail/:appointmentId" element={<ViewUserAppointmentDetail />} />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}

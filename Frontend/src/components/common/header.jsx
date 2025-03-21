@@ -78,7 +78,7 @@ export function Header() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mt-4" align="end">
-                <DropdownMenuItem className="cursor-pointer" onSelect={() => navigate("/appointment-list")}>
+                <DropdownMenuItem className="cursor-pointer" onSelect={() => navigate("/user/view-appointment-list")}>
                     <Calendar className="mr-2 h-4 w-4" />
                     <span>Lịch hẹn</span>
                 </DropdownMenuItem>

@@ -61,23 +61,20 @@ const BookingSuccess = () => {
             pollingRef.current = setInterval(async () => {
                 try {
                     const response = await API.getAppointmentById(appointmentId);
-                    const orderCode = response.data.paymentInformation.orderCode;
-                    const responsePayment = await API.checkPaymentStatus({ orderCode });
+                    const status = response.data.paymentInformation.status;
+                    // const responsePayment = await API.checkPaymentStatus({ orderCode });
 
-                    if (responsePayment.data.status === "PAID") {
+                    if (status === "PAID") {
                         console.log("✅ Payment completed, triggering onSuccess...");
 
                         // Clear the interval before proceeding
                         clearInterval(pollingRef.current);
                         pollingRef.current = null;
 
-                        // Wait for 5 seconds
-                        await new Promise((resolve) => setTimeout(resolve, 5000));
-
                         // Continue execution
                         // await API.confirmPayment({ appointmentId });
                         navigate(`/finish-booking?appointmentId=${appointmentId}`);
-                    } else if (responsePayment.data.status === "EXPIRED") {
+                    } else if (status === "EXPIRED") {
                         console.log("❌ Payment expired, redirecting...");
                         clearInterval(pollingRef.current);
                         pollingRef.current = null;
@@ -282,7 +279,7 @@ const BookingSuccess = () => {
                                         Vui lòng thanh toán để hoàn tất đặt lịch hẹn của bạn.
                                     </p>
                                     <p className="text-sm text-gray-500">
-                                        Sau khi thực hiện thanh toán thành công, vui lòng đợi từ 5 - 10s để hệ thống tự
+                                        Sau khi thực hiện thanh toán thành công, vui lòng đợi từ 10 - 15s để hệ thống tự
                                         động cập nhật.
                                     </p>
                                 </div>

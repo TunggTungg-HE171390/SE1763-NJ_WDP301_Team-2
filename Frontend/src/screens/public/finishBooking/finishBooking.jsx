@@ -5,11 +5,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import * as API from "@/api";
-import { useAuth } from "@/hooks/useAuth";
 
 const FinishBooking = () => {
     const navigate = useNavigate();
-    const { user } = useAuth();
     const [searchParams] = useSearchParams(); // Retrieve search params from the URL
     const appointmentId = searchParams.get("appointmentId"); // Extract appointmentId
     const [progressStage, setProgressStage] = useState(0);
@@ -87,58 +85,6 @@ const FinishBooking = () => {
         }
         return "mt-2 text-sm text-gray-500 transition-colors duration-300";
     };
-
-    // Send the email after appointment details are fetched
-    useEffect(() => {
-        if (appointmentDetails && isSuccess) {
-            const email = user.email; // User's email
-            const subject = "Thông báo lịch hẹn khám của bạn"; // Email subject
-            const content = `
-                <h3>Thông báo về lịch hẹn khám</h3>
-                <p>Chào ${user?.fullName},</p>
-                <p>Chúng tôi xin thông báo về lịch hẹn khám của bạn với chuyên gia ${
-                    appointmentDetails.psychologistId.fullName
-                }.</p>
-                <p><strong>Thông tin lịch hẹn:</strong></p>
-                <p><strong>Ngày:</strong> ${new Date(appointmentDetails.scheduledTime.date).toLocaleDateString(
-                    "vi-VN",
-                    {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
-                    }
-                )}</p> 
-                <p><strong>Giờ:</strong> ${new Date(appointmentDetails.scheduledTime.startTime).toLocaleTimeString(
-                    "vi-VN",
-                    {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                    }
-                )} đến ${new Date(appointmentDetails.scheduledTime.endTime).toLocaleTimeString("vi-VN", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-            })}</p>
-                <p><strong>Chuyên gia tư vấn:</strong> ${appointmentDetails.psychologistId.fullName}</p>
-                <p><strong>Hình thức:</strong> Tư vấn trực tuyến</p>
-                <p><strong>Giá tiền:</strong> 350.000 đ</p>
-                <p>Vui lòng chuẩn bị trước 10 phút và đảm bảo kết nối internet ổn định cho buổi tư vấn trực tuyến.</p>
-                <p>Trân trọng,</p>
-                <p>Đội ngũ hỗ trợ</p>
-            `;
-
-            // Send the email via the API
-            API.sendEmail({ email, subject, content })
-                .then((response) => {
-                    console.log("Email sent successfully:", response);
-                })
-                .catch((error) => {
-                    console.error("Error sending email:", error);
-                });
-        }
-    }, [appointmentDetails, user, isSuccess]);
 
     // If appointmentDetails is null, show loading spinner or message
     if (!appointmentDetails && isSuccess) {
