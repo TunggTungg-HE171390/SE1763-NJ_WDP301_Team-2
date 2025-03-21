@@ -46,6 +46,8 @@
         "@radix-ui/react-tabs": "^1.1.3",
         "@radix-ui/react-toast": "^1.2.6",
         "@radix-ui/react-tooltip": "^1.1.8",
+        "@zoom/meetingsdk": "^3.12.0",
+        "@zoomus/websdk": "^2.18.3",
         "axios": "^1.7.9",
         "bootstrap": "^5.3.3",
         "class-variance-authority": "^0.7.1",

@@ -28,6 +28,8 @@ async function getZoomAccessToken() {
 }
 
 export async function createZoomMeeting(topic, startTime, duration) {
+    const ISOStartTime = convertToICTISOString(startTime);
+
     try {
         const accessToken = await getZoomAccessToken();
 
@@ -36,7 +38,7 @@ export async function createZoomMeeting(topic, startTime, duration) {
             {
                 topic: topic || "New Meeting",
                 type: 2, // Scheduled Meeting
-                start_time: startTime,
+                start_time: ISOStartTime,
                 duration: duration || 30, // Default 30 minutes
                 timezone: "Asia/Ho_Chi_Minh",
                 settings: {
@@ -59,9 +61,23 @@ export async function createZoomMeeting(topic, startTime, duration) {
             }
         );
 
-        return response.data; // Returns meeting details
+        return response.data;
     } catch (error) {
         console.error("Error creating Zoom meeting:", error.response?.data);
         throw new Error("Failed to create meeting");
     }
+}
+
+export function convertToICTISOString(utcISOString) {
+    const dateUTC = new Date(utcISOString);
+
+    const ICT_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+    const dateInICT = new Date(dateUTC.getTime() + ICT_OFFSET_MS);
+
+    return dateInICT.toISOString();
+}
+
+function convertToBrowserJoinUrl(joinUrl) {
+    return joinUrl.replace(/\/j\/(\d+)/, "/wc/join/$1");
 }

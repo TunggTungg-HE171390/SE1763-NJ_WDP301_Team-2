@@ -144,4 +144,8 @@ export const getUserAppointmentById = async (credentials) => {
     return await apiClient.post("/appointment/appointment-details", credentials);
 };
 
+export const getZoomMeetURL = async (credentials) => {
+    return await apiClient.post("/appointment/get-zoom-url", credentials);
+};
+
 export default appointmentApi;

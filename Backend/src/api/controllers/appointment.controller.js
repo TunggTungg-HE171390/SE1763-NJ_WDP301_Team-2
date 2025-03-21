@@ -288,7 +288,10 @@ const checkPayment = async (appointmentId, scheduleId, expiredAt) => {
                 appointment.paymentInformation.status = "PAID";
 
                 const meeting = await createZoomMeeting("Tu van tam ly", appointment.scheduledTime.startTime, 60);
-                appointment.meetingURL = meeting.join_url;
+
+                const browserUrl = meeting.join_url.replace(/\/j\/(\d+)/, "/wc/join/$1");
+                console.log("", browserUrl);
+                appointment.meetingURL = browserUrl;
 
                 await appointment.save();
 

@@ -38,7 +38,6 @@ import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
 import ManageUsers from "./screens/admin/ManageUsers.jsx";
 import AboutUs from "./screens/common/aboutUs.jsx";
 import PaymentPage from "./screens/public/paymentAppointment/PaymentPage.jsx";
-import Temporary from "./screens/public/paymentAppointment/temp.jsx";
 import UserProfile from "./screens/common/userProfile/components/user-profile.jsx";
 import ViewSchedule from "./screens/psychologist/viewAppointment/viewAppointment";
 import { LocalizationProvider } from "@mui/x-date-pickers";
@@ -164,10 +163,12 @@ function Layout() {
                         <Route path="/changePassword" element={<ChangePassword />} />
                         <Route path="/forgotPassword" element={<ForgotPassword />} />
                         <Route path="/checkout-booking" element={<PaymentPage />} />
-                        <Route path="/tempo" element={<Temporary />} />
                         <Route path="user-profile/:id" element={<UserProfile />} />
                         <Route path="/user/view-appointment-list" element={<ViewAppointmentList />} />
-                        <Route path="/user/view-appointment-detail/:appointmentId" element={<ViewUserAppointmentDetail />} />
+                        <Route
+                            path="/user/view-appointment-detail/:appointmentId"
+                            element={<ViewUserAppointmentDetail />}
+                        />
                     </Routes>
                 </div>
                 {!hideLayout && <Footer />}
