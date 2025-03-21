@@ -1,4 +1,5 @@
 import Availability from "../models/availability.model.js";
+import Appointment from "../models/appointment.model.js";
 import mongoose from "mongoose";
 
 const createPsychologistAvailability = async (req, res) => {
@@ -86,6 +87,44 @@ const getAvailabilitiesById = async (req, res) => {
                 }
             } else {
                 console.log("No availabilities found in the database");
+            }
+        }
+        
+        // For booked slots, fetch the corresponding appointment IDs
+        if (availabilities.length > 0) {
+            // Convert availabilities to plain objects for manipulation
+            availabilities = availabilities.map(avail => avail.toObject());
+            
+            // Get all booked slots
+            const bookedSlots = availabilities.filter(avail => avail.isBooked);
+            
+            if (bookedSlots.length > 0) {
+                // For each booked slot, try to find the appointment
+                for (const slot of bookedSlots) {
+                    try {
+                        // Find appointment based on psychologistId and date/time
+                        const appointment = await Appointment.findOne({
+                            psychologistId: doctorId,
+                            'scheduledTime.date': {
+                                $gte: new Date(new Date(slot.date).setHours(0, 0, 0, 0)),
+                                $lt: new Date(new Date(slot.date).setHours(23, 59, 59, 999))
+                            },
+                            'scheduledTime.startTime': new Date(slot.startTime)
+                        });
+                        
+                        if (appointment) {
+                            // Add appointmentId to the availability object
+                            const slotIndex = availabilities.findIndex(a => 
+                                a._id.toString() === slot._id.toString());
+                            
+                            if (slotIndex !== -1) {
+                                availabilities[slotIndex].appointmentId = appointment._id;
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Error finding appointment:', err);
+                    }
+                }
             }
         }
         
