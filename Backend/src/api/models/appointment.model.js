@@ -1,48 +1,90 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 
-// Appointment schema
-const AppointmentSchema = new Schema(
-    {
-        patientId: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: "users", // Assuming "User" model for patients
-        },
-        psychologistId: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: "users", // Assuming "User" model for psychologists
-        },
-        scheduledTime: {
-            date: {
-                type: Date,
-                required: true,
-            },
-            startTime: {
-                type: String,
-                required: true,
-            },
-            endTime: {
-                type: String,
-                required: true,
-            },
-        },
-        status: {
-            type: String,
-            enum: ["Pending", "Confirmed", "Completed", "Cancelled"],
-            default: "Pending", // Default status is "Pending"
-        },
-        note: {
-            type: String,
-            required: false, // The note field is optional
-        },
+const appointmentSchema = new mongoose.Schema(
+  {
+    patientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    {
-        timestamps: true, // Automatically adds createdAt and updatedAt
-    }
+    psychologistId: {
+      type: String,
+      required: true,
+    },
+    scheduledTime: {
+      date: {
+        type: Date,
+        required: true,
+      },
+      startTime: {
+        type: Date,
+        required: true,
+      },
+      endTime: {
+        type: Date,
+        required: true,
+      },
+    },
+    originalSchedule: {
+      // For tracking reschedules
+      date: Date,
+      startTime: Date,
+      endTime: Date,
+    },
+    status: {
+      type: String,
+      enum: ["Pending", "Confirmed", "Completed", "Cancelled", "Rescheduled", "No-show"],
+      default: "Pending",
+    },
+    rescheduleRequest: {
+      requestedBy: {
+        type: String,
+        enum: ["patient", "psychologist", "staff"],
+      },
+      requestedTime: Date,
+      reason: String,
+      newSchedule: {
+        date: Date,
+        startTime: Date,
+        endTime: Date,
+      },
+      status: {
+        type: String,
+        enum: ["Pending", "Approved", "Rejected"],
+        default: "Pending",
+      },
+    },
+    payment: {
+      amount: Number,
+      status: {
+        type: String,
+        enum: ["Pending", "Paid", "Refunded", "Failed"],
+        default: "Pending",
+      },
+      method: String,
+      transactionId: String,
+      paidAt: Date,
+      refundedAt: Date,
+    },
+    notes: {
+      patient: String, // Notes from patient
+      psychologist: String, // Notes from psychologist
+      staff: String, // Notes from staff
+    },
+    lastModifiedBy: {
+      userId: String,
+      role: String,
+      timestamp: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  },
+  {
+    timestamps: true,
+  }
 );
 
-// Create the Appointment model
-const Appointment = mongoose.model("appointments", AppointmentSchema);
+const Appointment = mongoose.model("Appointment", appointmentSchema);
 
 export default Appointment;
