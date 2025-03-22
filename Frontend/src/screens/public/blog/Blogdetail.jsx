@@ -27,6 +27,9 @@ const BlogPostDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const [emailInput, setEmailInput] = useState("");
+    const [status, setStatus] = useState(null);
+
     const [liked, setLiked] = useState(false);
     const [bookmarked, setBookmarked] = useState(false);
     const [likeCount, setLikeCount] = useState(42);
@@ -71,6 +74,19 @@ const BlogPostDetail = () => {
 
         fetchBlogData();
     }, [id]);
+
+    const handleCardSubmit = async () => {
+        if (emailInput.trim() === "") return;
+
+        try {
+            await API.subscribeEmail({ email: emailInput });
+            setEmailInput("");
+            setStatus("success");
+        } catch (error) {
+            console.error(error);
+            setStatus("error");
+        }
+    };
 
     const handleLike = () => {
         if (liked) {
@@ -184,20 +200,23 @@ const BlogPostDetail = () => {
                             </div>
                         </div>
 
-                        {/* Featured Image */}
+                        {/* Featured Image
                         {post.image && (
                             <div className="mb-2 rounded-lg overflow-hidden">
                                 <img src={post.image} alt={post.title} className="w-full h-auto object-cover" />
                             </div>
-                        )}
+                        )} */}
 
                         {/* Blog Content - White Background Card */}
                         <Card className="p-4 mb-2">
-                            <div className="prose max-w-none">
+                            <div className="prose max-w-none text-lg px-6 text-left [line-height:2]">
                                 {/* If content is already HTML, use dangerouslySetInnerHTML */}
                                 {/* If content is plain text, display as paragraphs */}
                                 {post.content.includes("<") ? (
-                                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                                    <div
+                                        className="[&>ul]:list-disc [&>ul]:px-12"
+                                        dangerouslySetInnerHTML={{ __html: post.content }}
+                                    />
                                 ) : (
                                     <p>{post.content}</p>
                                 )}
@@ -331,8 +350,17 @@ const BlogPostDetail = () => {
                                     type="email"
                                     placeholder="Email của bạn"
                                     className="w-full p-2 border rounded-md"
+                                    value={emailInput}
+                                    onChange={(e) => setEmailInput(e.target.value)}
                                 />
-                                <Button className="w-full bg-blue-600">Đăng ký</Button>
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={handleCardSubmit}>
+                                    Đăng ký
+                                </Button>
+
+                                {status === "success" && <p className="text-green-600 text-sm">Đăng ký thành công!</p>}
+                                {status === "error" && (
+                                    <p className="text-red-600 text-sm">Đăng ký thất bại. Vui lòng thử lại.</p>
+                                )}
                             </div>
                         </Card>
 

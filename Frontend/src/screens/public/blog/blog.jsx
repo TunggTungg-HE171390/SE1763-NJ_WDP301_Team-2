@@ -20,7 +20,7 @@ const HealthcareBlogListing = () => {
     const [sortOption, setSortOption] = useState("newest");
     const [currentPage, setCurrentPage] = useState(1);
     const [showLeftAd, setShowLeftAd] = useState(true);
-    const postsPerPage = 3;
+    const postsPerPage = 6;
 
     // Fetch blog posts from API
     useEffect(() => {
@@ -90,13 +90,13 @@ const HealthcareBlogListing = () => {
     };
 
     // Helper function to extract excerpt from content
-    const getExcerpt = (content, maxLength = 150) => {
-        if (content.length <= maxLength) return content;
+    // const getExcerpt = (content, maxLength = 150) => {
+    //     if (content.length <= maxLength) return content;
 
-        // Find the last space within the maxLength to avoid cutting words
-        const lastSpace = content.substring(0, maxLength).lastIndexOf(" ");
-        return content.substring(0, lastSpace) + "...";
-    };
+    //     // Find the last space within the maxLength to avoid cutting words
+    //     const lastSpace = content.substring(0, maxLength).lastIndexOf(" ");
+    //     return content.substring(0, lastSpace) + "...";
+    // };
 
     // Advertisement Components
     const LeftSidebarAd = () => (
@@ -131,20 +131,51 @@ const HealthcareBlogListing = () => {
         </div>
     );
 
-    const RightSidebarAd = () => (
-        <div className="hidden lg:block w-65 sticky">
-            <div className="mt-4 bg-white border border-blue-200 rounded-lg overflow-hidden shadow-md">
-                <div className="p-4">
-                    <h3 className="font-semibold text-blue-800 mb-2">Đăng ký để nhận tin từ chúng tôi</h3>
-                    <p className="text-sm text-gray-600 mb-3">Nhận thông báo khi có bài đăng mới</p>
-                    <Input placeholder="Email của bạn" className="mb-2 border-blue-200" />
-                    <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
-                        Đăng ký
-                    </Button>
+    const RightSidebarAd = () => {
+        const [userInput, setUserInput] = useState("");
+        const [status, setStatus] = useState(null);
+
+        const handleInputSubmit = async () => {
+            if (userInput.trim() === "") return;
+
+            try {
+                await API.subscribeEmail({ email: userInput });
+                setStatus("success");
+                setUserInput(""); // Clear input
+            } catch (error) {
+                console.error(error);
+                setStatus("error");
+            }
+        };
+
+        return (
+            <div className="hidden lg:block w-65 sticky">
+                <div className="mt-4 bg-white border border-blue-200 rounded-lg overflow-hidden shadow-md">
+                    <div className="p-4">
+                        <h3 className="font-semibold text-blue-800 mb-2">Đăng ký để nhận tin từ chúng tôi</h3>
+                        <p className="text-sm text-gray-600 mb-3">Nhận thông báo khi có bài đăng mới</p>
+                        <input
+                            type="email"
+                            placeholder="Email của bạn"
+                            className="w-full p-2 border rounded-md mb-2 border-blue-200"
+                            value={userInput}
+                            onChange={(e) => setUserInput(e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700"
+                            onClick={handleInputSubmit}>
+                            Đăng ký
+                        </button>
+                        {status === "success" && <p className="text-green-600 text-sm mt-1">Đăng ký thành công!</p>}
+                        {status === "error" && (
+                            <p className="text-red-600 text-sm mt-1">Đăng ký thất bại. Vui lòng thử lại.</p>
+                        )}
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <>
@@ -230,7 +261,7 @@ const HealthcareBlogListing = () => {
                                                 <Link to={`/blogdetail/${post._id}`} key={post._id} className="block">
                                                     <Card className="overflow-hidden border-blue-100 hover:shadow-lg transition-shadow cursor-pointer">
                                                         <div className="md:flex">
-                                                            <div className="md:w-1/3 h-48 md:h-auto">
+                                                            {/* <div className="md:w-1/3 h-48 md:h-auto">
                                                                 <img
                                                                     src={post.image || "/api/placeholder/800/400"}
                                                                     alt={post.title}
@@ -240,8 +271,9 @@ const HealthcareBlogListing = () => {
                                                                         e.target.src = "/api/placeholder/800/400";
                                                                     }}
                                                                 />
-                                                            </div>
-                                                            <div className="md:w-2/3 p-6">
+                                                            </div> */}
+                                                            {/* <div className="md:w-2/3 p-6"> */}
+                                                            <div className="md:w-full p-6">
                                                                 <CardHeader className="p-0 pb-3">
                                                                     <div className="flex items-center justify-between">
                                                                         <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
@@ -258,7 +290,7 @@ const HealthcareBlogListing = () => {
                                                                 </CardHeader>
 
                                                                 <CardContent className="p-0 text-start text-gray-600">
-                                                                    <p>{getExcerpt(post.content)}</p>
+                                                                    {/* <p>{getExcerpt(post.content)}</p> */}
                                                                 </CardContent>
 
                                                                 <CardFooter className="p-0 pt-4 flex flex-wrap items-center justify-between">

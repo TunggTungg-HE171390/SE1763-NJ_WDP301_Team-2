@@ -35,3 +35,7 @@ export const botResponse = async (credentials) => {
 export const sendEmail = async (credentials) => {
   return await apiClient.post("/auth/send-email", credentials);
 };
+
+export const subscribeEmail = async (credentials) => {
+    return await apiClient.post("/auth/subscribe-news", credentials);
+};

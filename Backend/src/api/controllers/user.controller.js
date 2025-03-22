@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import EmailModel from "../models/email.model.js";
 import { generateVerificationCode } from "../utils/auth.js";
 import Email from "../utils/email.js";
 import { sendVerificationSMS } from "../utils/phone.js";
@@ -470,6 +471,38 @@ export const changePassword = async (req, res) => {
     }
 };
 
+export const subscribeEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        // Validate email
+        if (!email || typeof email !== "string") {
+            return res.status(400).json({ message: "A valid email is required." });
+        }
+
+        // Check if email already exists
+        const existing = await EmailModel.findOne({ email });
+        if (existing) {
+            return res.status(409).json({ message: "This email is already subscribed." });
+        }
+
+        // Save new email
+        const newEmail = new EmailModel({ email });
+
+        await Email.sendCustomEmail(
+            email,
+            "Đã đăng ký nhận bản tin",
+            "Cảm ơn bạn đã đăng ký nhận bản tin của chúng tôi!"
+        );
+        await newEmail.save();
+
+        return res.status(201).json({ message: "Email subscribed successfully." });
+    } catch (error) {
+        console.error("Error subscribing email:", error);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+};
+
 export default {
     registerUser,
     loginUser,
@@ -483,4 +516,5 @@ export default {
     updateUser,
     updateUser,
     getUserById,
+    subscribeEmail,
 };
