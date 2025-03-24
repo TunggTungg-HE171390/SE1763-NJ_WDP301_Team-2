@@ -20,17 +20,40 @@ const AppointmentSchema = new Schema(
             required: true,
             ref: "availabilities", // Reference to the availability slot
         },
+        paymentInformation: {
+            orderCode: {
+                type: String,
+            },
+            description: {
+                type: String,
+            },
+            expiredAt: {
+                type: Number, // Unix timestamp
+            },
+            amount: {
+                type: Number,
+                default: 350000,
+            },
+            status: {
+                type: String,
+                enum: ["PENDING", "PAID", "CANCELLED", "EXPIRED"],
+                default: "PENDING",
+            },
+            checkoutUrl: {
+                type: String,
+            },
+        },
         scheduledTime: {
             date: {
                 type: Date,
                 required: true,
             },
             startTime: {
-                type: Date,
+                type: Date, //ban đầu đang là String, đổi lại thành Date
                 required: true,
             },
             endTime: {
-                type: Date,
+                type: Date, //ban đầu đang là String, đổi lại thành Date
                 required: true,
             },
         },
@@ -44,6 +67,10 @@ const AppointmentSchema = new Schema(
             default: false, 
         },
         note: {
+            type: String,
+            required: false, // The note field is optional
+        },
+        meetingURL: {
             type: String,
             required: false, // The note field is optional
         },

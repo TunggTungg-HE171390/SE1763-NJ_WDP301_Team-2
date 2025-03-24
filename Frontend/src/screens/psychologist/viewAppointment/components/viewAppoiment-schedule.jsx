@@ -7,17 +7,17 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
-const ViewAppointmentSchedule = ({ appointments }) => {
+const ViewScheduleCalendar = ({ schedules }) => {
     const navigate = useNavigate();
     
-    // Transform appointments data for FullCalendar
-    const events = appointments.map(appointment => ({
-        id: appointment.id.toString(),
-        title: `${appointment.patientName}`,
-        start: `${appointment.date}T${convertTimeToISO(appointment.time)}`,
-        end: calculateEndTime(appointment.date, appointment.time),
+    // Transform schedules data for FullCalendar
+    const events = schedules.map(schedule => ({
+        id: schedule.id.toString(),
+        title: `${schedule.patientName}`,
+        start: `${schedule.date}T${convertTimeToISO(schedule.time)}`,
+        end: calculateEndTime(schedule.date, schedule.time),
         extendedProps: {
-            patientName: appointment.patientName
+            patientName: schedule.patientName
         },
         backgroundColor: '#3788d8',
         borderColor: '#3788d8'
@@ -103,8 +103,8 @@ const ViewAppointmentSchedule = ({ appointments }) => {
     );
 };
 
-ViewAppointmentSchedule.propTypes = {
-    appointments: PropTypes.arrayOf(
+ViewScheduleCalendar.propTypes = {
+    schedules: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.number.isRequired,
             date: PropTypes.string.isRequired,
@@ -114,4 +114,4 @@ ViewAppointmentSchedule.propTypes = {
     ).isRequired,
 };
 
-export default ViewAppointmentSchedule;
+export default ViewScheduleCalendar;

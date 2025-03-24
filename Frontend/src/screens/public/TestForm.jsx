@@ -9,10 +9,13 @@ import { useNavigate } from "react-router-dom";
 import { getQuestionByTestId } from "../../api/Questions.api";
 import { submitTest } from "../../api/TestHistory.api";
 import { Modal, Spinner, Form } from "react-bootstrap";
+import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
+
 
 export function TestForm() {
 
   useBootstrap();
+  const { user } = useAuth();
 
   const { testId } = useParams();
   const navigate = useNavigate();
@@ -76,7 +79,10 @@ export function TestForm() {
       console.log("Questions:", question);
 
 
-      const userId = "67a0374b7ad0db88c8b251c0";
+      // const userId = "67a0374b7ad0db88c8b251c0";
+
+      const userId = user._id;
+
       console.log("Sending data to backend:", { userId, testId, userInfo, answersArray });
 
       submitTest(userId, testId, answersArray, userInfo)  // Trả về promise

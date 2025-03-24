@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import RegisterForm from "./components/register-form";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 
 const images = [
     "https://marinwellnesscounseling.com/wp-content/uploads/2021/03/pexels-polina-zimmerman-3958461-scaled-1.jpeg",
@@ -22,7 +23,7 @@ const Register = () => {
                     return images[(currentIndex + 1) % images.length]; // Loop through images
                 });
                 setFade(false); // Reset fade after image change
-            }, 500); // 1-second fade duration
+            }, 1000); // 1-second fade duration
         }, 5000); // Change every 5 seconds
 
         return () => clearInterval(interval); // Cleanup interval on unmount
@@ -46,8 +47,15 @@ const Register = () => {
 
                 {/* Background Overlay for Readability */}
                 <div className="absolute inset-0 bg-white opacity-20"></div>
-
-                <RegisterForm />
+                <GoogleReCaptchaProvider
+                    reCaptchaKey="6LfUp_UqAAAAANBkxol2qns3TgR6TjZSPT7jJ-wJ"
+                    scriptProps={{
+                        async: true,
+                        defer: true,
+                        appendTo: "head",
+                    }}>
+                    <RegisterForm />
+                </GoogleReCaptchaProvider>
             </div>
         </>
     );

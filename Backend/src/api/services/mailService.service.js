@@ -32,7 +32,7 @@ export default function MailService() {
       emailSubject = "Yêu cầu đổi lịch không được chấp nhận";
     } else if (action === actions.CANCEL_APPOINTMENT) {
       emailText = messages.MESSAGE005(username, authCode);
-      emailSubject = "Yêu cầu đổi lịch không được chấp nhận";
+      emailSubject = "Yêu cầu hủy lịch được chấp nhận";
     } else {
       emailText = messages.MESSAGE_ERROR;
       emailSubject = "ERROR: Unknown action code.";

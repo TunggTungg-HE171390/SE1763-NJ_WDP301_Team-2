@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, Alert } from 'react';
 import PropTypes from 'prop-types';
-import { 
+import {
     Card,
     CardContent,
-    Grid, 
+    Grid,
     Chip,
-    Divider, 
+    Divider,
     IconButton,
     Tooltip,
     Box,
@@ -34,13 +34,13 @@ import {
     Close
 } from '@mui/icons-material';
 
-const ViewAppointmentDetailComponent = ({ 
-    appointment, 
-    onCancel, 
-    onReschedule, 
-    onUpdateNotes, 
+const ViewAppointmentDetailComponent = ({
+    appointment,
+    onCancel,
+    onReschedule,
+    onUpdateNotes,
     onConfirm,
-    isLoading 
+    isLoading
 }) => {
     const [openCancel, setOpenCancel] = useState(false);
     const [openReschedule, setOpenReschedule] = useState(false);
@@ -50,9 +50,9 @@ const ViewAppointmentDetailComponent = ({
     const [rescheduleTime, setRescheduleTime] = useState(appointment.time.split(' ')[0]);
     const [rescheduleReason, setRescheduleReason] = useState('');
     const [cancelReason, setCancelReason] = useState('');
-    
+
     const getStatusColor = (status) => {
-        switch(status.toLowerCase()) {
+        switch (status.toLowerCase()) {
             case 'confirmed':
                 return 'success';
             case 'pending':
@@ -65,14 +65,16 @@ const ViewAppointmentDetailComponent = ({
                 return 'default';
         }
     };
-    
+
     const handleSaveNotes = () => {
         onUpdateNotes(noteContent);
         setOpenNotes(false);
     };
 
-    const handleCancelAppointment = () => {
-        onCancel(cancelReason);
+    const handleCancelAppointment = (cancelReason) => {
+        // onCancel(cancelReason);
+        Alert("Cancel reason: " + cancelReason);
+        console.log("Cancel reason 1 :", cancelReason);
         setOpenCancel(false);
     };
 
@@ -96,8 +98,8 @@ const ViewAppointmentDetailComponent = ({
                                 {appointment.patientName}
                             </Box>
                         </Box>
-                        <Chip 
-                            label={appointment.status} 
+                        <Chip
+                            label={appointment.status}
                             color={getStatusColor(appointment.status)}
                             sx={{ fontWeight: 'bold' }}
                         />
@@ -124,7 +126,7 @@ const ViewAppointmentDetailComponent = ({
                                 </Box>
                             </Box>
                         </Grid>
-                        
+
                         <Grid item xs={12} md={6}>
                             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                                 <AccessTime color="primary" sx={{ mt: 0.5 }} />
@@ -152,7 +154,7 @@ const ViewAppointmentDetailComponent = ({
                                 </Box>
                             </Box>
                         </Grid>
-                        
+
                         <Grid item xs={12} md={6}>
                             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                                 <MedicalInformation color="primary" sx={{ mt: 0.5 }} />
@@ -222,8 +224,8 @@ const ViewAppointmentDetailComponent = ({
                             </Box>
                             <Tooltip title={isCancelled ? "Không thể chỉnh sửa cuộc hẹn đã hủy" : "Chỉnh sửa ghi chú"}>
                                 <span>
-                                    <IconButton 
-                                        size="small" 
+                                    <IconButton
+                                        size="small"
                                         onClick={() => setOpenNotes(true)}
                                         disabled={isLoading || isCancelled}
                                     >
@@ -256,8 +258,8 @@ const ViewAppointmentDetailComponent = ({
                             <CircularProgress size={24} sx={{ mr: 2 }} />
                         ) : (
                             <>
-                                <Button 
-                                    variant="outlined" 
+                                <Button
+                                    variant="outlined"
                                     color="error"
                                     startIcon={<Cancel />}
                                     onClick={() => setOpenCancel(true)}
@@ -265,8 +267,8 @@ const ViewAppointmentDetailComponent = ({
                                 >
                                     Hủy cuộc hẹn
                                 </Button>
-                                <Button 
-                                    variant="outlined" 
+                                <Button
+                                    variant="outlined"
                                     color="primary"
                                     startIcon={<CalendarMonth />}
                                     onClick={() => setOpenReschedule(true)}
@@ -274,8 +276,8 @@ const ViewAppointmentDetailComponent = ({
                                 >
                                     Đổi lịch hẹn
                                 </Button>
-                                <Button 
-                                    variant="contained" 
+                                <Button
+                                    variant="contained"
                                     color="success"
                                     startIcon={<CheckCircle />}
                                     onClick={onConfirm}
@@ -313,10 +315,10 @@ const ViewAppointmentDetailComponent = ({
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenCancel(false)} disabled={isLoading}>Trở lại</Button>
-                    <Button 
-                        onClick={handleCancelAppointment} 
-                        color="error" 
-                        variant="contained" 
+                    <Button
+                        onClick={() => handleCancelAppointment(cancelReason)}
+                        color="error"
+                        variant="contained"
                         disabled={isLoading}
                     >
                         {isLoading ? <CircularProgress size={24} /> : 'Xác nhận hủy'}
@@ -376,10 +378,10 @@ const ViewAppointmentDetailComponent = ({
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenReschedule(false)} disabled={isLoading}>Hủy bỏ</Button>
-                    <Button 
-                        onClick={handleRescheduleAppointment} 
-                        color="primary" 
-                        variant="contained" 
+                    <Button
+                        onClick={handleRescheduleAppointment}
+                        color="primary"
+                        variant="contained"
                         disabled={isLoading || !rescheduleDate || !rescheduleTime || !rescheduleReason}
                     >
                         {isLoading ? <CircularProgress size={24} /> : 'Xác nhận đổi lịch'}

@@ -11,5 +11,6 @@ psychologistRouter.get("/scheduleList/:doctorId", availabilityController.getAvai
 psychologistRouter.get("/schedule/:scheduleId", availabilityController.getAvailabilityById);
 psychologistRouter.post("/save-appointment", psychologistController.saveAppointment);
 psychologistRouter.get("/appointment/:appointmentId", psychologistController.getAppointmentById);
+psychologistRouter.get("/appointment-list/", psychologistController.getAppointmentList);
 
 export default psychologistRouter;

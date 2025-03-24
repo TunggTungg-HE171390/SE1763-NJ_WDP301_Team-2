@@ -21,7 +21,7 @@ export const getScheduleById = async (id) => {
 };
 
 export const saveAppointment = async (formData) => {
-    return apiClient.post("/psychologist/save-appointment", formData, {
+    return await apiClient.post("/psychologist/save-appointment", formData, {
         headers: {
             "Content-Type": "multipart/form-data", // Ensure proper content type
         },

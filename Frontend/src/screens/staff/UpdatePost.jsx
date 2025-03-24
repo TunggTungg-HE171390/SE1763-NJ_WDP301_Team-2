@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css"; // Import style cho Quill
+import "./quill-custom.css"; // Add custom styles import
 import { Button, Form, Container, Row, Col, Card, Stack } from "react-bootstrap";
 import { getBlogPostById, updateBlogPost } from "../../api/blogPosts.api";
 import { useBootstrap } from "@/hooks/useBootstrap";
@@ -62,6 +63,32 @@ const UpdatePost = () => {
         setPreview(url);
     };
 
+    // Customize ReactQuill modules with better toolbar configuration
+    const quillModules = {
+        toolbar: {
+            container: [
+                [{ header: [1, 2, false] }],
+                [{ list: "ordered" }, { list: "bullet" }],
+                [{ align: [] }],
+                ["bold", "italic", "underline"],
+                ["link", "image"],
+                [{ script: "sub" }, { script: "super" }],
+                ["blockquote", "code-block"],
+                ["clean"],
+            ],
+        },
+    };
+
+    const quillFormats = [
+        "header",
+        "list", "bullet", 
+        "align",
+        "bold", "italic", "underline",
+        "link", "image", 
+        "script",
+        "blockquote", "code-block"
+    ];
+
     return (
         <Container style={{ maxWidth: "800px", marginTop: "200px" }} className="my-5">
             <Button variant="secondary" onClick={() => navigate("/manage-posts")}>
@@ -84,25 +111,17 @@ const UpdatePost = () => {
 
                     <Form.Group controlId="content">
                         <Form.Label className="text-start d-block mb-2">Content</Form.Label>
-                        <ReactQuill
-                            className="mb-3"
-                            value={content}
-                            onChange={setContent}
-                            modules={{
-                                toolbar: [
-                                    [{ header: "1" }, { header: "2" }, { font: [] }],
-                                    [{ list: "ordered" }, { list: "bullet" }],
-                                    [{ align: [] }],
-                                    ["bold", "italic", "underline"],
-                                    ["link", "image"],
-                                    [{ script: "sub" }, { script: "super" }],
-                                    ["blockquote", "code-block"],
-                                    ["clean"],
-                                ],
-                            }}
-                            placeholder="Write your post content here..."
-                            required
-                        />
+                        <div className="quill-editor-container">
+                            <ReactQuill
+                                className="mb-3"
+                                value={content}
+                                onChange={setContent}
+                                modules={quillModules}
+                                formats={quillFormats}
+                                placeholder="Write your post content here..."
+                                required
+                            />
+                        </div>
                     </Form.Group>
 
                     <Row className="mb-3">
