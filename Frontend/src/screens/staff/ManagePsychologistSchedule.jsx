@@ -295,62 +295,51 @@ const ManagePsychologistSchedule = () => {
   const handleSaveSlots = async () => {
     setSaving(true);
     try {
-      // Collect all newly selected slots that don't exist yet
+      // Collect all time slots that have been selected
       const slotsToCreate = [];
       
+      // Process each date that has selections
       Object.entries(selectedSlots).forEach(([dateKey, timeSlots]) => {
+        // For each date, go through all time slots
         Object.entries(timeSlots).forEach(([timeKey, isSelected]) => {
-          if (isSelected) {
-            const date = parseISO(dateKey);
+          // Only process selected slots that aren't already in the database
+          if (isSelected && !isSlotExisting(new Date(dateKey), timeKey)) {
+            // Parse the time to create start and end times
+            const [hours, minutes] = timeKey.split(':').map(Number);
             
-            // Skip if slot is in the past
-            if (isSlotInPast(date, timeKey)) return;
-            
-            // Skip if slot already exists
-            if (isSlotExisting(date, timeKey)) return;
-            
-            // Find the end time
-            const slot = TIME_SLOTS.find(s => s.start === timeKey);
-            if (!slot) return;
-            
-            // Create start and end times
-            const [startHour, startMinute] = timeKey.split(':').map(Number);
-            const [endHour, endMinute] = slot.end.split(':').map(Number);
-            
+            // Create slot start time
             const startTime = new Date(dateKey);
-            startTime.setHours(startHour, startMinute, 0, 0);
+            startTime.setHours(hours, minutes, 0, 0);
             
-            const endTime = new Date(dateKey);
-            endTime.setHours(endHour, endMinute, 0, 0);
+            // Create slot end time (1 hour later)
+            const endTime = new Date(startTime);
+            endTime.setHours(startTime.getHours() + 1);
             
+            // Add to the array of slots to create
             slotsToCreate.push({
               psychologistId: id,
-              date: date.toISOString(),
+              date: dateKey,
               startTime: startTime.toISOString(),
-              endTime: endTime.toISOString(),
-              status: "Available"
+              endTime: endTime.toISOString()
             });
           }
         });
       });
       
       if (slotsToCreate.length === 0) {
-        setSuccess("Không có lịch trống mới nào được thêm.");
+        setSuccess("Không có lịch trống mới nào được chọn để thêm.");
         setTimeout(() => setSuccess(null), 3000);
         setSaving(false);
         return;
       }
       
-      console.log("Creating new slots:", slotsToCreate);
+      console.log(`Creating ${slotsToCreate.length} new availability slots`);
       
-      // Call backend API to create slots
-      const promises = slotsToCreate.map(slot => 
-        createAvailabilitySlots(slot.psychologistId, slot.date.split('T')[0], slot.date.split('T')[0])
-      );
+      // Call API to create the selected slots - use the unified function
+      const response = await createAvailabilitySlots(id, slotsToCreate);
+      console.log("API response:", response);
       
-      await Promise.all(promises);
-      
-      setSuccess(`Đã tạo thành công ${slotsToCreate.length} lịch trống mới!`);
+      setSuccess(`Đã tạo ${slotsToCreate.length} lịch trống thành công!`);
       
       // Refetch the schedule to get updated data
       const scheduleResponse = await getScheduleListByDoctorId(id);
@@ -458,10 +447,10 @@ const ManagePsychologistSchedule = () => {
         variant="outlined"
         startIcon={<ArrowBackIcon />}
         component={Link}
-        to={`/staff/view-schedule?doctor=${id}`}
+        to={`/staff/manage-psychologists`}
         sx={{ mb: 3 }}
       >
-        Quay lại lịch làm việc
+        Quay lại 
       </Button>
       
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">

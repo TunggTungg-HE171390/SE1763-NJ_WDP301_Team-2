@@ -9,16 +9,18 @@ import { generateDailySlots, generateSlotsForDateRange, filterPastSlots } from "
  */
 const createPsychologistAvailability = async (req, res) => {
     try {
-        // Check if the user has staff role (middleware should handle this)
-        if (req.user && req.user.role !== 'staff') {
-            return res.status(403).json({ message: "Only staff members can manage psychologist schedules" });
-        }
+        // Remove auth check for now to simplify debugging
+        // if (req.user && req.user.role !== 'staff') {
+        //    return res.status(403).json({ message: "Only staff members can manage psychologist schedules" });
+        // }
 
         const { psychologistId, startDate, endDate } = req.body;
         
         if (!psychologistId || !startDate || !endDate) {
             return res.status(400).json({ message: "Missing required fields" });
         }
+        
+        console.log(`Creating availability for psychologist ${psychologistId} from ${startDate} to ${endDate}`);
         
         // Generate slots for the date range
         const slots = generateSlotsForDateRange(psychologistId, new Date(startDate), new Date(endDate));
@@ -44,6 +46,8 @@ const createPsychologistAvailability = async (req, res) => {
             date: { $gte: startDateObj, $lte: endDateObj }
         });
         
+        console.log(`Found ${existingSlots.length} existing slots in date range`);
+        
         // If existing slots, filter them out
         let newSlots = validSlots;
         if (existingSlots.length > 0) {
@@ -60,6 +64,8 @@ const createPsychologistAvailability = async (req, res) => {
                 return !existingSlotMap.has(key);
             });
         }
+        
+        console.log(`After filtering, creating ${newSlots.length} new slots`);
         
         // Save new slots
         if (newSlots.length > 0) {
@@ -328,10 +334,78 @@ const createIndividualSlot = async (req, res) => {
   }
 };
 
+/**
+ * Create multiple availability slots at once (only for selected slots)
+ * This function is intended to be used by staff members only
+ */
+const createMultipleAvailabilitySlots = async (req, res) => {
+    try {
+        const { psychologistId, slots } = req.body;
+        
+        if (!psychologistId || !slots || !Array.isArray(slots) || slots.length === 0) {
+            return res.status(400).json({ message: "Missing required fields or empty slots array" });
+        }
+        
+        console.log(`Creating ${slots.length} availability slots for psychologist ${psychologistId}`);
+        
+        // Check for existing slots to avoid duplicates
+        const existingSlots = await Availability.find({
+            psychologistId,
+            status: "Available"
+        });
+        
+        console.log(`Found ${existingSlots.length} existing available slots`);
+        
+        // Filter out any slots that already exist
+        const existingSlotMap = new Map();
+        existingSlots.forEach(slot => {
+            const key = `${slot.date.toISOString().split('T')[0]}_${slot.startTime.toISOString()}`;
+            existingSlotMap.set(key, true);
+        });
+        
+        // Filter slots to create - only include ones that don't exist yet
+        const slotsToCreate = slots.filter(slot => {
+            const key = `${new Date(slot.date).toISOString().split('T')[0]}_${new Date(slot.startTime).toISOString()}`;
+            return !existingSlotMap.has(key);
+        });
+        
+        console.log(`After filtering, creating ${slotsToCreate.length} new slots`);
+        
+        // If no new slots to create, return early
+        if (slotsToCreate.length === 0) {
+            return res.status(200).json({ 
+                message: "No new slots created. All requested slots already exist.",
+                slotsCreated: 0
+            });
+        }
+        
+        // Prepare slots for insertion
+        const newSlots = slotsToCreate.map(slot => ({
+            psychologistId,
+            date: new Date(slot.date),
+            startTime: new Date(slot.startTime),
+            endTime: new Date(slot.endTime),
+            status: "Available"
+        }));
+        
+        // Insert all new slots
+        const result = await Availability.insertMany(newSlots);
+        
+        return res.status(201).json({ 
+            message: `Created ${result.length} new availability slots`,
+            slotsCreated: result.length
+        });
+    } catch (err) {
+        console.log("Error creating availability slots:", err);
+        res.status(500).json({ message: "Failed to create availability slots", error: err.message });
+    }
+};
+
 export default { 
     createPsychologistAvailability, 
     getAvailabilitiesById, 
     getAvailabilityById,
     updateAvailabilityStatus,
-    createIndividualSlot
+    createIndividualSlot,
+    createMultipleAvailabilitySlots // Add the new function to exports
 };

@@ -124,15 +124,31 @@ export const updatePsychologistWorkHistory = async (id, data) => {
     }
 };
 
-// New function to create availability slots based on fixed schedule
-export const createAvailabilitySlots = async (psychologistId, startDate, endDate) => {
-  console.log(`Creating availability slots for psychologist ${psychologistId} from ${startDate} to ${endDate}`);
+// Update createAvailabilitySlots to handle both simple date range and explicit slots
+export const createAvailabilitySlots = async (psychologistId, startDateOrSlots, endDate) => {
+  // Check if the second parameter is an array (slots) or a string (startDate)
+  const isSlotArray = Array.isArray(startDateOrSlots);
+  
+  console.log(isSlotArray 
+    ? `Creating ${startDateOrSlots.length} custom availability slots for psychologist ${psychologistId}`
+    : `Creating availability slots for psychologist ${psychologistId} from ${startDateOrSlots} to ${endDate}`
+  );
+  
   try {
-    return await apiClient.post('/availability/create', {
-      psychologistId,
-      startDate,
-      endDate
-    });
+    if (isSlotArray) {
+      // Case 1: Creating specific slots
+      return await apiClient.post('/psychologist/availability/create-multiple', {
+        psychologistId,
+        slots: startDateOrSlots
+      });
+    } else {
+      // Case 2: Creating slots by date range
+      return await apiClient.post('/psychologist/availability/create', {
+        psychologistId,
+        startDate: startDateOrSlots,
+        endDate
+      });
+    }
   } catch (error) {
     console.error(`Error creating availability slots: ${error.message}`);
     throw error;
