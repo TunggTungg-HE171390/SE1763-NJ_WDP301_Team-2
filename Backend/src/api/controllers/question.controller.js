@@ -78,7 +78,9 @@ const insertQuestionOnTest = async (req, res, next) => {
 
     const savedQuestions = await Questions.insertMany(questionDocs);
 
-    return res.status(201).json({ message: "Questions created successfully", questions: savedQuestions });
+    const questionIds = savedQuestions.map((q) => q._id);
+
+    return res.status(201).json({ message: "Questions created successfully", questionIds });
   } catch (error) {
     next(error);
   }

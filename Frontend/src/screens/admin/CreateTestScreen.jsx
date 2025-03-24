@@ -179,7 +179,8 @@ export function CreateTestScreen() {
                 console.log("Response từ insertQuestionOnTest:", response2);
     
                 alert("Tạo bài kiểm tra thành công!");
-                navigate(`/getTest/${categoryId}`);
+                // navigate(`/getTest/${categoryId}`);
+                navigate(-1);
             }
         } catch (err) {
             console.error("Lỗi khi tạo bài kiểm tra hoặc chèn câu hỏi:", err);

@@ -24,11 +24,11 @@ export const getQuestionByTestId = async (testId) => {
 
 export const insertQuestionOnTest = async (testId, questions) => {
     try {
-        const response = await apiClient.post(`question/insert-questions/${testId}`, questions);
-        console.log("API Response:", questions);
+        const response = await apiClient.post(`question/insert-questions/${testId}`, { questions });
+        console.log("API Response:", response.data);
         return response.data;
     } catch (error) {
-        console.error("Error fetching question:", error);
+        console.error("Error inserting questions:", error);
         throw error;
     }
 };
