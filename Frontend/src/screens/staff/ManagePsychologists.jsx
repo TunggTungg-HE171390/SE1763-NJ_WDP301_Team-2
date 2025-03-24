@@ -216,6 +216,17 @@ const ManagePsychologists = () => {
                               size="small"
                               title="Xem và quản lý lịch làm việc"
                             >
+                              <ScheduleIcon />
+                            </IconButton>
+                            
+                            {/* Add View Appointments Button */}
+                            <IconButton 
+                              component={Link}
+                              to={`/staff/view-schedule?doctor=${psy._id}`}
+                              color="success"
+                              size="small"
+                              title="Xem lịch hẹn"
+                            >
                               <EventIcon />
                             </IconButton>
                           </Box>

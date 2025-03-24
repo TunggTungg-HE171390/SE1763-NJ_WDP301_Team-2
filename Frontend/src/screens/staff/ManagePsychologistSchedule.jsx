@@ -43,7 +43,8 @@ import {
   NavigateNext as NextIcon,
   Info as InfoIcon,
   FilterAlt as FilterIcon,
-  Save as SaveIcon
+  Save as SaveIcon,
+  Event as EventIcon
 } from '@mui/icons-material';
 import { 
   format, 
@@ -471,8 +472,19 @@ const ManagePsychologistSchedule = () => {
               </Box>
             </Box>
             
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <FormControl size="small" sx={{ minWidth: 120, mr: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {/* Add the View Appointments button */}
+              <Button
+                variant="outlined"
+                color="info"
+                component={Link}
+                to={`/staff/view-schedule?doctor=${id}`}
+                startIcon={<EventIcon />}
+              >
+                Xem lịch hẹn
+              </Button>
+              
+              <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel id="view-mode-label">Chế độ xem</InputLabel>
                 <Select
                   labelId="view-mode-label"

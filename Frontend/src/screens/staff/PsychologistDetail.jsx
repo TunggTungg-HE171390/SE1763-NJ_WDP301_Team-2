@@ -34,7 +34,8 @@ import {
   EventNote as EventNoteIcon,
   Edit as EditIcon,
   StarBorder as StarBorderIcon,
-  Schedule as ScheduleIcon
+  Schedule as ScheduleIcon,
+  Event as EventIcon
 } from '@mui/icons-material';
 import { getPsychologistDetails, getPsychologist } from '../../api/psychologist.api';
 
@@ -241,6 +242,18 @@ const PsychologistDetail = () => {
                 fullWidth
               >
                 Xem và quản lý lịch làm việc
+              </Button>
+              
+              {/* Add button to view schedule/appointments */}
+              <Button
+                variant="outlined"
+                color="info"
+                startIcon={<EventIcon />}
+                component={Link}
+                to={`/staff/view-schedule?doctor=${psychologist._id}`}
+                fullWidth
+              >
+                Xem lịch hẹn
               </Button>
             </Box>
           </Paper>
