@@ -137,6 +137,7 @@ function Layout() {
                 <div>
                     <Routes>
                         <Route path="/" element={<Homepage />} />
+                        {/* Public routes */}
                         <Route path="/CategoryTestSelected" element={<CategoryTestSelected />} />
                         <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
                         <Route path="/questions-on-test/:testId" element={<TestForm />} />
@@ -148,23 +149,55 @@ function Layout() {
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
                         
                         {/* Psychologist routes */}
-                        <Route path="/psychologist/view-schedule" element={<ViewSchedule userRole="psychologist" />} />
-                        <Route path="/psychologist/view-appointment-detail/:appointmentId" element={<AppointmentDetail />} />
+                        <Route path="/psychologist/view-schedule" element={
+                            <ProtectedRoute element={<ViewSchedule userRole="psychologist" />} requiredRole="psychologist" />
+                        } />
+                        <Route path="/psychologist/view-appointment-detail/:appointmentId" element={
+                            <ProtectedRoute element={<AppointmentDetail />} requiredRole="psychologist" />
+                        } />
                         
-                        {/* Staff routes */}
-                        <Route path="/staff/view-schedule" element={<ViewSchedule userRole="staff" />} />
-                        <Route path="/staff/view-appointment-detail/:appointmentId" element={<AppointmentDetail />} />
-                        <Route path="/staff/appointment-details/:appointmentId" element={<AppointmentDetail />} />
-                        <Route path="/staff/manage-appointments" element={<ManageAppointments />} />
-                        <Route path="/staff/manage-psychologists" element={<ManagePsychologists />} />
-                        <Route path="/staff/psychologist-detail/:id" element={<PsychologistDetail />} />
-                        <Route path="/staff/manage-psychologist-schedule/:id" element={<ManagePsychologistSchedule />} />
-                        <Route path="/staff/edit-psychologist-experience/:id" element={<EditPsychologistExperience />} />
-                        <Route path="/staff/edit-psychologist-work-history/:id" element={<EditPsychologistWorkHistory />} />
-                        <Route path="/staff/manage-posts" element={<ManagePosts />} />
-                        <Route path="/staff/create-post" element={<CreateNewPost />} />
-                        <Route path="/staff/update-post/:postId" element={<UpdatePost />} />
+                        {/* Staff routes - properly protected with role-based access */}
+                        <Route path="/staff/view-schedule" element={
+                            <ProtectedRoute element={<ViewSchedule userRole="staff" />} requiredRole="staff" />
+                        } />
+                        <Route path="/staff/view-appointment-detail/:appointmentId" element={
+                            <ProtectedRoute element={<AppointmentDetail />} requiredRole="staff" />
+                        } />
+                        <Route path="/staff/appointment-details/:appointmentId" element={
+                            <ProtectedRoute element={<AppointmentDetail />} requiredRole="staff" />
+                        } />
+                        <Route path="/staff/manage-appointments" element={
+                            <ProtectedRoute element={<ManageAppointments />} requiredRole="staff" />
+                        } />
+                        <Route path="/staff/manage-psychologists" element={
+                            <ProtectedRoute element={<ManagePsychologists />} requiredRole="staff" />
+                        } />
+                        <Route path="/staff/psychologist-detail/:id" element={
+                            <ProtectedRoute element={<PsychologistDetail />} requiredRole="staff" />
+                        } />
                         
+                        {/* Make sure this route is properly defined */}
+                        <Route path="/staff/manage-psychologist-schedule/:id" element={
+                            <ProtectedRoute element={<ManagePsychologistSchedule />} requiredRole="staff" />
+                        } />
+                        
+                        <Route path="/staff/edit-psychologist-experience/:id" element={
+                            <ProtectedRoute element={<EditPsychologistExperience />} requiredRole="staff" />
+                        } />
+                        <Route path="/staff/edit-psychologist-work-history/:id" element={
+                            <ProtectedRoute element={<EditPsychologistWorkHistory />} requiredRole="staff" />
+                        } />
+                        <Route path="/staff/manage-posts" element={
+                            <ProtectedRoute element={<ManagePosts />} requiredRole="staff" />
+                        } />
+                        <Route path="/staff/create-post" element={
+                            <ProtectedRoute element={<CreateNewPost />} requiredRole="staff" />
+                        } />
+                        <Route path="/staff/update-post/:postId" element={
+                            <ProtectedRoute element={<UpdatePost />} requiredRole="staff" />
+                        } />
+                        
+                        {/* Public doctor routes */}
                         <Route path="/doctor" element={<DoctorBooking />} />
                         <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
                         <Route path="/book-appointment" element={<BookAppointment />} />

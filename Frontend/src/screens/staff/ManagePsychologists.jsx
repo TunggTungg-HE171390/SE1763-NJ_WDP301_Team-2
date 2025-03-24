@@ -208,36 +208,15 @@ const ManagePsychologists = () => {
                               <VisibilityIcon />
                             </IconButton>
                             
-                            <IconButton 
-                              component={Link} 
-                              to={`/staff/edit-psychologist/${psy._id}`}
-                              color="info"
-                              size="small"
-                              title="Chỉnh sửa thông tin"
-                            >
-                              <EditIcon />
-                            </IconButton>
-                            
-                            <IconButton 
-                              component={Link}
-                              to={`/staff/view-schedule?doctor=${psy._id}`}
-                              state={{ from: 'managePsychologists' }}
-                              color="secondary"
-                              size="small"
-                              title="Xem lịch làm việc"
-                            >
-                              <EventIcon />
-                            </IconButton>
-
+                            {/* Combined View/Manage Schedule Button - ensure correct route format */}
                             <IconButton 
                               component={Link}
                               to={`/staff/manage-psychologist-schedule/${psy._id}`}
-                              state={{ from: 'managePsychologists' }}
-                              color="success"
+                              color="info"
                               size="small"
-                              title="Quản lý lịch trống"
+                              title="Xem và quản lý lịch làm việc"
                             >
-                              <ScheduleIcon />
+                              <EventIcon />
                             </IconButton>
                           </Box>
                         </TableCell>

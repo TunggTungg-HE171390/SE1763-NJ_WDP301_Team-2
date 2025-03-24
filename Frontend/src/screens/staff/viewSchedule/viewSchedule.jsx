@@ -281,7 +281,7 @@ const ViewSchedule = ({ userRole = 'staff' }) => {
             startIcon={<AddIcon />}
             onClick={() => navigate(`/staff/manage-psychologist-schedule/${doctorId}`)}
           >
-            Thêm lịch làm việc
+            Quản lý lịch làm việc
           </Button>
         )}
       </Box>
@@ -451,19 +451,32 @@ const ViewSchedule = ({ userRole = 'staff' }) => {
                                         </Button>
                                       </Tooltip>
                                     ) : (
-                                      <Tooltip title="Xem chi tiết buổi hẹn">
-                                        <Button
-                                          variant="outlined"
-                                          size="small"
-                                          color="info"
-                                          onClick={() => handleViewAppointment(schedule)}
-                                          disabled={!schedule.appointmentId && schedule.isBooked}
-                                        >
-                                          {!schedule.appointmentId && schedule.isBooked 
-                                            ? "Không có chi tiết" 
-                                            : "Xem chi tiết"}
-                                        </Button>
-                                      </Tooltip>
+                                      schedule.appointmentId ? (
+                                        <Tooltip title="Xem chi tiết buổi hẹn">
+                                          <Button
+                                            variant="outlined"
+                                            size="small"
+                                            color="info"
+                                            onClick={() => handleViewAppointment(schedule)}
+                                          >
+                                            Xem chi tiết
+                                          </Button>
+                                        </Tooltip>
+                                      ) : (
+                                        // Wrap disabled button in span for Tooltip
+                                        <Tooltip title="Không có chi tiết cuộc hẹn">
+                                          <span>
+                                            <Button
+                                              variant="outlined"
+                                              size="small"
+                                              color="info"
+                                              disabled
+                                            >
+                                              Không có chi tiết
+                                            </Button>
+                                          </span>
+                                        </Tooltip>
+                                      )
                                     )}
                                   </Box>
                                 )}
@@ -563,17 +576,30 @@ const ViewSchedule = ({ userRole = 'staff' }) => {
                           </Grid>
                           <Grid item xs={12} sm={8} sx={{ textAlign: { sm: 'right' } }}>
                             {userRole === 'staff' && (
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                color="info"
-                                onClick={() => handleViewAppointment(schedule)}
-                                disabled={!schedule.appointmentId}
-                              >
-                                {!schedule.appointmentId 
-                                  ? "Không có chi tiết" 
-                                  : "Xem chi tiết buổi hẹn"}
-                              </Button>
+                              schedule.appointmentId ? (
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  color="info"
+                                  onClick={() => handleViewAppointment(schedule)}
+                                >
+                                  Xem chi tiết buổi hẹn
+                                </Button>
+                              ) : (
+                                // Wrap disabled button in span for Tooltip
+                                <Tooltip title="Không có chi tiết cuộc hẹn">
+                                  <span>
+                                    <Button
+                                      variant="outlined"
+                                      size="small"
+                                      color="info"
+                                      disabled
+                                    >
+                                      Không có chi tiết
+                                    </Button>
+                                  </span>
+                                </Tooltip>
+                              )
                             )}
                           </Grid>
                         </Grid>

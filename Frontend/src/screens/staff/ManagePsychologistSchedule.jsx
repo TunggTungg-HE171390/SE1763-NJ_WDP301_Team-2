@@ -1,309 +1,428 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Container,
   Typography,
-  Box,
   Paper,
+  Box,
   Grid,
   Button,
-  TextField,
-  CircularProgress,
   Alert,
-  Card,
-  CardContent,
+  CircularProgress,
   Divider,
   IconButton,
-  Avatar,
-  Chip,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  FormControlLabel,
-  Switch,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
+  Tooltip,
+  Card,
+  CardContent,
+  Chip,
   ToggleButton,
-  ToggleButtonGroup,
-  Breadcrumbs,
-  Link as MuiLink
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  ButtonGroup,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import 'dayjs/locale/vi';
 import {
   ArrowBack as ArrowBackIcon,
-  Save as SaveIcon,
-  Delete as DeleteIcon,
+  CalendarMonth as CalendarIcon,
   Add as AddIcon,
-  CalendarMonth as CalendarMonthIcon,
-  NavigateNext as NavigateNextIcon
+  Check as CheckIcon,
+  Close as CloseIcon,
+  NavigateBefore as PrevIcon,
+  NavigateNext as NextIcon,
+  Info as InfoIcon,
+  FilterAlt as FilterIcon,
+  Save as SaveIcon
 } from '@mui/icons-material';
-import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import dayjs from 'dayjs';
-import { getPsychologist } from '../../api/psychologist.api';
 import { 
-  saveAvailability, 
-  getAvailabilityByPsychologistId, 
-  generateAvailabilitySlots 
-} from '../../api/availability.api';
+  format, 
+  addDays, 
+  startOfWeek, 
+  endOfWeek, 
+  eachDayOfInterval, 
+  isToday, 
+  addWeeks, 
+  subWeeks,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  parseISO,
+  setHours,
+  setMinutes,
+  isAfter,
+  isBefore,
+  isSameDay,
+  isWithinInterval
+} from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { getPsychologist, getScheduleListByDoctorId, createAvailabilitySlots } from '../../api/psychologist.api';
+import { useAuth } from '../../components/auth/authContext';
 
-const daysOfWeek = [
-  { value: 1, label: "Thứ 2" },
-  { value: 2, label: "Thứ 3" },
-  { value: 3, label: "Thứ 4" },
-  { value: 4, label: "Thứ 5" },
-  { value: 5, label: "Thứ 6" },
-  { value: 6, label: "Thứ 7" },
-  { value: 0, label: "Chủ nhật" }
-];
+// Create time slots for a day (8:30 AM to 5:30 PM)
+const generateTimeSlots = () => {
+  const slots = [];
+  const startHour = 8;
+  const startMinute = 30;
+  const endHour = 17;
+  const endMinute = 30;
+  
+  let currentHour = startHour;
+  let currentMinute = startMinute;
+  
+  while (currentHour < endHour || (currentHour === endHour && currentMinute <= endMinute)) {
+    // Format time as "HH:MM"
+    const formattedHour = currentHour.toString().padStart(2, '0');
+    const formattedMinute = currentMinute.toString().padStart(2, '0');
+    const time = `${formattedHour}:${formattedMinute}`;
+    
+    // Calculate end time (1 hour later)
+    let endTimeHour = currentHour;
+    let endTimeMinute = currentMinute;
+    
+    endTimeMinute += 60;
+    if (endTimeMinute >= 60) {
+      endTimeHour += Math.floor(endTimeMinute / 60);
+      endTimeMinute %= 60;
+    }
+    
+    const endFormattedHour = endTimeHour.toString().padStart(2, '0');
+    const endFormattedMinute = endTimeMinute.toString().padStart(2, '0');
+    const endTime = `${endFormattedHour}:${endFormattedMinute}`;
+    
+    slots.push({
+      start: time,
+      end: endTime,
+      label: `${time} - ${endTime}`
+    });
+    
+    // Move to next slot
+    currentMinute += 60;
+    if (currentMinute >= 60) {
+      currentHour += Math.floor(currentMinute / 60);
+      currentMinute %= 60;
+    }
+  }
+  
+  return slots;
+};
+
+const TIME_SLOTS = generateTimeSlots();
 
 const ManagePsychologistSchedule = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
+  const { user } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  // State variables
   const [psychologist, setPsychologist] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [viewMode, setViewMode] = useState('week'); // 'week' or 'month'
+  const [existingSlots, setExistingSlots] = useState([]);
+  const [selectedSlots, setSelectedSlots] = useState({});
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogDate, setDialogDate] = useState(null);
   
-  // Availability state
-  const [availabilityType, setAvailabilityType] = useState('weekly'); // 'weekly' or 'specific'
-  const [workingDays, setWorkingDays] = useState([1, 2, 3, 4, 5]); // Default Mon-Fri
-  const [workingHours, setWorkingHours] = useState({
-    start: dayjs('2023-01-01T08:00'),
-    end: dayjs('2023-01-01T17:00'),
+  // Check if user is staff
+  const isStaff = user?.role === 'staff';
+  
+  // Calculate week dates
+  const weekDays = eachDayOfInterval({
+    start: currentWeekStart,
+    end: endOfWeek(currentWeekStart, { weekStartsOn: 1 })
   });
   
-  const [specificDates, setSpecificDates] = useState([
-    { date: dayjs(), startTime: dayjs('2023-01-01T08:00'), endTime: dayjs('2023-01-01T17:00'), active: true }
-  ]);
-  
-  const [breakPeriod, setBreakPeriod] = useState({
-    enabled: true,
-    start: dayjs('2023-01-01T12:00'),
-    end: dayjs('2023-01-01T13:00'),
-  });
-  
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-  const [appointmentDurationMinutes, setAppointmentDurationMinutes] = useState(60); // Default 1 hour per appointment
-  
+  // Initialize selected slots for newly added dates
   useEffect(() => {
+    const newSelectedSlots = { ...selectedSlots };
+    
+    weekDays.forEach(day => {
+      const dateKey = format(day, 'yyyy-MM-dd');
+      if (!newSelectedSlots[dateKey]) {
+        newSelectedSlots[dateKey] = {};
+        TIME_SLOTS.forEach(slot => {
+          newSelectedSlots[dateKey][slot.start] = false;
+        });
+      }
+    });
+    
+    setSelectedSlots(newSelectedSlots);
+  }, [currentWeekStart]);
+  
+  // Fetch psychologist and existing schedule data
+  useEffect(() => {
+    // Redirect non-staff users
+    if (user && !isStaff) {
+      navigate('/');
+      return;
+    }
+    
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch psychologist data
-        const psychologistResponse = await getPsychologist(id);
-        setPsychologist(psychologistResponse.data);
+        // Fetch psychologist info
+        const psychoResponse = await getPsychologist(id);
+        if (psychoResponse?.data) {
+          setPsychologist(psychoResponse.data);
+        } else {
+          throw new Error("Không thể tải thông tin chuyên gia tâm lý");
+        }
         
-        // Fetch availability data
-        try {
-          const availabilityResponse = await getAvailabilityByPsychologistId(id);
-          if (availabilityResponse && availabilityResponse.data) {
-            loadExistingAvailability(availabilityResponse.data);
-          }
-          setError(null);
-        } catch (availabilityError) {
-          console.warn('No availability configuration found. Creating new one.', availabilityError);
-          // No existing availability - we'll create a new one with defaults
+        // Fetch existing schedule
+        const scheduleResponse = await getScheduleListByDoctorId(id);
+        if (scheduleResponse && Array.isArray(scheduleResponse)) {
+          console.log("Existing schedules:", scheduleResponse);
+          setExistingSlots(scheduleResponse);
+          
+          // Update selected slots based on existing data
+          const newSelectedSlots = { ...selectedSlots };
+          
+          scheduleResponse.forEach(slot => {
+            if (!slot.startTime) return;
+            
+            const slotDate = new Date(slot.date || slot.startTime);
+            const dateKey = format(slotDate, 'yyyy-MM-dd');
+            const timeKey = format(new Date(slot.startTime), 'HH:mm');
+            
+            if (!newSelectedSlots[dateKey]) {
+              newSelectedSlots[dateKey] = {};
+              TIME_SLOTS.forEach(timeSlot => {
+                newSelectedSlots[dateKey][timeSlot.start] = false;
+              });
+            }
+            
+            // Mark slots as selected if they already exist and are available
+            if (slot.status === "Available") {
+              newSelectedSlots[dateKey][timeKey] = true;
+            }
+          });
+          
+          setSelectedSlots(newSelectedSlots);
         }
       } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Không thể tải thông tin của chuyên gia tâm lý.');
-        
-        // Mock data for development
-        if (process.env.NODE_ENV !== 'production') {
-          const mockPsychologist = {
-            _id: id,
-            fullname: 'Dr. Nguyễn Văn A',
-            specialization: 'Tâm lý lâm sàng',
-            email: 'doctor.a@example.com',
-            phone: '0901234567',
-            avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-          };
-          setPsychologist(mockPsychologist);
-          
-          const mockAvailability = {
-            psychologistId: id,
-            type: 'weekly',
-            daysOfWeek: [1, 2, 3, 4, 5],
-            hours: { start: '08:00', end: '17:00' },
-            breakTime: { start: '12:00', end: '13:00' },
-            appointmentDuration: 60
-          };
-          loadExistingAvailability(mockAvailability);
-        }
+        console.error("Error fetching data:", err);
+        setError("Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại sau.");
       } finally {
         setLoading(false);
       }
     };
     
-    fetchData();
-  }, [id]);
+    if (id) {
+      fetchData();
+    }
+  }, [id, user, isStaff, navigate]);
   
-  const loadExistingAvailability = (availability) => {
-    if (!availability) return;
+  // Toggle a time slot for a specific date
+  const toggleSlot = (date, time) => {
+    const dateKey = format(date, 'yyyy-MM-dd');
     
-    if (availability.type === 'weekly') {
-      setAvailabilityType('weekly');
-      setWorkingDays(availability.daysOfWeek || [1, 2, 3, 4, 5]);
+    setSelectedSlots(prev => {
+      const updatedSlots = { ...prev };
       
-      if (availability.hours) {
-        setWorkingHours({
-          start: dayjs(`2023-01-01T${availability.hours.start}`),
-          end: dayjs(`2023-01-01T${availability.hours.end}`),
+      if (!updatedSlots[dateKey]) {
+        updatedSlots[dateKey] = {};
+        TIME_SLOTS.forEach(slot => {
+          updatedSlots[dateKey][slot.start] = false;
         });
       }
       
-      if (availability.breakTime) {
-        setBreakPeriod({
-          enabled: true,
-          start: dayjs(`2023-01-01T${availability.breakTime.start}`),
-          end: dayjs(`2023-01-01T${availability.breakTime.end}`),
-        });
-      } else {
-        setBreakPeriod({...breakPeriod, enabled: false});
-      }
+      updatedSlots[dateKey][time] = !updatedSlots[dateKey][time];
+      return updatedSlots;
+    });
+  };
+  
+  // Check if a slot is already saved in the database
+  const isSlotExisting = (date, time) => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    const targetStart = new Date(dateString + 'T' + time);
+    
+    return existingSlots.some(slot => {
+      if (!slot.startTime) return false;
       
-      if (availability.appointmentDuration) {
-        setAppointmentDurationMinutes(availability.appointmentDuration);
-      }
-    } else if (availability.type === 'specific') {
-      setAvailabilityType('specific');
-      
-      if (Array.isArray(availability.dates) && availability.dates.length > 0) {
-        const formattedDates = availability.dates.map(date => ({
-          date: dayjs(date.date),
-          startTime: dayjs(`2023-01-01T${date.startTime}`),
-          endTime: dayjs(`2023-01-01T${date.endTime}`),
-          active: date.active !== false
-        }));
-        setSpecificDates(formattedDates);
-      }
-      
-      if (availability.appointmentDuration) {
-        setAppointmentDurationMinutes(availability.appointmentDuration);
-      }
+      const slotStart = new Date(slot.startTime);
+      return isSameDay(slotStart, date) && 
+             format(slotStart, 'HH:mm') === time &&
+             slot.status === "Available";
+    });
+  };
+  
+  // Check if a slot is in the past
+  const isSlotInPast = (date, time) => {
+    const slotDateTime = new Date(date);
+    const [hours, minutes] = time.split(':').map(Number);
+    slotDateTime.setHours(hours, minutes, 0, 0);
+    
+    return isBefore(slotDateTime, new Date());
+  };
+  
+  // Navigate to previous week/month
+  const handlePrevPeriod = () => {
+    if (viewMode === 'week') {
+      setCurrentWeekStart(subWeeks(currentWeekStart, 1));
+    } else {
+      setCurrentDate(subMonths(currentDate, 1));
     }
   };
   
-  const handleDayToggle = (event, newDays) => {
-    if (newDays.length) setWorkingDays(newDays);
-  };
-  
-  const handleViewChange = (event, newView) => {
-    if (newView !== null) {
-      setAvailabilityType(newView);
+  // Navigate to next week/month
+  const handleNextPeriod = () => {
+    if (viewMode === 'week') {
+      setCurrentWeekStart(addWeeks(currentWeekStart, 1));
+    } else {
+      setCurrentDate(addMonths(currentDate, 1));
     }
   };
   
-  const handleAddSpecificDate = () => {
-    setSpecificDates([
-      ...specificDates,
-      {
-        date: dayjs(), 
-        startTime: dayjs('2023-01-01T08:00'),
-        endTime: dayjs('2023-01-01T17:00'),
-        active: true
-      }
-    ]);
-  };
-  
-  const handleRemoveSpecificDate = (index) => {
-    const newDates = [...specificDates];
-    newDates.splice(index, 1);
-    setSpecificDates(newDates);
-  };
-  
-  const handleSpecificDateChange = (index, field, value) => {
-    const newDates = [...specificDates];
-    newDates[index] = {...newDates[index], [field]: value};
-    setSpecificDates(newDates);
-  };
-  
-  const handleBreakToggle = (event) => {
-    setBreakPeriod({...breakPeriod, enabled: event.target.checked});
-  };
-  
-  const handleSaveAvailability = () => {
-    setOpenConfirmDialog(true);
-  };
-  
-  const confirmSaveAvailability = async () => {
+  // Save selected slots to the database
+  const handleSaveSlots = async () => {
     setSaving(true);
-    setOpenConfirmDialog(false);
-    
     try {
-      let availabilityData = {
-        psychologistId: id,
-        appointmentDuration: appointmentDurationMinutes,
-      };
+      // Collect all newly selected slots that don't exist yet
+      const slotsToCreate = [];
       
-      if (availabilityType === 'weekly') {
-        availabilityData = {
-          ...availabilityData,
-          type: 'weekly',
-          daysOfWeek: workingDays,
-          hours: {
-            start: workingHours.start.format('HH:mm'),
-            end: workingHours.end.format('HH:mm')
+      Object.entries(selectedSlots).forEach(([dateKey, timeSlots]) => {
+        Object.entries(timeSlots).forEach(([timeKey, isSelected]) => {
+          if (isSelected) {
+            const date = parseISO(dateKey);
+            
+            // Skip if slot is in the past
+            if (isSlotInPast(date, timeKey)) return;
+            
+            // Skip if slot already exists
+            if (isSlotExisting(date, timeKey)) return;
+            
+            // Find the end time
+            const slot = TIME_SLOTS.find(s => s.start === timeKey);
+            if (!slot) return;
+            
+            // Create start and end times
+            const [startHour, startMinute] = timeKey.split(':').map(Number);
+            const [endHour, endMinute] = slot.end.split(':').map(Number);
+            
+            const startTime = new Date(dateKey);
+            startTime.setHours(startHour, startMinute, 0, 0);
+            
+            const endTime = new Date(dateKey);
+            endTime.setHours(endHour, endMinute, 0, 0);
+            
+            slotsToCreate.push({
+              psychologistId: id,
+              date: date.toISOString(),
+              startTime: startTime.toISOString(),
+              endTime: endTime.toISOString(),
+              status: "Available"
+            });
           }
-        };
-        
-        if (breakPeriod.enabled) {
-          availabilityData.breakTime = {
-            start: breakPeriod.start.format('HH:mm'),
-            end: breakPeriod.end.format('HH:mm')
-          };
-        }
-      } else {
-        availabilityData = {
-          ...availabilityData,
-          type: 'specific',
-          dates: specificDates.map(date => ({
-            date: date.date.format('YYYY-MM-DD'),
-            startTime: date.startTime.format('HH:mm'),
-            endTime: date.endTime.format('HH:mm'),
-            active: date.active
-          }))
-        };
+        });
+      });
+      
+      if (slotsToCreate.length === 0) {
+        setSuccess("Không có lịch trống mới nào được thêm.");
+        setTimeout(() => setSuccess(null), 3000);
+        setSaving(false);
+        return;
       }
       
-      // Call the API to save the availability
-      const response = await saveAvailability(availabilityData);
+      console.log("Creating new slots:", slotsToCreate);
       
-      if (response && response.data) {
-        setSuccess('Lịch trống đã được cập nhật thành công.');
-        
-        // After saving availability configuration, generate actual time slots
-        try {
-          // Generate slots for the next 3 months
-          const startDate = dayjs().format('YYYY-MM-DD');
-          const endDate = dayjs().add(3, 'month').format('YYYY-MM-DD');
-          
-          await generateAvailabilitySlots(id, startDate, endDate);
-          console.log('Time slots generated successfully');
-        } catch (generateError) {
-          console.error('Error generating time slots:', generateError);
-          // Don't show error to user since the main action succeeded
-        }
-      } else {
-        throw new Error('Unexpected response format');
+      // Call backend API to create slots
+      const promises = slotsToCreate.map(slot => 
+        createAvailabilitySlots(slot.psychologistId, slot.date.split('T')[0], slot.date.split('T')[0])
+      );
+      
+      await Promise.all(promises);
+      
+      setSuccess(`Đã tạo thành công ${slotsToCreate.length} lịch trống mới!`);
+      
+      // Refetch the schedule to get updated data
+      const scheduleResponse = await getScheduleListByDoctorId(id);
+      if (scheduleResponse && Array.isArray(scheduleResponse)) {
+        setExistingSlots(scheduleResponse);
       }
       
-      setTimeout(() => setSuccess(null), 5000); // Clear success message after 5 seconds
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error('Error saving availability:', err);
-      setError('Không thể lưu lịch trống. Vui lòng thử lại sau.');
+      console.error("Error saving slots:", err);
+      setError("Đã xảy ra lỗi khi lưu lịch trống. Vui lòng thử lại sau.");
+      setTimeout(() => setError(null), 5000);
     } finally {
       setSaving(false);
     }
+  };
+  
+  // Open dialog to edit slots for a specific date
+  const handleOpenDialog = (date) => {
+    setDialogDate(date);
+    setOpenDialog(true);
+  };
+  
+  // Close dialog
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setDialogDate(null);
+  };
+  
+  // Select all slots for a day
+  const selectAllSlotsForDay = (date) => {
+    const dateKey = format(date, 'yyyy-MM-dd');
+    
+    setSelectedSlots(prev => {
+      const updatedSlots = { ...prev };
+      
+      if (!updatedSlots[dateKey]) {
+        updatedSlots[dateKey] = {};
+      }
+      
+      TIME_SLOTS.forEach(slot => {
+        if (!isSlotInPast(date, slot.start)) {
+          updatedSlots[dateKey][slot.start] = true;
+        }
+      });
+      
+      return updatedSlots;
+    });
+  };
+  
+  // Clear all slots for a day
+  const clearAllSlotsForDay = (date) => {
+    const dateKey = format(date, 'yyyy-MM-dd');
+    
+    setSelectedSlots(prev => {
+      const updatedSlots = { ...prev };
+      
+      if (!updatedSlots[dateKey]) {
+        updatedSlots[dateKey] = {};
+      }
+      
+      TIME_SLOTS.forEach(slot => {
+        updatedSlots[dateKey][slot.start] = false;
+      });
+      
+      return updatedSlots;
+    });
+  };
+  
+  // Format date for display
+  const formatDateHeader = (date) => {
+    return format(date, 'EEE, dd/MM', { locale: vi });
   };
   
   if (loading) {
@@ -314,19 +433,20 @@ const ManagePsychologistSchedule = () => {
     );
   }
   
-  if (!psychologist && error) {
+  // Prevent non-staff from accessing this page
+  if (!isStaff) {
     return (
       <Container maxWidth="lg" sx={{ mt: 12, mb: 4 }}>
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
+        <Alert severity="error">
+          Chỉ nhân viên (staff) mới có quyền truy cập trang này.
         </Alert>
-        <Button
-          variant="contained"
-          startIcon={<ArrowBackIcon />}
-          component={Link}
-          to="/staff/manage-psychologists"
+        <Button 
+          variant="contained" 
+          component={Link} 
+          to="/" 
+          sx={{ mt: 2 }}
         >
-          Quay lại danh sách
+          Quay về trang chủ
         </Button>
       </Container>
     );
@@ -334,326 +454,292 @@ const ManagePsychologistSchedule = () => {
   
   return (
     <Container maxWidth="lg" sx={{ mt: 12, mb: 4 }}>
-      {/* Breadcrumbs Navigation */}
-      <Paper sx={{ p: 2, mb: 3, display: 'flex', alignItems: 'center' }}>
-        <Button
-          startIcon={<ArrowBackIcon />}
-          onClick={() => navigate('/staff/manage-psychologists')}
-          sx={{ mr: 2 }}
-        >
-          Quay lại
-        </Button>
-        
-        <Breadcrumbs 
-          separator={<NavigateNextIcon fontSize="small" />} 
-          aria-label="breadcrumb"
-        >
-          <MuiLink 
-            component={Link} 
-            to="/" 
-            underline="hover" 
-            color="inherit"
-          >
-            Trang chủ
-          </MuiLink>
-          <MuiLink 
-            component={Link} 
-            to="/staff/manage-psychologists" 
-            underline="hover" 
-            color="inherit"
-          >
-            Quản lý chuyên gia tâm lý
-          </MuiLink>
-          <Typography color="text.primary">
-            Quản lý lịch trống
-          </Typography>
-        </Breadcrumbs>
-      </Paper>
-
-      <Typography variant="h4" gutterBottom fontWeight={600}>
-        Quản lý lịch trống
-      </Typography>
-      
-      {/* Psychologist Info Card */}
-      <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar
-            src={psychologist?.avatar}
-            alt={psychologist?.fullname}
-            sx={{ width: 60, height: 60, mr: 2 }}
-          />
-          <Box>
-            <Typography variant="h5" fontWeight={500}>
-              {psychologist?.fullname}
-            </Typography>
-            <Chip
-              label={psychologist?.specialization || 'Chuyên gia tâm lý'}
-              color="primary"
-              size="small"
-              sx={{ mr: 1 }}
-            />
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {psychologist?.email} | {psychologist?.phone}
-            </Typography>
-          </Box>
-        </Box>
-      </Paper>
-      
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-      
-      {success && (
-        <Alert severity="success" sx={{ mb: 3 }}>
-          {success}
-        </Alert>
-      )}
+      <Button
+        variant="outlined"
+        startIcon={<ArrowBackIcon />}
+        component={Link}
+        to={`/staff/view-schedule?doctor=${id}`}
+        sx={{ mb: 3 }}
+      >
+        Quay lại lịch làm việc
+      </Button>
       
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
-        <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-            <CalendarMonthIcon sx={{ mr: 1 }} color="primary" />
-            <Typography variant="h6" fontWeight={500}>
-              Thiết lập lịch trống
-            </Typography>
-          </Box>
-          
-          {/* Availability Type Selection */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              Kiểu lịch trống
-            </Typography>
-            <ToggleButtonGroup
-              value={availabilityType}
-              exclusive
-              onChange={handleViewChange}
-              color="primary"
-              sx={{ mb: 2 }}
-            >
-              <ToggleButton value="weekly">
-                Lịch hàng tuần
-              </ToggleButton>
-              <ToggleButton value="specific">
-                Lịch từng ngày
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
-          
-          <Divider sx={{ my: 3 }} />
-          
-          {/* Weekly Availability Config */}
-          {availabilityType === 'weekly' && (
-            <>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Các ngày làm việc
+        <Paper elevation={3} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
+          {/* Header */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <CalendarIcon color="primary" sx={{ mr: 2, fontSize: 28 }} />
+              <Box>
+                <Typography variant="h5" component="h1" fontWeight={500}>
+                  Quản lý lịch trống
+                </Typography>
+                {psychologist && (
+                  <Typography variant="subtitle1" color="text.secondary">
+                    {psychologist.fullName} - {psychologist.psychologist?.psychologistProfile?.specialization || "Chuyên gia tâm lý"}
                   </Typography>
-                  <ToggleButtonGroup
-                    value={workingDays}
-                    onChange={handleDayToggle}
-                    color="primary"
-                    sx={{ flexWrap: 'wrap' }}
-                    multiple
-                  >
-                    {daysOfWeek.map((day) => (
-                      <ToggleButton key={day.value} value={day.value} sx={{ minWidth: 80 }}>
-                        {day.label}
-                      </ToggleButton>
-                    ))}
-                  </ToggleButtonGroup>
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Giờ làm việc
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <TimePicker
-                        label="Bắt đầu"
-                        value={workingHours.start}
-                        onChange={(newValue) => setWorkingHours({...workingHours, start: newValue})}
-                        slotProps={{ textField: { fullWidth: true } }}
-                      />
-                    </Grid>
-                    <Grid item xs={6}>
-                      <TimePicker
-                        label="Kết thúc"
-                        value={workingHours.end}
-                        onChange={(newValue) => setWorkingHours({...workingHours, end: newValue})}
-                        slotProps={{ textField: { fullWidth: true } }}
-                      />
-                    </Grid>
-                  </Grid>
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={breakPeriod.enabled}
-                        onChange={handleBreakToggle}
-                      />
-                    }
-                    label="Thời gian nghỉ trưa"
-                  />
-                  
-                  {breakPeriod.enabled && (
-                    <Grid container spacing={2} sx={{ mt: 1 }}>
-                      <Grid item xs={6}>
-                        <TimePicker
-                          label="Bắt đầu nghỉ"
-                          value={breakPeriod.start}
-                          onChange={(newValue) => setBreakPeriod({...breakPeriod, start: newValue})}
-                          slotProps={{ textField: { fullWidth: true } }}
-                        />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <TimePicker
-                          label="Kết thúc nghỉ"
-                          value={breakPeriod.end}
-                          onChange={(newValue) => setBreakPeriod({...breakPeriod, end: newValue})}
-                          slotProps={{ textField: { fullWidth: true } }}
-                        />
-                      </Grid>
-                    </Grid>
-                  )}
-                </Grid>
-              </Grid>
-            </>
-          )}
-          
-          {/* Specific Days Config */}
-          {availabilityType === 'specific' && (
-            <>
-              <Box sx={{ mb: 2 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<AddIcon />}
-                  onClick={handleAddSpecificDate}
-                >
-                  Thêm ngày làm việc
-                </Button>
+                )}
               </Box>
-              
-              {specificDates.map((dateItem, index) => (
-                <Card key={index} variant="outlined" sx={{ mb: 2 }}>
-                  <CardContent>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} md={4}>
-                        <DatePicker
-                          label="Ngày"
-                          value={dateItem.date}
-                          onChange={(newDate) => handleSpecificDateChange(index, 'date', newDate)}
-                          slotProps={{ textField: { fullWidth: true } }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} md={3}>
-                        <TimePicker
-                          label="Bắt đầu"
-                          value={dateItem.startTime}
-                          onChange={(newTime) => handleSpecificDateChange(index, 'startTime', newTime)}
-                          slotProps={{ textField: { fullWidth: true } }}
-                        />
-                      </Grid>
-                      <Grid item xs={6} md={3}>
-                        <TimePicker
-                          label="Kết thúc"
-                          value={dateItem.endTime}
-                          onChange={(newTime) => handleSpecificDateChange(index, 'endTime', newTime)}
-                          slotProps={{ textField: { fullWidth: true } }}
-                        />
-                      </Grid>
-                      <Grid item xs={12} md={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <IconButton 
-                          color="error"
-                          onClick={() => handleRemoveSpecificDate(index)}
-                          disabled={specificDates.length === 1}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={dateItem.active}
-                              onChange={(e) => handleSpecificDateChange(index, 'active', e.target.checked)}
-                            />
-                          }
-                          label="Kích hoạt ngày này"
-                        />
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                </Card>
-              ))}
-            </>
-          )}
-          
-          <Divider sx={{ my: 3 }} />
-          
-          {/* Common Settings */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Typography variant="subtitle1" gutterBottom>
-                Thời gian cho mỗi lịch hẹn
-              </Typography>
-              <FormControl fullWidth>
-                <InputLabel id="duration-label">Thời lượng</InputLabel>
+            </Box>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <FormControl size="small" sx={{ minWidth: 120, mr: 2 }}>
+                <InputLabel id="view-mode-label">Chế độ xem</InputLabel>
                 <Select
-                  labelId="duration-label"
-                  value={appointmentDurationMinutes}
-                  onChange={(e) => setAppointmentDurationMinutes(e.target.value)}
-                  label="Thời lượng"
+                  labelId="view-mode-label"
+                  value={viewMode}
+                  label="Chế độ xem"
+                  onChange={(e) => setViewMode(e.target.value)}
                 >
-                  <MenuItem value={30}>30 phút</MenuItem>
-                  <MenuItem value={45}>45 phút</MenuItem>
-                  <MenuItem value={60}>1 tiếng</MenuItem>
-                  <MenuItem value={90}>1 tiếng 30 phút</MenuItem>
-                  <MenuItem value={120}>2 tiếng</MenuItem>
+                  <MenuItem value="week">Tuần</MenuItem>
+                  <MenuItem value="month">Tháng</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-          </Grid>
-          
-          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
-            <Button
-              variant="contained"
-              startIcon={<SaveIcon />}
-              onClick={handleSaveAvailability}
-              disabled={saving}
-              size="large"
-            >
-              {saving ? 'Đang lưu...' : 'Lưu lịch trống'}
-            </Button>
+              
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSaveSlots}
+                disabled={saving}
+                startIcon={<CheckIcon />}
+              >
+                {saving ? 'Đang lưu...' : 'Lưu lịch trống'}
+              </Button>
+            </Box>
           </Box>
+          
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
+          
+          {success && (
+            <Alert severity="success" sx={{ mb: 3 }}>
+              {success}
+            </Alert>
+          )}
+          
+          <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
+            Nhấn vào các ô để thêm/xóa lịch trống. Các lịch được chọn (màu xanh) sẽ được đặt ở trạng thái "Available".
+          </Alert>
+          
+          {/* Calendar navigation */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <IconButton onClick={handlePrevPeriod}>
+              <PrevIcon />
+            </IconButton>
+            
+            <Typography variant="h6">
+              {viewMode === 'week' 
+                ? `${format(currentWeekStart, 'dd/MM/yyyy')} - ${format(weekDays[weekDays.length - 1], 'dd/MM/yyyy')}`
+                : format(currentDate, 'MMMM yyyy', { locale: vi })}
+            </Typography>
+            
+            <IconButton onClick={handleNextPeriod}>
+              <NextIcon />
+            </IconButton>
+          </Box>
+          
+          <Divider sx={{ mb: 3 }} />
+          
+          {/* Week view */}
+          {viewMode === 'week' && (
+            <Grid container spacing={2}>
+              {weekDays.map((day) => (
+                <Grid item xs={12} sm={6} md={isMobile ? 12 : weekDays.length <= 5 ? 2.4 : 2} key={day.toString()}>
+                  <Card 
+                    variant="outlined" 
+                    sx={{ 
+                      height: '100%',
+                      bgcolor: isToday(day) ? 'rgba(25, 118, 210, 0.05)' : 'transparent',
+                      border: isToday(day) ? '1px solid #1976d2' : undefined
+                    }}
+                  >
+                    <Box sx={{ 
+                      p: 1, 
+                      bgcolor: isToday(day) ? 'primary.main' : 'grey.200', 
+                      color: isToday(day) ? 'white' : 'text.primary',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <Typography variant="subtitle1" fontWeight="medium">
+                        {formatDateHeader(day)}
+                      </Typography>
+                      
+                      <Box>
+                        <Tooltip title="Chọn tất cả">
+                          <IconButton 
+                            size="small" 
+                            onClick={() => selectAllSlotsForDay(day)}
+                            sx={{ color: isToday(day) ? 'white' : 'inherit' }}
+                          >
+                            <AddIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        
+                        <Tooltip title="Xóa tất cả">
+                          <IconButton 
+                            size="small" 
+                            onClick={() => clearAllSlotsForDay(day)}
+                            sx={{ color: isToday(day) ? 'white' : 'inherit' }}
+                          >
+                            <CloseIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </Box>
+                    
+                    <Box sx={{ p: 1, maxHeight: 400, overflowY: 'auto' }}>
+                      {TIME_SLOTS.map((slot, index) => {
+                        const dateKey = format(day, 'yyyy-MM-dd');
+                        const isPast = isSlotInPast(day, slot.start);
+                        const isExisting = isSlotExisting(day, slot.start);
+                        const isSelected = selectedSlots[dateKey]?.[slot.start] || false;
+                        
+                        return (
+                          <Box 
+                            key={`${dateKey}-${slot.start}`}
+                            onClick={() => !isPast && toggleSlot(day, slot.start)}
+                            sx={{
+                              py: 1.5,
+                              px: 2,
+                              mb: 1,
+                              borderRadius: 1,
+                              cursor: isPast ? 'not-allowed' : 'pointer',
+                              bgcolor: isSelected ? 'primary.main' : isPast ? 'grey.100' : 'background.paper',
+                              color: isSelected ? 'white' : isPast ? 'text.disabled' : 'text.primary',
+                              border: '1px solid',
+                              borderColor: isSelected ? 'primary.main' : isPast ? 'grey.300' : 'grey.300',
+                              '&:hover': {
+                                bgcolor: isPast ? 'grey.100' : isSelected ? 'primary.dark' : 'action.hover',
+                              },
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              opacity: isPast ? 0.7 : 1
+                            }}
+                          >
+                            <Typography variant="body2">
+                              {slot.label}
+                            </Typography>
+                            
+                            {isExisting && (
+                              <Chip 
+                                label="Đã tạo" 
+                                size="small" 
+                                color={isSelected ? "default" : "success"}
+                                sx={{ fontSize: '0.7rem', height: 20 }}
+                              />
+                            )}
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+          
+          {/* Month view */}
+          {viewMode === 'month' && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Chức năng xem theo tháng đang được phát triển.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Vui lòng sử dụng chế độ xem theo tuần để quản lý lịch trống.
+              </Typography>
+            </Box>
+          )}
         </Paper>
+        
+        {/* Dialog for editing a specific day */}
+        <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="xs" fullWidth>
+          <DialogTitle>
+            {dialogDate && `Chỉnh sửa lịch ngày ${format(dialogDate, 'dd/MM/yyyy', { locale: vi })}`}
+          </DialogTitle>
+          <DialogContent>
+            {dialogDate && (
+              <Box sx={{ mt: 1 }}>
+                {TIME_SLOTS.map((slot) => {
+                  const dateKey = format(dialogDate, 'yyyy-MM-dd');
+                  const isPast = isSlotInPast(dialogDate, slot.start);
+                  const isExisting = isSlotExisting(dialogDate, slot.start);
+                  const isSelected = selectedSlots[dateKey]?.[slot.start] || false;
+                  
+                  return (
+                    <Box 
+                      key={`dialog-${dateKey}-${slot.start}`}
+                      onClick={() => !isPast && toggleSlot(dialogDate, slot.start)}
+                      sx={{
+                        py: 1.5,
+                        px: 2,
+                        mb: 1,
+                        borderRadius: 1,
+                        cursor: isPast ? 'not-allowed' : 'pointer',
+                        bgcolor: isSelected ? 'primary.main' : isPast ? 'grey.100' : 'background.paper',
+                        color: isSelected ? 'white' : isPast ? 'text.disabled' : 'text.primary',
+                        border: '1px solid',
+                        borderColor: isSelected ? 'primary.main' : isPast ? 'grey.300' : 'grey.300',
+                        '&:hover': {
+                          bgcolor: isPast ? 'grey.100' : isSelected ? 'primary.dark' : 'action.hover',
+                        },
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        opacity: isPast ? 0.7 : 1
+                      }}
+                    >
+                      <Typography variant="body2">
+                        {slot.label}
+                      </Typography>
+                      
+                      {isExisting && (
+                        <Chip 
+                          label="Đã tạo" 
+                          size="small" 
+                          color={isSelected ? "default" : "success"}
+                          sx={{ fontSize: '0.7rem', height: 20 }}
+                        />
+                      )}
+                    </Box>
+                  );
+                })}
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDialog}>Đóng</Button>
+            {saving ? (
+              <Tooltip title="Đang lưu...">
+                <span>
+                  <Button 
+                    variant="contained" 
+                    color="primary"
+                    disabled
+                  >
+                    Đang lưu...
+                  </Button>
+                </span>
+              </Tooltip>
+            ) : (
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={() => {
+                  handleCloseDialog();
+                  handleSaveSlots();
+                }}
+              >
+                Lưu thay đổi
+              </Button>
+            )}
+          </DialogActions>
+        </Dialog>
       </LocalizationProvider>
-      
-      {/* Confirmation Dialog */}
-      <Dialog
-        open={openConfirmDialog}
-        onClose={() => setOpenConfirmDialog(false)}
-      >
-        <DialogTitle>
-          Xác nhận lưu lịch trống
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Bạn có chắc chắn muốn lưu thay đổi lịch trống của chuyên gia {psychologist?.fullname}?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenConfirmDialog(false)}>Hủy</Button>
-          <Button onClick={confirmSaveAvailability} variant="contained" autoFocus>
-            Xác nhận
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Container>
   );
 };

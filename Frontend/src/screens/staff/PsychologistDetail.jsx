@@ -33,7 +33,8 @@ import {
   CalendarMonth as CalendarMonthIcon,
   EventNote as EventNoteIcon,
   Edit as EditIcon,
-  StarBorder as StarBorderIcon
+  StarBorder as StarBorderIcon,
+  Schedule as ScheduleIcon
 } from '@mui/icons-material';
 import { getPsychologistDetails, getPsychologist } from '../../api/psychologist.api';
 
@@ -230,26 +231,16 @@ const PsychologistDetail = () => {
 
             <Divider sx={{ my: 2 }} />
 
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
               <Button
                 variant="contained"
-                startIcon={<EditIcon />}
+                color="primary"
+                startIcon={<ScheduleIcon />}
                 component={Link}
-                to={`/staff/edit-psychologist/${psychologist._id}`}
+                to={`/staff/manage-psychologist-schedule/${psychologist._id}`}
                 fullWidth
               >
-                Chỉnh sửa thông tin
-              </Button>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-              <Button
-                variant="outlined"
-                startIcon={<EventNoteIcon />}
-                component={Link}
-                to={`/staff/view-schedule?doctor=${psychologist._id}`}
-                fullWidth
-              >
-                Xem lịch làm việc
+                Xem và quản lý lịch làm việc
               </Button>
             </Box>
           </Paper>

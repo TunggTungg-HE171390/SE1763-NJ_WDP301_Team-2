@@ -11,6 +11,11 @@ psychologistRouter.get("/get-psychologist-list", psychologistController.getPsych
 psychologistRouter.get("/get-specialization-list", psychologistController.getUniqueSpecializations);
 psychologistRouter.post("/save-appointment", psychologistController.saveAppointment);
 
+// Availability routes
+psychologistRouter.post("/availability/create", availabilityController.createPsychologistAvailability);
+psychologistRouter.post("/availability/create-slot", availabilityController.createIndividualSlot);
+psychologistRouter.patch("/availability/:slotId/status", availabilityController.updateAvailabilityStatus);
+
 // Make sure scheduleList route is BEFORE the generic /:doctorId route
 psychologistRouter.get("/scheduleList/:doctorId", availabilityController.getAvailabilitiesById);
 psychologistRouter.get("/schedule/:scheduleId", availabilityController.getAvailabilityById);

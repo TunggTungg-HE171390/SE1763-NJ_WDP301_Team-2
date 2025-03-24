@@ -28,7 +28,8 @@ import {
   DialogContentText,
   DialogActions,
   CircularProgress,
-  Alert
+  Alert,
+  Tooltip
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -492,6 +493,19 @@ const ManageAppointments = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Example of disabled button inside Tooltip */}
+      <Tooltip title="Không thể thực hiện">
+        <span>
+          <Button
+            variant="outlined"
+            size="small"
+            disabled
+          >
+            Không khả dụng
+          </Button>
+        </span>
+      </Tooltip>
     </Container>
   );
 };

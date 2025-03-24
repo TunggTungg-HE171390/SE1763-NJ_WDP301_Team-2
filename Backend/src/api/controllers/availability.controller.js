@@ -1,25 +1,88 @@
 import Availability from "../models/availability.model.js";
 import Appointment from "../models/appointment.model.js";
 import mongoose from "mongoose";
+import { generateDailySlots, generateSlotsForDateRange, filterPastSlots } from "../utils/scheduleGenerator.js";
 
+/**
+ * Create availability slots for a psychologist based on fixed schedule
+ * This function is intended to be used by staff members only
+ */
 const createPsychologistAvailability = async (req, res) => {
     try {
-        const { psychologistId, date, startTime, endTime } = req.body;
+        // Check if the user has staff role (middleware should handle this)
+        if (req.user && req.user.role !== 'staff') {
+            return res.status(403).json({ message: "Only staff members can manage psychologist schedules" });
+        }
+
+        const { psychologistId, startDate, endDate } = req.body;
         
-        if (!psychologistId || !date || !startTime || !endTime) {
+        if (!psychologistId || !startDate || !endDate) {
             return res.status(400).json({ message: "Missing required fields" });
         }
         
-        const newAvailability = new Availability({
+        // Generate slots for the date range
+        const slots = generateSlotsForDateRange(psychologistId, new Date(startDate), new Date(endDate));
+        
+        // Filter out slots in the past
+        const validSlots = filterPastSlots(slots);
+        
+        if (validSlots.length === 0) {
+            return res.status(400).json({ 
+                message: "No valid slots could be generated. Please check that your dates are in the future."
+            });
+        }
+        
+        // Check for existing slots in this date range to avoid duplicates
+        const startDateObj = new Date(startDate);
+        startDateObj.setHours(0, 0, 0, 0);
+        
+        const endDateObj = new Date(endDate);
+        endDateObj.setHours(23, 59, 59, 999);
+        
+        const existingSlots = await Availability.find({
             psychologistId,
-            date: new Date(date),
-            startTime: new Date(startTime),
-            endTime: new Date(endTime),
-            isBooked: false,
+            date: { $gte: startDateObj, $lte: endDateObj }
         });
-
-        await newAvailability.save();
-        res.status(201).json({ message: "Psychologist availability created successfully!", availability: newAvailability });
+        
+        // If existing slots, filter them out
+        let newSlots = validSlots;
+        if (existingSlots.length > 0) {
+            // Create a map of existing slot times for efficient lookup
+            const existingSlotMap = new Map();
+            existingSlots.forEach(slot => {
+                const key = `${slot.date.toISOString().split('T')[0]}_${slot.startTime.toISOString()}`;
+                existingSlotMap.set(key, true);
+            });
+            
+            // Filter out slots that already exist
+            newSlots = validSlots.filter(slot => {
+                const key = `${slot.date.toISOString().split('T')[0]}_${slot.startTime.toISOString()}`;
+                return !existingSlotMap.has(key);
+            });
+        }
+        
+        // Save new slots
+        if (newSlots.length > 0) {
+            // Explicitly ensure all slots have "Available" status
+            newSlots = newSlots.map(slot => ({
+                ...slot,
+                status: "Available"
+            }));
+            
+            const result = await Availability.insertMany(newSlots);
+            
+            return res.status(201).json({ 
+                message: `Created ${result.length} new availability slots`,
+                slotsCreated: result.length,
+                firstDate: new Date(result[0].date),
+                lastDate: new Date(result[result.length - 1].date)
+            });
+        } else {
+            return res.status(200).json({ 
+                message: "No new slots created. All requested slots already exist.",
+                slotsCreated: 0
+            });
+        }
     } catch (err) {
         console.log("Error creating availability:", err);
         res.status(500).json({ message: "Failed to create availability", error: err.message });
@@ -153,4 +216,122 @@ const getAvailabilityById = async (req, res) => {
     }
 };
 
-export default { createPsychologistAvailability, getAvailabilitiesById, getAvailabilityById };
+/**
+ * Update availability slot status
+ * This function is used by the system when appointments are created/updated
+ */
+const updateAvailabilityStatus = async (req, res) => {
+    try {
+        const { slotId } = req.params;
+        const { status, appointmentId } = req.body;
+        
+        if (!slotId || !status) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+        
+        // Validate status
+        if (!["Available", "Pending", "Booked"].includes(status)) {
+            return res.status(400).json({ message: "Invalid status" });
+        }
+        
+        // Find and update the slot
+        const slot = await Availability.findById(slotId);
+        
+        if (!slot) {
+            return res.status(404).json({ message: "Slot not found" });
+        }
+        
+        // Don't allow changing already booked slots back to available
+        if (slot.status === "Booked" && status === "Available") {
+            return res.status(400).json({ 
+                message: "Cannot change booked slot back to available" 
+            });
+        }
+        
+        // Update the slot
+        slot.status = status;
+        
+        // If moving to booked status, ensure we have an appointmentId
+        if (status === "Booked") {
+            if (!appointmentId) {
+                return res.status(400).json({ 
+                    message: "appointmentId is required when setting status to Booked" 
+                });
+            }
+            slot.appointmentId = appointmentId;
+        }
+        
+        await slot.save();
+        
+        return res.status(200).json({
+            message: "Availability status updated successfully",
+            availability: slot
+        });
+    } catch (error) {
+        console.error("Error updating availability status:", error);
+        res.status(500).json({ message: "Failed to update status", error: error.message });
+    }
+};
+
+/**
+ * Create individual availability slot
+ */
+const createIndividualSlot = async (req, res) => {
+  try {
+    // Check if the user has staff role (middleware should handle this)
+    if (req.user && req.user.role !== 'staff') {
+      return res.status(403).json({ message: "Only staff members can manage psychologist schedules" });
+    }
+
+    const { psychologistId, date, startTime, endTime } = req.body;
+    
+    if (!psychologistId || !date || !startTime || !endTime) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+    
+    // Check if slot is in the past
+    const slotStartTime = new Date(startTime);
+    const now = new Date();
+    
+    if (slotStartTime < now) {
+      return res.status(400).json({ message: "Cannot create slots in the past" });
+    }
+    
+    // Check if slot already exists
+    const existingSlot = await Availability.findOne({
+      psychologistId,
+      startTime: slotStartTime
+    });
+    
+    if (existingSlot) {
+      return res.status(409).json({ message: "Slot already exists for this time" });
+    }
+    
+    // Create new slot
+    const newSlot = new Availability({
+      psychologistId,
+      date: new Date(date),
+      startTime: slotStartTime,
+      endTime: new Date(endTime),
+      status: "Available"
+    });
+    
+    await newSlot.save();
+    
+    return res.status(201).json({
+      message: "Slot created successfully",
+      slot: newSlot
+    });
+  } catch (error) {
+    console.error("Error creating slot:", error);
+    res.status(500).json({ message: "Failed to create slot", error: error.message });
+  }
+};
+
+export default { 
+    createPsychologistAvailability, 
+    getAvailabilitiesById, 
+    getAvailabilityById,
+    updateAvailabilityStatus,
+    createIndividualSlot
+};

@@ -24,7 +24,8 @@ import {
   Step,
   StepLabel,
   Avatar,
-  Stack
+  Stack,
+  Tooltip
 } from '@mui/material';
 // Remove Timeline imports from @mui/lab
 import {

@@ -124,6 +124,45 @@ export const updatePsychologistWorkHistory = async (id, data) => {
     }
 };
 
+// New function to create availability slots based on fixed schedule
+export const createAvailabilitySlots = async (psychologistId, startDate, endDate) => {
+  console.log(`Creating availability slots for psychologist ${psychologistId} from ${startDate} to ${endDate}`);
+  try {
+    return await apiClient.post('/availability/create', {
+      psychologistId,
+      startDate,
+      endDate
+    });
+  } catch (error) {
+    console.error(`Error creating availability slots: ${error.message}`);
+    throw error;
+  }
+};
+
+// New function to update availability slot status
+export const updateSlotStatus = async (slotId, status, appointmentId = null) => {
+  console.log(`Updating status for slot ${slotId} to ${status}`);
+  try {
+    return await apiClient.patch(`/availability/${slotId}/status`, {
+      status,
+      appointmentId
+    });
+  } catch (error) {
+    console.error(`Error updating slot status: ${error.message}`);
+    throw error;
+  }
+};
+
+// Create individual availability slot
+export const createIndividualSlot = async (slot) => {
+  try {
+    return await apiClient.post('/psychologist/availability/create-slot', slot);
+  } catch (error) {
+    console.error('Error creating individual slot:', error);
+    throw error;
+  }
+};
+
 // Helper function to generate mock data for development
 const getMockPsychologist = (id) => {
     return {
