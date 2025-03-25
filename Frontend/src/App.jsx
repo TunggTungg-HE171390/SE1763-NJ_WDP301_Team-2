@@ -90,12 +90,21 @@ const theme = createTheme({
 // Protected route with role-based access control
 function ProtectedRoute({ element, requiredRole }) {
     const { user } = useAuth();
+    
+    console.log("ProtectedRoute check:", { 
+        isAuthenticated: !!user, 
+        userRole: user?.role, 
+        requiredRole,
+        hasAccess: user?.role === requiredRole
+    });
 
     if (!user) {
+        console.log("Redirecting to login: User not authenticated");
         return <Navigate to="/login" replace />;
     }
 
     if (requiredRole && user.role !== requiredRole) {
+        console.log(`Access denied: User role '${user.role}' doesn't match required role '${requiredRole}'`);
         return <Navigate to="/" replace />; // Redirect unauthorized users to homepage
     }
 
