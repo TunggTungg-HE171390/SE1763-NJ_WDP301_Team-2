@@ -174,6 +174,14 @@ export function Header() {
                                 Quản lý chuyên gia
                             </Link>
                         </NavigationMenuLink>
+                        <NavigationMenuLink 
+                            asChild 
+                            className={`${navigationMenuTriggerStyle()} cursor-pointer text-black`}
+                        >
+                            <Link to="/staff/manage-posts" className="text-black">
+                                Quản lý bài viết
+                            </Link>
+                        </NavigationMenuLink>
                     </NavigationMenuItem>
                 )}
             </NavigationMenuList>
