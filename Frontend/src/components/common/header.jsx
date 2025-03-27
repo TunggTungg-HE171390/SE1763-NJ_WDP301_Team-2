@@ -3,6 +3,7 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "@/components/auth/authContext";
 import TeamLogo from "@/assets/TeamLogo.svg";
+import bell from "@/assets/bell.png";
 import PropTypes from "prop-types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,8 +25,17 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, Settings, HelpCircle, LogOut } from "lucide-react";
+import { Calendar, Settings, HelpCircle, LogOut, BarChart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
+import { getCountRequestReschedule, changeBooleanIsReschedule } from "../../api/appointment.api";
+import { useBootstrap } from "@/hooks/useBootstrap";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 
 function ListItem({ className, title, children, href }) {
     return (
@@ -59,10 +69,83 @@ export function Header() {
     const { logout } = useContext(AuthContext);
     const [isAuthenticated, setIsAuthenticated] = useState(!!user);
     const userName = user?.fullName;
+    useBootstrap();
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [patientNamesData, setPatientNamesData] = useState([]);
+    const [rescheduleData, setRescheduleData] = useState([]);
 
     useEffect(() => {
         setIsAuthenticated(!!user); // Update when user state changes
     }, [user]);
+
+    const [countReschedule, setCountReschedule] = useState(0);
+    useEffect(() => {
+        const fetchCountReschedule = async () => {
+            try {
+                const response = await getCountRequestReschedule();
+
+                setRescheduleData(response.patientNames.map((name, index) => ({
+                    appointmentIds: response.appointmentIds[index],
+                    patientNames: name,
+                    psychologistNames: response.psychologistNames[index],
+                    notes: response.notes[index],
+                    scheduledTimes: response.scheduledTimes[index],
+                    statuses: response.statuses[index],
+                })));
+
+                setCountReschedule(response.count);
+                setPatientNamesData(response.scheduledTimes);
+            } catch (error) {
+                console.error("Error fetching count:", error);
+            }
+        };
+        fetchCountReschedule();
+    }, [user]);
+
+    const handleBellClick = async () => {
+        setIsModalVisible(true);
+    };
+
+    const formatScheduledTime = (scheduledTime) => {
+        const date = new Date(scheduledTime);  // Chuyển chuỗi ISO thành đối tượng Date
+
+        // Định dạng ngày và giờ
+        const formattedDate = new Intl.DateTimeFormat('vi-VN', {
+            weekday: 'long',  // Tên đầy đủ của ngày trong tuần
+            day: '2-digit',   // Ngày theo định dạng 2 chữ số
+            month: '2-digit', // Tháng theo định dạng 2 chữ số
+            year: 'numeric'   // Năm đầy đủ
+        }).format(date);
+
+        // Định dạng giờ
+        const formattedTime = date.toLocaleTimeString('vi-VN', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+
+        return `Giờ: ${formattedTime} (${formattedDate})`;
+    };
+
+    const handleChangeStatus = async (appointmentId, status) => {
+        try {
+            console.log(appointmentId, status);
+            const response = await changeBooleanIsReschedule(appointmentId, status);
+            setCountReschedule(countReschedule - 1);
+            if (status === "Approved") {
+                alert(`Mã đơn ${appointmentId} đã được duyệt`);
+            } else if (status === "Cancelled") {
+                alert(`Mã đơn ${appointmentId} không được duyệt `);
+            } else {
+                alert(`Lỗi`);
+            }
+            setRescheduleData(prevData => prevData.filter(q => q.appointmentIds !== appointmentId));
+
+        } catch (error) {
+            console.error("Error changing status:", error);
+        }
+    };
+
 
     const UserMenu = () => (
         <DropdownMenu>
@@ -78,6 +161,10 @@ export function Header() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 mt-4" align="end">
+                <DropdownMenuItem className="cursor-pointer" onSelect={() => navigate("/view-statistics")}>
+                    <BarChart className="mr-2 h-4 w-4" />
+                    <span>Thống kê</span>
+                </DropdownMenuItem>
                 <DropdownMenuItem className="cursor-pointer" onSelect={() => navigate("/user/view-appointment-list")}>
                     <Calendar className="mr-2 h-4 w-4" />
                     <span>Lịch hẹn</span>
@@ -198,7 +285,102 @@ export function Header() {
             <div className="flex gap-3 items-center justify-between ml-auto mr-4">
                 {isAuthenticated ? (
                     <div className="flex flex-row items-center gap-2">
-                        <p className="flex items-center mr-1 font-semibold">{user.fullName}</p>
+                        {user?.role === "staff" && (
+                            <div className="relative inline-block" onClick={handleBellClick}>
+                                <img
+                                    src={bell}
+                                    alt="bell"
+                                    className="w-[48px] h-[55px] py-1"
+                                />
+
+                                <div className="absolute top-1 right-0 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">
+                                    {countReschedule}
+                                </div>
+                            </div>
+                        )}
+
+                        <Dialog open={isModalVisible} onOpenChange={setIsModalVisible}>
+                            <DialogContent className="sm:max-w-[600px] border-blue-200">
+                                <DialogHeader className="bg-blue-50 p-4 rounded-t-lg">
+                                    <DialogTitle className="text-blue-800 text-center font-bold">
+                                        Thông báo đổi lịch từ người dùng
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <div className="p-4 max-h-[60vh] overflow-y-auto">
+                                    {rescheduleData.map((q, index) => (
+                                        <Card
+                                            key={index}
+                                            className="mb-4 p-4 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-transform duration-200 hover:scale-105"
+                                        >
+                                            <CardContent className="p-0">
+                                                <div className="flex items-center">
+                                                    <Avatar className="h-12 w-12 mr-3">
+                                                        <AvatarFallback>{q.patientNames.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-1 border-b border-gray-200 pb-3">
+                                                        <p className="font-bold text-lg text-gray-800">
+                                                            {q.patientNames} đã yêu cầu xếp lại lịch khám.
+                                                        </p>
+                                                        <div className="flex flex-row mt-1 text-sm text-gray-600">
+                                                            <strong className="w-[100px] font-semibold">Mã đơn:</strong>
+                                                            <span>{q.appointmentIds}</span>
+                                                        </div>
+                                                        <div className="flex flex-row mt-1 text-sm text-gray-600">
+                                                            <strong className="w-[100px] font-semibold">Thời gian:</strong>
+                                                            <span>{formatScheduledTime(q.scheduledTimes)}</span>
+                                                        </div>
+                                                        <div className="flex flex-row mt-1 text-sm text-gray-600">
+                                                            <strong className="w-[100px] font-semibold">Bác sĩ:</strong>
+                                                            <span>{q.psychologistNames}</span>
+                                                        </div>
+                                                        <div className="flex flex-row mt-1 text-sm text-gray-600">
+                                                            <strong className="w-[100px] font-semibold">Lý do:</strong>
+                                                            <span>{q.notes}</span>
+                                                        </div>
+                                                        <div className="flex flex-row mt-1 text-sm">
+                                                            <strong className="w-[100px] font-semibold">Trạng thái:</strong>
+                                                            <span
+                                                                className={`font-bold ${q.statuses === "Confirmed"
+                                                                    ? "text-green-600"
+                                                                    : q.statuses === "Pending"
+                                                                        ? "text-yellow-500"
+                                                                        : "text-red-600"
+                                                                    }`}
+                                                            >
+                                                                {q.statuses}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between mt-4 gap-2">
+                                                    <Button
+                                                        className="w-[90px] bg-blue-600 hover:bg-blue-700"
+                                                        onClick={() => handleChangeStatus(q.appointmentIds, "Approved")}
+                                                    >
+                                                        Xác nhận
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        className="w-[90px] border-blue-300 text-blue-600 hover:bg-blue-50"
+                                                    >
+                                                        Xem chi tiết
+                                                    </Button>
+                                                    <Button
+                                                        variant="destructive"
+                                                        className="w-[90px] bg-red-600 hover:bg-red-700"
+                                                        onClick={() => handleChangeStatus(q.appointmentIds, "Cancelled")}
+                                                    >
+                                                        Hủy
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+
+                        <p className="flex items-center justify-center mt-3 mr-1 font-semibold">{user.fullName}</p>
                         <Avatar className="h-9 w-9">
                             <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                         </Avatar>

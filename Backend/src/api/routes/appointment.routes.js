@@ -8,7 +8,7 @@ appointmentRouter.get("/rescheduleList", AppointmentController.getStatusReschedu
 appointmentRouter.get("/getAllAppoint", AppointmentController.getAllAppointment);
 appointmentRouter.get("/getAppointment/:appointmentId", AppointmentController.getDetailAppointmentId);
 appointmentRouter.get("/countRequestReschedule", AppointmentController.getCountRequestReschedule);
-appointmentRouter.put("/reschedule-appointment", AppointmentController.changeBooleanIsReschedule);
+appointmentRouter.put("/reschedule-appointment/:appointmentId", AppointmentController.changeBooleanIsReschedule);
 appointmentRouter.put("/cancel-schedule/:appointmentId", AppointmentController.cancelScheduleByPatient);
 appointmentRouter.post("/create_payment_link", AppointmentController.createPaymentLink);
 appointmentRouter.post("/check_payment_status", AppointmentController.checkPaymentStatusAPI);
@@ -21,5 +21,6 @@ appointmentRouter.post("/count-pending-appointment", AppointmentController.check
 appointmentRouter.post("/create-meet-url", AppointmentController.createMeetUrlAPI);
 appointmentRouter.post("/appointment-details", AppointmentController.getUserAppointmentById);
 appointmentRouter.post("/create-zoom-meeting", AppointmentController.createZoomMeetingAPI);
+appointmentRouter.post("/reschedule/:appointmentId", AppointmentController.rescheduleAppointment);
 
 export default appointmentRouter;

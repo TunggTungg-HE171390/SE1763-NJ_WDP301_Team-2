@@ -8,7 +8,7 @@ import PayOS from "@payos/node";
 import dotenv from "dotenv";
 import { MailService } from "../services/index.js";
 import actions from '../actions/requestController.action.js';
-
+import mongoose from 'mongoose';
 
 dotenv.config();
 
@@ -547,15 +547,34 @@ const getDetailAppointmentId = async (req, res, next) => {
 
 const getCountRequestReschedule = async (req, res, next) => {
     try {
-        const countRequestReschedule = await Appointment.find({ isRescheduled: true }).countDocuments();
+        const appointments = await Appointment.find({ isRescheduled: true })
+            .populate("patientId", "fullName")
+            .populate("psychologistId", "fullName");
+
+        const patientNames = appointments.map(appointment => appointment.patientId.fullName);
+        const psychologistNames = appointments.map(appointment => appointment.psychologistId.fullName);
+
+        const scheduledTimes = appointments.map(appointment => appointment.scheduledTime.date);
+        const statuses = appointments.map(appointment => appointment.status);
+        const notes = appointments.map(appointment => appointment.note);
+        const appointmentIds = appointments.map(appointment => appointment._id);
+
         res.json({
-            count: countRequestReschedule,
+            count: appointments.length,
+            appointmentIds: appointmentIds,
+            patientNames: patientNames,
+            psychologistNames: psychologistNames,
+            notes: notes,
+            scheduledTimes: scheduledTimes,
+            statuses: statuses
         });
     } catch (error) {
-        console.error("Error fetching users: ", error);
+        console.error("Error fetching count:", error);
         next(error);
     }
 };
+
+
 
 const changeBooleanIsReschedule = async (req, res, next) => {
     try {
@@ -564,9 +583,12 @@ const changeBooleanIsReschedule = async (req, res, next) => {
             .populate("psychologistId", "fullName email");
         const { status } = req.body;
 
-        if (appointment.isRescheduled) {
-            return res.status(400).json({ error: "This appointment has already been rescheduled once." });
-        }
+        // if (appointment.isRescheduled) {
+        //     return res.status(400).json({ error: "This appointment has already been rescheduled once." });
+        // }
+
+        console.log(status);
+        console.log(req.params.appointmentId);
 
         // Kiểm tra thời gian reschedule có <= 7 ngày không
         const currentDate = new Date();
@@ -580,26 +602,34 @@ const changeBooleanIsReschedule = async (req, res, next) => {
         const mailService = MailService();
         let statusMessage = "";
 
-        const reScheduleTime = `
-        🔹 Ngày: ${new Date(appointment.scheduledTime.date).toLocaleDateString("vi-VN", { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}  
-        🔹 Giờ: ${appointment.scheduledTime.startTime} đến ${appointment.scheduledTime.endTime}  
-        `;
+        // const reScheduleTime = `
+        // 🔹 Ngày: ${new Date(appointment.scheduledTime.date).toLocaleDateString("vi-VN", { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}  
+        // 🔹 Giờ: ${appointment.scheduledTime.startTime} đến ${appointment.scheduledTime.endTime}  
+        // `;
 
+        const reScheduleTime = `
+        🔹 Ngày: ${new Date(appointment.scheduledTime.date).toLocaleDateString("vi-VN", { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
+        🔹 Giờ: ${new Date(appointment.scheduledTime.startTime).toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' })} 
+        (${new Date(appointment.scheduledTime.startTime).toLocaleDateString("vi-VN", { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}) 
+        - 
+        ${new Date(appointment.scheduledTime.endTime).toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit', second: '2-digit' })} 
+        (${new Date(appointment.scheduledTime.endTime).toLocaleDateString("vi-VN", { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })})  
+    `;
         if (status === "Approved") {
             appointment.status = "Confirmed";
-            // appointment.isRescheduled = false;
+            appointment.isRescheduled = false;
             statusMessage = `✅ Yêu cầu đổi lịch hẹn của bạn với ${appointment.psychologistId.fullName} đã được chấp nhận.  
             Vui lòng kiểm tra lại lịch hẹn của bạn dưới đây:\n\n${reScheduleTime}`;
             await mailService.sendEmail(appointment.patientId.email, appointment.patientId.fullName, statusMessage, actions.RESCHEDULE_APPOINTMENT_SUCCESS);
             console.log("Gui mail thanh cong tới Patient");
             statusMessage = `✅ Bệnh nhân ${appointment.patientId.fullName} đã yêu cầu đổi lịch hẹn với bạn.  
             Vui lòng kiểm tra lại lịch hẹn của bạn dưới đây:\n\n${reScheduleTime}`;
-            await mailService.sendEmail(appointment.psychologistId.email, appointment.psychologistId.fullName, status, actions.RESCHEDULE_APPOINTMENT_SUCCESS);
+            await mailService.sendEmail(appointment.psychologistId.email, appointment.psychologistId.fullName, statusMessage, actions.RESCHEDULE_APPOINTMENT_SUCCESS);
             console.log("Gui mail thanh cong tới Psychologist");
         } else if (status === "Cancelled") {
             appointment.status = "Confirmed";
             appointment.isRescheduled = false;
-            statusMessage = `Yêu cầu đổi lịch hẹn của bạn và ${appointment.psychologistId.fullName} không chấp nhận. Vui lòng chọn thời gian khác.`;
+            statusMessage = `Yêu cầu đổi lịch hẹn của bạn và ${appointment.psychologistId.fullName} không được chấp nhận. Vui lòng chọn thời gian khác.`;
             await mailService.sendEmail(appointment.patientId.email, appointment.patientId.fullName, statusMessage, actions.RESCHEDULE_APPOINTMENT_FAILURE);
             console.log("Gui mail thanh cong tới Patient");
         }
@@ -611,6 +641,59 @@ const changeBooleanIsReschedule = async (req, res, next) => {
         next(error);
     }
 };
+
+const rescheduleAppointment = async (req, res, next) => {
+    try {
+        const { newAvailabilityId, rescheduleReason } = req.body;
+        console.log(newAvailabilityId);
+        console.log(rescheduleReason);
+        const appointment = await Appointment.findById(req.params.appointmentId);
+
+        if (!appointment) {
+            throw new Error('Appointment not found');
+        }
+
+        console.log("Vào insert");
+
+        const newAppointment = new Appointment({
+            patientId: appointment.patientId,
+            psychologistId: appointment.psychologistId,
+            availabilityId: new mongoose.Types.ObjectId(newAvailabilityId._id),
+            scheduledTime: {
+                date: newAvailabilityId.date,
+                startTime: newAvailabilityId.startTime,
+                endTime: newAvailabilityId.endTime,
+            },
+            status: 'Pending',
+            isRescheduled: true,
+            paymentInformation: appointment.paymentInformation,
+            note: rescheduleReason,
+        });
+
+        // 3. Save the new appointment
+        await newAppointment.save();
+        console.log(newAppointment);
+
+        // 4. Optionally, update the status of the old appointment to "Cancelled"
+        appointment.status = 'Cancelled';
+        await appointment.save();
+
+        const oldAvailability = await Availability.findById(appointment.availabilityId);
+        console.log("oldAvailability", oldAvailability);
+        oldAvailability.isBooked = false;
+        await oldAvailability.save();
+
+        const newAvailability = await Availability.findById(newAppointment.availabilityId);
+        console.log("newAvailability", newAvailability);
+        newAvailability.isBooked = true;
+        await newAvailability.save();
+
+        res.json("Ok ");
+    } catch (error) {
+        console.error('Error while rescheduling appointment:', error);
+        throw error;
+    }
+}
 
 const cancelScheduleByPatient = async (req, res, next) => {
     try {
@@ -626,7 +709,7 @@ const cancelScheduleByPatient = async (req, res, next) => {
             return res.status(404).json({ message: "Appointment not found" });
         }
 
-        if (appointment.status === "Confirmed"|| appointment.status === "Pending") {
+        if (appointment.status === "Confirmed" || appointment.status === "Pending") {
 
             appointment.status = "Cancelled";
             appointment.note = "<p>" + cancelReason + "</p>";
@@ -683,7 +766,6 @@ export default {
     createMeetUrlAPI,
     getUserAppointmentById,
     createZoomMeetingAPI,
-
     findScheduleByPsychologistId,
     getStatusRescheduleByUser,
     getAllAppointment,
@@ -691,4 +773,5 @@ export default {
     getCountRequestReschedule,
     changeBooleanIsReschedule,
     cancelScheduleByPatient,
+    rescheduleAppointment
 };

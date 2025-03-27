@@ -47,6 +47,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ViewAppointmentList from "./screens/public/appointmentList/AppointmentManagement.jsx";
 import ViewUserAppointmentDetail from "./screens/public/appointmentDetail/viewAppointmentDetail.jsx";
+import StaticChart from "./screens/staticChart/StaticChart.jsx";
 // import dayjs from "dayjs";
 import "dayjs/locale/vi"; // Import Vietnamese locale for dayjs
 // Create MUI theme
@@ -170,6 +171,8 @@ function Layout() {
                         <Route path="/checkout-booking" element={<PaymentPage />} />
                         <Route path="user-profile/:id" element={<UserProfile />} />
                         <Route path="/user/view-appointment-list" element={<ViewAppointmentList />} />
+                        <Route path="/view-statistics" element={<StaticChart />} />
+
                         <Route
                             path="/user/view-appointment-detail/:appointmentId"
                             element={<ViewUserAppointmentDetail />}

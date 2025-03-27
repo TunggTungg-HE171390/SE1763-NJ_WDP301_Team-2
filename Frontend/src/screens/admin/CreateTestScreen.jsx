@@ -170,7 +170,10 @@ export function CreateTestScreen() {
 
             if(formattedQuestions.questions.length === 0) {
                 alert("Vui lòng nhập câu hỏi.");
-            }else{
+            }else if(formattedQuestions.questions.length < 10) {
+                alert("Tối thiểu 10 câu hỏi");
+            }
+            else{
                 const response = await creatTest(categoryId, title, description, testOutcomes);
                 const testId = response.test;
     
