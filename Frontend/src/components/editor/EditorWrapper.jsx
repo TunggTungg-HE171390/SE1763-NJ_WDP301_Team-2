@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
@@ -9,7 +9,7 @@ import Quote from '@editorjs/quote';
 import Code from '@editorjs/code';
 import LinkTool from '@editorjs/link';
 import Paragraph from '@editorjs/paragraph';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, CircularProgress } from '@mui/material';
 
 /**
  * Wrapper component for Editor.js
@@ -23,29 +23,83 @@ const EditorWrapper = ({ data, onChange, placeholder = 'Bắt đầu nhập nộ
   const editorRef = useRef(null);
   const editorInstance = useRef(null);
   const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Parse JSON data if it's a string
-  const parseData = () => {
-    if (!data) return undefined;
+  // Parse JSON data with proper validation to avoid "Block paragraph skipped" error
+  const parseData = useCallback(() => {
+    // Default valid data structure
+    const defaultData = {
+      time: new Date().getTime(),
+      blocks: [
+        {
+          type: "paragraph",
+          data: {
+            text: ""
+          }
+        }
+      ],
+      version: "2.26.5"
+    };
+
+    // If no data provided, return default structure
+    if (!data) {
+      return defaultData;
+    }
     
     try {
-      return typeof data === 'string' ? JSON.parse(data) : data;
+      // Parse string data or use object directly
+      const parsed = typeof data === 'string' ? JSON.parse(data) : data;
+      
+      // Validate the structure
+      if (!parsed || typeof parsed !== 'object') {
+        return defaultData;
+      }
+      
+      // Make sure blocks exist and are valid
+      if (!Array.isArray(parsed.blocks) || parsed.blocks.length === 0) {
+        return defaultData;
+      }
+      
+      // Validate each block has required properties
+      const validBlocks = parsed.blocks.filter(block => 
+        block && 
+        typeof block === 'object' && 
+        typeof block.type === 'string' && 
+        block.data && 
+        typeof block.data === 'object'
+      );
+      
+      // If no valid blocks found, use default
+      if (validBlocks.length === 0) {
+        return defaultData;
+      }
+      
+      // Return valid data structure
+      return {
+        time: parsed.time || defaultData.time,
+        blocks: validBlocks,
+        version: parsed.version || defaultData.version
+      };
     } catch (e) {
-      console.warn('Không thể parse dữ liệu editor:', e);
-      return undefined;
+      console.log('Error parsing editor data, using default:', e);
+      return defaultData;
     }
-  };
+  }, [data]);
 
   // Initialize editor
   useEffect(() => {
     if (!editorRef.current) return;
+    
+    setIsLoading(true);
 
-    // Avoid re-initialization
-    if (editorInstance.current) return;
+    // Clean up existing instance if any
+    if (editorInstance.current && editorInstance.current.destroy) {
+      editorInstance.current.destroy();
+      editorInstance.current = null;
+    }
 
-    // Image upload function (replace with your actual implementation)
+    // Image upload function
     const imageUploadCallback = async (file) => {
-      // Mock implementation - in a real app, upload to your server/cloud storage
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = () => {
@@ -60,113 +114,164 @@ const EditorWrapper = ({ data, onChange, placeholder = 'Bắt đầu nhập nộ
       });
     };
 
-    try {
-      // Initialize Editor.js
-      editorInstance.current = new EditorJS({
-        holder: editorRef.current,
-        tools: {
-          header: {
-            class: Header,
-            inlineToolbar: true,
-            config: {
-              levels: [1, 2, 3],
-              defaultLevel: 2
-            }
-          },
-          paragraph: {
-            class: Paragraph,
-            inlineToolbar: true,
-          },
-          list: {
-            class: List,
-            inlineToolbar: true,
-          },
-          image: {
-            class: Image,
-            config: {
-              uploader: {
-                uploadByFile: imageUploadCallback,
+    // Small delay to ensure DOM is ready
+    const initTimeout = setTimeout(() => {
+      try {
+        // Get properly formatted data
+        const parsedData = parseData();
+        
+        // Initialize Editor.js
+        editorInstance.current = new EditorJS({
+          holder: editorRef.current,
+          tools: {
+            paragraph: {
+              class: Paragraph,
+              inlineToolbar: true,
+              config: {
+                preserveBlank: true
+              }
+            },
+            header: {
+              class: Header,
+              inlineToolbar: true,
+              config: {
+                levels: [1, 2, 3],
+                defaultLevel: 2
+              }
+            },
+            list: {
+              class: List,
+              inlineToolbar: true,
+            },
+            image: {
+              class: Image,
+              config: {
+                uploader: {
+                  uploadByFile: imageUploadCallback,
+                },
               },
             },
+            embed: Embed,
+            table: {
+              class: Table,
+              inlineToolbar: true,
+            },
+            quote: {
+              class: Quote,
+              inlineToolbar: true,
+            },
+            code: Code,
+            linkTool: LinkTool,
           },
-          embed: Embed,
-          table: {
-            class: Table,
-            inlineToolbar: true,
+          data: parsedData,
+          placeholder: placeholder,
+          onReady: () => {
+            setIsReady(true);
+            setIsLoading(false);
           },
-          quote: {
-            class: Quote,
-            inlineToolbar: true,
-          },
-          code: Code,
-          linkTool: LinkTool,
-        },
-        data: parseData(),
-        placeholder: placeholder,
-        onChange: async () => {
-          if (onChange) {
-            try {
-              const savedData = await editorInstance.current.save();
-              onChange(JSON.stringify(savedData));
-            } catch (e) {
-              console.error('Lỗi khi lưu dữ liệu editor:', e);
+          onChange: async () => {
+            if (onChange) {
+              try {
+                const savedData = await editorInstance.current.save();
+                onChange(JSON.stringify(savedData));
+              } catch (e) {
+                console.error('Error saving editor data:', e);
+              }
             }
-          }
-        }
-      });
-
-      editorInstance.current.isReady
-        .then(() => {
-          setIsReady(true);
-          console.log('Editor.js đã sẵn sàng');
-        })
-        .catch((error) => {
-          console.error('Editor.js khởi tạo thất bại:', error);
+          },
+          autofocus: false,
+          logLevel: 'ERROR' // Only log errors, not warnings
         });
-    } catch (error) {
-      console.error('Lỗi khởi tạo Editor.js:', error);
-    }
+
+        // Handle initialization errors
+        editorInstance.current.isReady
+          .catch((error) => {
+            console.error('Editor.js initialization failed:', error);
+            setIsLoading(false);
+          });
+          
+      } catch (error) {
+        console.error('Error initializing Editor.js:', error);
+        setIsLoading(false);
+      }
+    }, 100);
 
     // Cleanup
     return () => {
+      clearTimeout(initTimeout);
       if (editorInstance.current && editorInstance.current.destroy) {
         editorInstance.current.destroy();
         editorInstance.current = null;
       }
     };
-  }, []);
+  }, [parseData, placeholder]);
 
-  // Update editor content if data changes externally
-  useEffect(() => {
-    if (isReady && editorInstance.current) {
-      const parsed = parseData();
-      if (parsed && Object.keys(parsed).length > 0) {
-        editorInstance.current.render(parsed);
-      }
-    }
-  }, [data, isReady]);
+  // Custom styling to avoid high-contrast warnings
+  const customStyles = {
+    border: '1px solid rgba(0, 0, 0, 0.23)', 
+    borderRadius: '4px',
+    padding: '10px', 
+    backgroundColor: '#fff',
+    minHeight: '250px',
+    position: 'relative',
+    
+    '&:hover': {
+      borderColor: 'rgba(0, 0, 0, 0.87)',
+    },
+    
+    '&:focus-within': {
+      borderColor: '#1976d2',
+      borderWidth: '2px',
+      padding: '9px',
+    },
+    
+    // Modern approach for high-contrast mode
+    '@media (forced-colors: active)': {
+      borderColor: 'CanvasText',
+    },
+    
+    // Override Editor.js specific styles
+    '& .ce-block': {
+      paddingLeft: 0,
+      paddingRight: 0,
+    },
+    
+    '& .ce-toolbar__content': {
+      maxWidth: 'calc(100% - 80px)', // Fix toolbar width issues
+    },
+    
+    '& .ce-paragraph': {
+      lineHeight: '1.6em',
+      outline: 'none',
+    },
+    
+    ...sx
+  };
 
   return (
-    <Box sx={{ 
-      border: '1px solid rgba(0, 0, 0, 0.23)', 
-      borderRadius: '4px',
-      padding: '10px', 
-      backgroundColor: '#fff',
-      minHeight: '250px',
-      '&:hover': {
-        borderColor: 'rgba(0, 0, 0, 0.87)',
-      },
-      '&:focus-within': {
-        borderColor: '#1976d2',
-        borderWidth: '2px',
-        padding: '9px',
-      },
-      ...sx
-    }}>
-      <div ref={editorRef} />
-      {!isReady && (
+    <Box sx={customStyles}>
+      <div ref={editorRef} style={{ minHeight: '200px' }} />
+      
+      {isLoading && (
+        <Box sx={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: 'rgba(255,255,255,0.7)',
+          zIndex: 2
+        }}>
+          <CircularProgress size={40} />
+        </Box>
+      )}
+      
+      {!isReady && !isLoading && (
         <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 10 }}>
-          Đang tải trình soạn thảo...
+          Không thể tải trình soạn thảo. Vui lòng thử lại.
         </Typography>
       )}
     </Box>

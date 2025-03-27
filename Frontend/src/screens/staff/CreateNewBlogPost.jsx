@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createBlogPost } from "../../api/blogPosts.api";
-import EditorWrapper from "../../components/editor/EditorWrapper";
+import TinyEditor from "../../components/editor/TinyEditor";
 import {
     Container,
     Typography,
@@ -130,12 +130,17 @@ const CreateNewPost = () => {
                                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
                                     Content
                                 </Typography>
-                                <EditorWrapper 
-                                    data={content}
+                                <TinyEditor
+                                    value={content}
                                     onChange={setContent}
                                     placeholder="Write your post content here..."
-                                    sx={{ minHeight: '300px' }}
+                                    height={350}
                                 />
+                                {!content && (
+                                    <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
+                                        Content is required
+                                    </Typography>
+                                )}
                             </Grid>
 
                             <Grid item xs={12}>

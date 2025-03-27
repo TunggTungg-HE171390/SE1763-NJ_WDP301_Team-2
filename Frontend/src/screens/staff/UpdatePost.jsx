@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getBlogPostById, updateBlogPost } from "../../api/blogPosts.api";
-import EditorWrapper from "../../components/editor/EditorWrapper";
+import TinyEditor from "../../components/editor/TinyEditor";
 import {
     Container,
     Typography,
@@ -155,11 +155,11 @@ const UpdatePost = () => {
                                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
                                     Content
                                 </Typography>
-                                <EditorWrapper 
-                                    data={content}
+                                <TinyEditor 
+                                    value={content}
                                     onChange={setContent}
                                     placeholder="Write your post content here..."
-                                    sx={{ minHeight: '300px' }}
+                                    height={350}
                                 />
                             </Grid>
 
