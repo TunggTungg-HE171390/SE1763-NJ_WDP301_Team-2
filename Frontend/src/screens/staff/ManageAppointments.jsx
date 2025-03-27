@@ -29,7 +29,15 @@ import {
   DialogActions,
   CircularProgress,
   Alert,
-  Tooltip
+  Tooltip,
+  Divider,
+  Card,
+  CardContent,
+  Badge,
+  Grid,
+  useTheme,
+  useMediaQuery,
+  Avatar
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -37,14 +45,21 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Edit as EditIcon,
-  CalendarToday as CalendarIcon
+  CalendarToday as CalendarIcon,
+  Refresh as RefreshIcon,
+  FilterList as FilterListIcon,
+  Person as PersonIcon,
+  Psychology as PsychologyIcon
 } from '@mui/icons-material';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { Link } from 'react-router-dom';
 import { getAllAppointments, updateAppointmentStatus } from '../../api/appointment.api';
 
 const ManageAppointments = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
@@ -59,15 +74,17 @@ const ManageAppointments = () => {
   const [statusNote, setStatusNote] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   // Tab status groupings
   const statusGroups = [
-    { label: 'Tất cả', statuses: [] }, // Empty array means all statuses
-    { label: 'Đang chờ', statuses: ['Pending'] },
-    { label: 'Đã xác nhận', statuses: ['Confirmed'] },
-    { label: 'Đã hoàn thành', statuses: ['Completed'] },
-    { label: 'Đổi lịch', statuses: ['Rescheduled'] },
-    { label: 'Đã hủy', statuses: ['Cancelled', 'No-show'] }
+    { label: 'Tất cả', statuses: [], count: 0 },
+    { label: 'Đang chờ', statuses: ['Pending'], count: 0, color: 'warning' },
+    { label: 'Đã xác nhận', statuses: ['Confirmed'], count: 0, color: 'info' },
+    { label: 'Đã hoàn thành', statuses: ['Completed'], count: 0, color: 'success' },
+    { label: 'Đổi lịch', statuses: ['Rescheduled'], count: 0, color: 'secondary' },
+    { label: 'Đã hủy', statuses: ['Cancelled', 'No-show'], count: 0, color: 'error' }
   ];
 
   useEffect(() => {
@@ -76,17 +93,32 @@ const ManageAppointments = () => {
 
   const fetchAppointments = async () => {
     setLoading(true);
+    setIsRefreshing(true);
     try {
       const response = await getAllAppointments();
       if (response && response.data) {
         setAppointments(response.data);
         setFilteredAppointments(response.data);
+        
+        // Update counts for tabs
+        statusGroups.forEach((group, index) => {
+          if (index === 0) {
+            // Total count for "All" tab
+            group.count = response.data.length;
+          } else {
+            // Count for specific status groups
+            group.count = response.data.filter(app => 
+              group.statuses.includes(app.status)
+            ).length;
+          }
+        });
       }
     } catch (err) {
       console.error('Error fetching appointments:', err);
       setError('Không thể tải danh sách cuộc hẹn. Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -124,6 +156,9 @@ const ManageAppointments = () => {
   const handleChangeTab = (event, newValue) => {
     setActiveTab(newValue);
     setPage(0);
+    // Reset additional filters when changing tabs
+    setStatusFilter('all');
+    setShowFilters(false);
   };
 
   const handleChangeStatusFilter = (event) => {

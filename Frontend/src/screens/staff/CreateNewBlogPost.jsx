@@ -1,13 +1,30 @@
 import React, { useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css"; // Import style cho Quill
-import { Button, Form, Container, Row, Col, Card, Stack } from "react-bootstrap";
-import { createBlogPost } from "../../api/blogPosts.api";
-import { useBootstrap } from "@/hooks/useBootstrap";
 import { useNavigate } from "react-router-dom";
+import { createBlogPost } from "../../api/blogPosts.api";
+import EditorWrapper from "../../components/editor/EditorWrapper";
+import {
+    Container,
+    Typography,
+    Box,
+    TextField,
+    Button,
+    Card,
+    CardContent,
+    Grid,
+    MenuItem,
+    Select,
+    FormControl,
+    InputLabel,
+    Stack,
+    Paper,
+    Alert,
+    Snackbar
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ReplayIcon from "@mui/icons-material/Replay";
+import SaveIcon from "@mui/icons-material/Save";
 
 const CreateNewPost = () => {
-    useBootstrap();
     const navigate = useNavigate();
 
     const [title, setTitle] = useState("");
@@ -15,18 +32,46 @@ const CreateNewPost = () => {
     const [status, setStatus] = useState("Draft");
     const [image, setImage] = useState("");
     const [preview, setPreview] = useState("");
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertSeverity, setAlertSeverity] = useState("success");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!title.trim()) {
+            setAlertMessage("Please enter a title for your post");
+            setAlertSeverity("warning");
+            setAlertOpen(true);
+            return;
+        }
+
+        if (!content) {
+            setAlertMessage("Please add some content to your post");
+            setAlertSeverity("warning");
+            setAlertOpen(true);
+            return;
+        }
+
         const postData = { title, content, status, image };
 
         try {
-            const result = await createBlogPost(postData); // ✅ Gọi API từ file riêng
-            alert("✅ Post created successfully!");
+            const result = await createBlogPost(postData);
+            setAlertMessage("Post created successfully!");
+            setAlertSeverity("success");
+            setAlertOpen(true);
             console.log("Post created:", result);
+            
+            // Optional: Clear form after successful submission
+            if (result) {
+                setTimeout(() => {
+                    handleReset();
+                }, 2000);
+            }
         } catch (error) {
-            alert(`❌ Error: ${error.message}`);
+            setAlertMessage(`Error: ${error.message}`);
+            setAlertSeverity("error");
+            setAlertOpen(true);
         }
     };
 
@@ -44,121 +89,132 @@ const CreateNewPost = () => {
         setPreview(url);
     };
 
+    const handleCloseAlert = () => {
+        setAlertOpen(false);
+    };
+
     return (
-        <Container style={{ maxWidth: "800px", marginTop: "200px" }} className="my-5">
-            <Button variant="secondary" onClick={() => navigate("/manage-posts")}>
-                Back to Manage Posts
-            </Button>
-            <Card className="p-4 shadow-sm mt-3" style={{ borderRadius: "10px", backgroundColor: "#ffffff" }}>
-                <h2 className="text-center mb-4">Create New Post</h2>
-                <Form onSubmit={handleSubmit}>
-                    <Form.Group controlId="title">
-                        <Form.Label className="text-start d-block mb-2">Title</Form.Label>
-                        <Form.Control
-                            className="form-control-lg mb-3"
-                            type="text"
-                            placeholder="Enter post title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            required
-                        />
-                    </Form.Group>
+        <Container maxWidth="md" sx={{ mt: 12, mb: 4 }}>
+            <Box sx={{ mb: 2 }}>
+                <Button
+                    variant="outlined"
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => navigate("/manage-posts")}
+                >
+                    Back to Manage Posts
+                </Button>
+            </Box>
 
-                    <Form.Group controlId="content">
-                        <Form.Label className="text-start d-block mb-2">Content</Form.Label>
-                        <ReactQuill
-                            className="mb-3"
-                            value={content}
-                            onChange={setContent}
-                            modules={{
-                                toolbar: [
-                                    [{ header: "1" }, { header: "2" }, { font: [] }],
-                                    [{ list: "ordered" }, { list: "bullet" }],
-                                    [{ align: [] }],
-                                    ["bold", "italic", "underline"],
-                                    ["link", "image"],
-                                    [{ script: "sub" }, { script: "super" }],
-                                    ["blockquote", "code-block"],
-                                    ["clean"],
-                                ],
-                            }}
-                            placeholder="Write your post content here..."
-                            required
-                        />
-                    </Form.Group>
+            <Card elevation={3} sx={{ borderRadius: 2 }}>
+                <CardContent sx={{ p: 4 }}>
+                    <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="bold" sx={{ mb: 4 }}>
+                        Create New Post
+                    </Typography>
 
-                    <Row className="mb-3">
-                        <Col md={12}>
-                            <Form.Group controlId="status">
-                                <Form.Label className="text-start d-block mb-2">Status</Form.Label>
-                                <Form.Control
-                                    className="form-control-lg mb-3"
-                                    as="select"
-                                    value={status}
-                                    onChange={(e) => setStatus(e.target.value)}>
-                                    <option value="Draft">Draft</option>
-                                    <option value="Published">Published</option>
-                                </Form.Control>
-                            </Form.Group>
-                        </Col>
+                    <Box component="form" onSubmit={handleSubmit} noValidate>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    required
+                                    id="title"
+                                    label="Title"
+                                    variant="outlined"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    autoFocus
+                                />
+                            </Grid>
 
-                        <Col md={12}>
-                            <Form.Group controlId="image">
-                                <Form.Label className="text-start d-block mb-2">Image URL</Form.Label>
-                                <Form.Control
-                                    className="form-control-lg mb-3"
-                                    type="text"
-                                    placeholder="Enter image URL"
+                            <Grid item xs={12}>
+                                <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                                    Content
+                                </Typography>
+                                <EditorWrapper 
+                                    data={content}
+                                    onChange={setContent}
+                                    placeholder="Write your post content here..."
+                                    sx={{ minHeight: '300px' }}
+                                />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="status-label">Status</InputLabel>
+                                    <Select
+                                        labelId="status-label"
+                                        id="status"
+                                        value={status}
+                                        label="Status"
+                                        onChange={(e) => setStatus(e.target.value)}
+                                    >
+                                        <MenuItem value="Draft">Draft</MenuItem>
+                                        <MenuItem value="Published">Published</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    id="image"
+                                    label="Featured Image URL"
+                                    variant="outlined"
                                     value={image}
                                     onChange={handleImageChange}
+                                    placeholder="Enter image URL"
                                 />
-                            </Form.Group>
-                        </Col>
-                    </Row>
+                            </Grid>
 
-                    {preview && (
-                        <div className="text-center mb-3">
-                            <img
-                                src={preview}
-                                alt="Preview"
-                                style={{
-                                    maxWidth: "100%",
-                                    height: "auto",
-                                    borderRadius: "5px",
-                                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                                    objectFit: "cover",
-                                }}
-                            />
-                        </div>
-                    )}
+                            {preview && (
+                                <Grid item xs={12}>
+                                    <Paper elevation={1} sx={{ p: 2, textAlign: 'center' }}>
+                                        <img
+                                            src={preview}
+                                            alt="Preview"
+                                            style={{
+                                                maxWidth: "100%",
+                                                maxHeight: "300px",
+                                                objectFit: "contain",
+                                                borderRadius: "4px",
+                                            }}
+                                        />
+                                    </Paper>
+                                </Grid>
+                            )}
 
-                    <Stack direction="horizontal" gap={3} className="d-flex justify-content-center mt-3">
-                        <Button
-                            variant="secondary"
-                            onClick={handleReset}
-                            style={{
-                                fontSize: "18px",
-                                padding: "10px",
-                                borderRadius: "5px",
-                                width: "150px",
-                            }}>
-                            Reset
-                        </Button>
-
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            style={{
-                                fontSize: "18px",
-                                padding: "10px",
-                                borderRadius: "5px",
-                                width: "150px",
-                            }}>
-                            Create Post
-                        </Button>
-                    </Stack>
-                </Form>
+                            <Grid item xs={12}>
+                                <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2 }}>
+                                    <Button
+                                        variant="outlined"
+                                        color="secondary"
+                                        startIcon={<ReplayIcon />}
+                                        onClick={handleReset}
+                                        size="large"
+                                    >
+                                        Reset
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        type="submit"
+                                        startIcon={<SaveIcon />}
+                                        size="large"
+                                    >
+                                        Create Post
+                                    </Button>
+                                </Stack>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </CardContent>
             </Card>
+
+            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleCloseAlert}>
+                <Alert onClose={handleCloseAlert} severity={alertSeverity} sx={{ width: '100%' }}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };
