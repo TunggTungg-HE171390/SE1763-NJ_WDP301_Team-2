@@ -51,6 +51,7 @@ import ManagePsychologistSchedule from "./screens/staff/ManagePsychologistSchedu
 import EditPsychologistExperience from "./screens/staff/EditPsychologistExperience";
 import EditPsychologistWorkHistory from "./screens/staff/EditPsychologistWorkHistory";
 import ManageAppointments from "./screens/staff/ManageAppointments";
+import ViewAppointmentDetail from "./screens/psychologist/viewAppointmentDetail/viewAppointmentDetail";
 
 // Create MUI theme
 const theme = createTheme({
@@ -160,10 +161,10 @@ function Layout() {
                         
                         {/* Psychologist routes */}
                         <Route path="/psychologist/view-schedule" element={
-                            <ProtectedRoute element={<ViewPersonalSchedule userRole="psychologist" />} requiredRole="psychologist" />
+                            <ProtectedRoute element={<ViewPersonalSchedule />} requiredRole="psychologist" />
                         } />
                         <Route path="/psychologist/view-appointment-detail/:appointmentId" element={
-                            <ProtectedRoute element={<AppointmentDetail />} requiredRole="psychologist" />
+                            <ProtectedRoute element={<ViewAppointmentDetail />} requiredRole="psychologist" />
                         } />
                         
                         {/* Staff routes - properly protected with role-based access */}

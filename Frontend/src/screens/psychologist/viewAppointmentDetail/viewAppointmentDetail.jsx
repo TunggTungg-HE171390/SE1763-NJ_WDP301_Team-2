@@ -1,352 +1,366 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import ViewAppointmentDetailComponent from './components/viewAppointmentDetail-component';
-import WeeklyCalendarSidebar from './components/WeeklyCalendarSidebar';
-import DailyAppointmentsList from './components/DailyAppointmentsList';
-import { 
-    Container, 
-    Paper, 
-    Typography, 
-    Box, 
-    CircularProgress,
-    Button,
-    Alert,
-    Snackbar,
-    Grid
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import {
+  Container,
+  Typography,
+  Box,
+  Paper,
+  Grid,
+  Button,
+  Divider,
+  Chip,
+  CircularProgress,
+  Alert,
+  Avatar,
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import appointmentApi from '../../../api/appointment.api';
-import { useAuth } from '../../../components/auth/authContext'; // Updated import path
+import {
+  ArrowBack as ArrowBackIcon,
+  AccessTime as TimeIcon,
+  Event as EventIcon,
+  Person as PersonIcon,
+  Psychology as PsychologyIcon,
+  Edit as EditIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+} from '@mui/icons-material';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { useAuth } from '../../../components/auth/authContext';
+import { getAppointmentById, updateNotes } from '../../../api/appointment.api';
 
 const ViewAppointmentDetail = () => {
-    const { appointmentId } = useParams();
-    const navigate = useNavigate();
-    const [appointment, setAppointment] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [toast, setToast] = useState({ open: false, message: '', severity: 'info' });
-    const { user } = useAuth(); // Get current user
+  const { appointmentId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [appointment, setAppointment] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [psychologistNote, setPsychologistNote] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  
+  // Fetch appointment details on component mount
+  useEffect(() => {
+    const fetchAppointmentDetails = async () => {
+      setLoading(true);
+      try {
+        const response = await getAppointmentById(appointmentId);
+        if (response && response.data) {
+          setAppointment(response.data);
+          setPsychologistNote(response.data.notes?.psychologist || '');
+        } else {
+          setError('Không tìm thấy thông tin cuộc hẹn');
+        }
+      } catch (err) {
+        console.error('Error fetching appointment details:', err);
+        setError('Không thể tải thông tin cuộc hẹn. Vui lòng thử lại sau.');
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    // State for weekly calendar
-    const [weekDates, setWeekDates] = useState([]);
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [dailyAppointments, setDailyAppointments] = useState([]);
-
-    // Check if user is authorized (psychologist or staff)
-    useEffect(() => {
-        // Redirect patients to the patient version of appointment detail
-        if (user && user.role === 'patient') {
-            navigate(`/patient/view-appointment-detail/${appointmentId}`);
-        }
-    }, [user, appointmentId, navigate]);
-
-    // Generate week dates based on the appointment date
-    useEffect(() => {
-        if (appointment) {
-            const appointmentDate = new Date(appointment.date);
-            const currentWeekDates = getWeekDates(appointmentDate);
-            setWeekDates(currentWeekDates);
-            setSelectedDate(appointmentDate.toISOString().split('T')[0]);
-        }
-    }, [appointment]);
-
-    // Fetch daily appointments when selected date changes
-    useEffect(() => {
-        if (selectedDate) {
-            fetchDailyAppointments(selectedDate);
-        }
-    }, [selectedDate]);
-
-    // Generate array of dates for the week containing the given date
-    const getWeekDates = (date) => {
-        const day = date.getDay(); // 0 (Sunday) to 6 (Saturday)
-        const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to get Monday
-        
-        const monday = new Date(date);
-        monday.setDate(diff);
-        
-        const weekDates = [];
-        for (let i = 0; i < 7; i++) {
-            const currentDate = new Date(monday);
-            currentDate.setDate(monday.getDate() + i);
-            weekDates.push({
-                date: currentDate.toISOString().split('T')[0],
-                dayName: currentDate.toLocaleDateString('vi-VN', { weekday: 'short' }),
-                dayNumber: currentDate.getDate()
-            });
-        }
-        
-        return weekDates;
-    };
-
-    // Fetch appointments for a specific date
-    const fetchDailyAppointments = async (date) => {
-        try {
-            setLoading(true);
-            const appointments = await appointmentApi.getAppointmentsByDate(date);
-            setDailyAppointments(appointments);
-        } catch (err) {
-            console.error('Error fetching daily appointments:', err);
-            setToast({
-                open: true,
-                message: 'Không thể tải danh sách cuộc hẹn trong ngày',
-                severity: 'error'
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // Handle date selection from sidebar
-    const handleDateSelect = (date) => {
-        setSelectedDate(date);
-    };
-
-    // Handle appointment selection from daily list
-    const handleAppointmentSelect = (appointmentId) => {
-        navigate(`/psychologist/view-appointment-detail/${appointmentId}`);
-    };
-
-    useEffect(() => {
-        const fetchAppointmentDetail = async () => {
-            if (!appointmentId) return;
-            
-            setLoading(true);
-            try {
-                const data = await appointmentApi.getAppointmentById(appointmentId);
-                if (data) {
-                    setAppointment(data);
-                    setError(null);
-                    
-                    // Set week dates based on appointment date
-                    const appointmentDate = new Date(data.date);
-                    const currentWeekDates = getWeekDates(appointmentDate);
-                    setWeekDates(currentWeekDates);
-                    setSelectedDate(appointmentDate.toISOString().split('T')[0]);
-                } else {
-                    setError("Không tìm thấy thông tin cuộc hẹn");
-                }
-            } catch (err) {
-                console.error("Error fetching appointment:", err);
-                setError(err.message || "Có lỗi xảy ra khi lấy thông tin cuộc hẹn");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchAppointmentDetail();
-    }, [appointmentId]);
-
-    const handleCancelAppointment = async (reason) => {
-        try {
-            setLoading(true);
-            const updatedAppointment = await appointmentApi.cancelAppointment(appointmentId, reason);
-            
-            // Update local state
-            setAppointment(updatedAppointment);
-            
-            // Refresh daily appointments
-            fetchDailyAppointments(selectedDate);
-            
-            setToast({
-                open: true,
-                message: 'Cuộc hẹn đã được hủy thành công',
-                severity: 'success'
-            });
-        } catch (err) {
-            console.error("Error cancelling appointment:", err);
-            setToast({
-                open: true,
-                message: err.message || 'Có lỗi xảy ra khi hủy cuộc hẹn',
-                severity: 'error'
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRescheduleAppointment = async (newDate, newTime, reason) => {
-        try {
-            setLoading(true);
-            const updatedAppointment = await appointmentApi.rescheduleAppointment(appointmentId, newDate, newTime, reason);
-            
-            // Update local state
-            setAppointment(updatedAppointment);
-            
-            // Refresh daily appointments
-            fetchDailyAppointments(selectedDate);
-            
-            setToast({
-                open: true,
-                message: 'Cuộc hẹn đã được đổi lịch thành công',
-                severity: 'success'
-            });
-        } catch (err) {
-            console.error("Error rescheduling appointment:", err);
-            setToast({
-                open: true,
-                message: err.message || 'Có lỗi xảy ra khi đổi lịch cuộc hẹn',
-                severity: 'error'
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleUpdateNotes = async (notes) => {
-        try {
-            setLoading(true);
-            const updatedAppointment = await appointmentApi.updateNotes(appointmentId, notes);
-            
-            // Update local state
-            setAppointment(updatedAppointment);
-            
-            setToast({
-                open: true,
-                message: 'Ghi chú đã được cập nhật',
-                severity: 'success'
-            });
-        } catch (err) {
-            console.error("Error updating notes:", err);
-            setToast({
-                open: true,
-                message: err.message || 'Có lỗi xảy ra khi cập nhật ghi chú',
-                severity: 'error'
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleConfirmAppointment = async () => {
-        try {
-            setLoading(true);
-            const updatedAppointment = await appointmentApi.confirmAppointment(appointmentId);
-            
-            // Update local state
-            setAppointment(updatedAppointment);
-            
-            // Refresh daily appointments
-            fetchDailyAppointments(selectedDate);
-            
-            setToast({
-                open: true,
-                message: 'Cuộc hẹn đã được xác nhận',
-                severity: 'success'
-            });
-        } catch (err) {
-            console.error("Error confirming appointment:", err);
-            setToast({
-                open: true,
-                message: err.message || 'Có lỗi xảy ra khi xác nhận cuộc hẹn',
-                severity: 'error'
-            });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading && !appointment) {
-        return (
-            <Container maxWidth="lg" sx={{ mt: 12, mb: 4, textAlign: 'center' }}>
-                <CircularProgress size={40} />
-                <Typography variant="h5" sx={{ mt: 2 }}>Đang tải thông tin cuộc hẹn...</Typography>
-            </Container>
-        );
+    fetchAppointmentDetails();
+  }, [appointmentId]);
+  
+  // Handle opening note dialog
+  const handleOpenNoteDialog = () => {
+    setOpenDialog(true);
+  };
+  
+  // Handle closing note dialog
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+  
+  // Handle saving note
+  const handleSaveNote = async () => {
+    try {
+      setLoading(true);
+      const response = await updateNotes(appointmentId, psychologistNote);
+      if (response && response.data) {
+        setAppointment(response.data);
+        setSuccess('Đã cập nhật ghi chú thành công');
+        setTimeout(() => setSuccess(''), 3000);
+      }
+    } catch (err) {
+      console.error('Error saving note:', err);
+      setError('Không thể cập nhật ghi chú. Vui lòng thử lại sau.');
+      setTimeout(() => setError(''), 3000);
+    } finally {
+      setLoading(false);
+      setOpenDialog(false);
     }
-
-    if (error && !appointment) {
-        return (
-            <Container maxWidth="lg" sx={{ mt: 12, mb: 4, textAlign: 'center' }}>
-                <Typography variant="h5" color="error">{error}</Typography>
-                <Button 
-                    component={Link} 
-                    to="/psychologist/view-schedule" 
-                    variant="contained" 
-                    color="primary" 
-                    sx={{ mt: 3 }}
-                >
-                    Quay lại danh sách cuộc hẹn
-                </Button>
-            </Container>
-        );
+  };
+  
+  // Format functions
+  const formatDate = (date) => {
+    if (!date) return 'N/A';
+    try {
+      return format(new Date(date), 'dd/MM/yyyy', { locale: vi });
+    } catch (err) {
+      return String(date);
     }
-
+  };
+  
+  const formatTime = (time) => {
+    if (!time) return 'N/A';
+    try {
+      return format(new Date(time), 'HH:mm', { locale: vi });
+    } catch (err) {
+      return String(time);
+    }
+  };
+  
+  const formatDateTime = (dateTime) => {
+    if (!dateTime) return 'N/A';
+    try {
+      return format(new Date(dateTime), 'EEEE, dd/MM/yyyy - HH:mm', { locale: vi });
+    } catch (err) {
+      return String(dateTime);
+    }
+  };
+  
+  // Get status label and color
+  const getStatusLabel = (status) => {
+    const statusMap = {
+      'Pending': 'Đang chờ',
+      'Confirmed': 'Đã xác nhận',
+      'Completed': 'Đã hoàn thành',
+      'Cancelled': 'Đã hủy',
+      'Rescheduled': 'Đổi lịch',
+      'No-show': 'Không đến'
+    };
+    return statusMap[status] || status;
+  };
+  
+  const getStatusColor = (status) => {
+    const colorMap = {
+      'Pending': 'warning',
+      'Confirmed': 'info',
+      'Completed': 'success',
+      'Cancelled': 'error',
+      'Rescheduled': 'secondary',
+      'No-show': 'default'
+    };
+    return colorMap[status] || 'default';
+  };
+  
+  // Loading state
+  if (loading && !appointment) {
     return (
-        <Container maxWidth="xl" sx={{ mt: 12, mb: 4 }}>
-            <Box sx={{ mb: 3 }}>
-                <Button 
-                    component={Link} 
-                    to="/psychologist/view-schedule" 
-                    variant="outlined" 
-                    startIcon={<ArrowBackIcon />}
-                >
-                    Quay lại lịch hẹn
-                </Button>
+      <Container maxWidth="lg" sx={{ mt: 12, mb: 4, display: 'flex', justifyContent: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+  
+  // Error state
+  if (error && !appointment) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 12, mb: 4 }}>
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+          component={Link}
+          to="/psychologist/view-schedule"
+          sx={{ mb: 3 }}
+        >
+          Quay lại lịch làm việc
+        </Button>
+        
+        <Alert severity="error">{error}</Alert>
+      </Container>
+    );
+  }
+  
+  return (
+    <Container maxWidth="lg" sx={{ mt: 12, mb: 4 }}>
+      <Button
+        variant="outlined"
+        startIcon={<ArrowBackIcon />}
+        component={Link}
+        to="/psychologist/view-schedule"
+        sx={{ mb: 3 }}
+      >
+        Quay lại lịch làm việc
+      </Button>
+      
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+      
+      {appointment && (
+        <>
+          <Paper elevation={2} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h5" component="h1" fontWeight={600}>
+                Chi tiết cuộc hẹn
+              </Typography>
+              <Chip 
+                label={getStatusLabel(appointment.status)} 
+                color={getStatusColor(appointment.status)} 
+                size="medium"
+              />
             </Box>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+              Mã cuộc hẹn: <Box component="span" fontFamily="monospace">{appointment._id}</Box>
+            </Typography>
+            
+            <Divider sx={{ my: 2 }} />
             
             <Grid container spacing={2}>
-                {/* Left Sidebar - Weekly Calendar */}
-                <Grid item xs={12} md={2}>
-                    <Paper elevation={2} sx={{ height: '100%', p: 2 }}>
-                        <WeeklyCalendarSidebar 
-                            weekDates={weekDates} 
-                            selectedDate={selectedDate} 
-                            onSelectDate={handleDateSelect}
-                        />
-                    </Paper>
-                </Grid>
-                
-                {/* Main Content - Appointment Details */}
-                <Grid item xs={12} md={7}>
-                    <Paper elevation={3} sx={{ p: 3, borderRadius: 2 }}>
-                        <Typography variant="h4" fontWeight={600} gutterBottom>
-                            Chi tiết cuộc hẹn
-                        </Typography>
-                        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                            Thông tin chi tiết về cuộc hẹn với bệnh nhân
-                        </Typography>
-                        {appointment && (
-                            <ViewAppointmentDetailComponent 
-                                appointment={appointment}
-                                onCancel={handleCancelAppointment}
-                                onReschedule={handleRescheduleAppointment}
-                                onUpdateNotes={handleUpdateNotes}
-                                onConfirm={handleConfirmAppointment}
-                                isLoading={loading}
-                            />
-                        )}
-                    </Paper>
-                </Grid>
-                
-                {/* Right Sidebar - Daily Appointments */}
-                <Grid item xs={12} md={3}>
-                    <Paper elevation={2} sx={{ height: '100%', p: 2 }}>
-                        <DailyAppointmentsList 
-                            date={selectedDate}
-                            appointments={dailyAppointments}
-                            currentAppointmentId={Number(appointmentId)}
-                            onSelectAppointment={handleAppointmentSelect}
-                        />
-                    </Paper>
-                </Grid>
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+                  <EventIcon color="primary" sx={{ mr: 1, mt: 0.5 }} />
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">Ngày hẹn</Typography>
+                    <Typography variant="body1">
+                      {formatDate(appointment.scheduledTime?.date)}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+                  <TimeIcon color="primary" sx={{ mr: 1, mt: 0.5 }} />
+                  <Box>
+                    <Typography variant="body2" color="text.secondary">Thời gian</Typography>
+                    <Typography variant="body1">
+                      {formatTime(appointment.scheduledTime?.startTime)} - {formatTime(appointment.scheduledTime?.endTime)}
+                    </Typography>
+                  </Box>
+                </Box>
+              </Grid>
             </Grid>
             
-            <Snackbar 
-                open={toast.open} 
-                autoHideDuration={6000} 
-                onClose={() => setToast({...toast, open: false})}
-            >
-                <Alert 
-                    onClose={() => setToast({...toast, open: false})} 
-                    severity={toast.severity} 
-                    sx={{ width: '100%' }}
+            <Divider sx={{ my: 2 }} />
+            
+            {/* Patient info */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" fontWeight={500} sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+                <PersonIcon sx={{ mr: 1 }} />
+                Thông tin bệnh nhân
+              </Typography>
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', pl: 4 }}>
+                <Avatar 
+                  src={appointment.patient?.avatar} 
+                  alt={appointment.patient?.fullName || 'Patient'}
+                  sx={{ width: 50, height: 50, mr: 2 }}
+                />
+                <Box>
+                  <Typography variant="body1" fontWeight={500}>
+                    {appointment.patient?.fullName || 'Không có thông tin'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Email: {appointment.patient?.email || 'N/A'}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    SĐT: {appointment.patient?.phone || 'N/A'}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+            
+            {/* Patient notes */}
+            {appointment.notes?.patient && (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" fontWeight={500} sx={{ mb: 1 }}>
+                  Ghi chú của bệnh nhân
+                </Typography>
+                <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
+                  <Typography variant="body2">
+                    {appointment.notes.patient}
+                  </Typography>
+                </Paper>
+              </Box>
+            )}
+            
+            {/* Psychologist notes */}
+            <Box sx={{ mb: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                <Typography variant="subtitle1" fontWeight={500}>
+                  Ghi chú của bạn
+                </Typography>
+                <Button 
+                  variant="text" 
+                  startIcon={<EditIcon />}
+                  onClick={handleOpenNoteDialog}
                 >
-                    {toast.message}
-                </Alert>
-            </Snackbar>
-        </Container>
-    );
+                  Chỉnh sửa
+                </Button>
+              </Box>
+              <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
+                <Typography variant="body2">
+                  {appointment.notes?.psychologist || 'Chưa có ghi chú'}
+                </Typography>
+              </Paper>
+            </Box>
+            
+            {/* Additional appointment details if needed */}
+            {appointment.rescheduleRequest && (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle1" fontWeight={500} sx={{ mb: 1 }}>
+                  Thông tin đổi lịch
+                </Typography>
+                <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.default' }}>
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Người yêu cầu:</strong> {
+                      appointment.rescheduleRequest.requestedBy === 'patient' ? 'Bệnh nhân' :
+                      appointment.rescheduleRequest.requestedBy === 'psychologist' ? 'Chuyên gia' : 'Nhân viên'
+                    }
+                  </Typography>
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Thời gian yêu cầu:</strong> {formatDateTime(appointment.rescheduleRequest.requestedTime)}
+                  </Typography>
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Lý do:</strong> {appointment.rescheduleRequest.reason || 'Không có lý do'}
+                  </Typography>
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Trạng thái:</strong> {
+                      appointment.rescheduleRequest.status === 'Pending' ? 'Đang chờ phê duyệt' :
+                      appointment.rescheduleRequest.status === 'Approved' ? 'Đã chấp nhận' : 'Đã từ chối'
+                    }
+                  </Typography>
+                </Paper>
+              </Box>
+            )}
+          </Paper>
+        </>
+      )}
+      
+      {/* Dialog for editing psychologist note */}
+      <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
+        <DialogTitle>Cập nhật ghi chú buổi tư vấn</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Nhập ghi chú của bạn về buổi tư vấn này.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Ghi chú"
+            fullWidth
+            multiline
+            rows={6}
+            value={psychologistNote}
+            onChange={(e) => setPsychologistNote(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDialog}>Hủy</Button>
+          <Button onClick={handleSaveNote} variant="contained" color="primary">
+            Lưu ghi chú
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Container>
+  );
 };
 
 export default ViewAppointmentDetail;

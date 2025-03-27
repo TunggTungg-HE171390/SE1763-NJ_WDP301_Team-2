@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import { handleBadRequest, handleNotFound, handleServerErrors, logRequestTime } from "./api/middlewares/index.js";
 import router from "./api/routes/index.js";
 import cors from "cors";
+import availabilityRouter from "./api/routes/availability.routes.js";
+import appointmentRouter from "./api/routes/appointment.routes.js";
 
 const app = express();
 dotenv.config();
@@ -59,6 +61,8 @@ app.use(
 );
 
 app.use("/api", router);
+app.use("/api/availability", availabilityRouter);
+app.use("/api/appointments", appointmentRouter);
 
 // Sử dụng các middleware xử lý lỗi
 app.use(handleBadRequest);

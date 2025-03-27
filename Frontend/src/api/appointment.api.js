@@ -2,7 +2,7 @@ import apiClient from './apiClient';
 import mockApi from './mockApi/appointment.mock';
 
 // Kiểm tra xem có đang ở chế độ phát triển và dùng mock API không
-const USE_MOCK_API = true; // Để true để sử dụng mock API, false để sử dụng API thật
+const USE_MOCK_API = false; // Set to false to use the real API
 
 // Get appointment by ID
 export const getAppointmentById = async (appointmentId) => {
@@ -11,7 +11,8 @@ export const getAppointmentById = async (appointmentId) => {
     if (USE_MOCK_API) {
       return await mockApi.getAppointmentById(appointmentId);
     }
-    return await apiClient.get(`/psychologist/appointment/${appointmentId}`);
+    // Use the correct endpoint
+    return await apiClient.get(`/appointments/${appointmentId}`);
   } catch (error) {
     console.error(`Error fetching appointment data: ${error.message}`);
     throw error;
@@ -33,13 +34,23 @@ export const updateAppointmentStatus = async (appointmentId, data) => {
 };
 
 // Get all appointments (for staff management)
-export const getAllAppointments = async () => {
+export const getAllAppointments = async (filters = {}) => {
   try {
-    console.log("Fetching all appointments");
+    console.log("Fetching all appointments with filters:", filters);
     if (USE_MOCK_API) {
-      return await mockApi.getAllAppointments();
+      return await mockApi.getAllAppointments(filters);
     }
-    return await apiClient.get("/appointments");
+    
+    // Build query string from filters
+    const queryParams = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value);
+      }
+    });
+    
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+    return await apiClient.get(`/appointments${queryString}`);
   } catch (error) {
     console.error(`Error fetching all appointments: ${error.message}`);
     throw error;
@@ -53,7 +64,10 @@ export const cancelAppointment = async (appointmentId, reason) => {
     if (USE_MOCK_API) {
       return await mockApi.cancelAppointment(appointmentId, reason);
     }
-    return await apiClient.patch(`/appointments/${appointmentId}/cancel`, { reason });
+    return await apiClient.patch(`/appointments/${appointmentId}/status`, { 
+      status: 'Cancelled',
+      note: reason
+    });
   } catch (error) {
     console.error(`Error cancelling appointment: ${error.message}`);
     throw error;
@@ -67,7 +81,9 @@ export const confirmAppointment = async (appointmentId) => {
     if (USE_MOCK_API) {
       return await mockApi.confirmAppointment(appointmentId);
     }
-    return await apiClient.patch(`/appointments/${appointmentId}/confirm`);
+    return await apiClient.patch(`/appointments/${appointmentId}/status`, { 
+      status: 'Confirmed'
+    });
   } catch (error) {
     console.error(`Error confirming appointment: ${error.message}`);
     throw error;
@@ -99,7 +115,9 @@ export const updateNotes = async (appointmentId, notes) => {
     if (USE_MOCK_API) {
       return await mockApi.updateAppointmentNotes(appointmentId, notes);
     }
-    return await apiClient.patch(`/appointments/${appointmentId}/notes`, { notes });
+    return await apiClient.patch(`/appointments/${appointmentId}/status`, { 
+      note: notes 
+    });
   } catch (error) {
     console.error(`Error updating appointment notes: ${error.message}`);
     throw error;
@@ -113,7 +131,7 @@ export const getAppointmentsByDate = async (date) => {
     if (USE_MOCK_API) {
       return await mockApi.getAppointmentsByDate(date);
     }
-    return await apiClient.get(`/appointments/date/${date}`);
+    return await apiClient.get(`/appointments?startDate=${date}&endDate=${date}`);
   } catch (error) {
     console.error(`Error fetching appointments by date: ${error.message}`);
     return { data: [] }; // Return empty array on error to avoid UI breakage
