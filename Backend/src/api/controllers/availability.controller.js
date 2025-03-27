@@ -403,11 +403,97 @@ const createMultipleAvailabilitySlots = async (req, res) => {
     }
 };
 
+/**
+ * Get availability slots by date range
+ * Can be filtered by psychologist ID
+ */
+const getAvailabilitySlotsByDateRange = async (req, res) => {
+    try {
+        const { startDate, endDate, psychologistId } = req.query;
+        
+        if (!startDate || !endDate) {
+            return res.status(400).json({ message: "Start date and end date are required" });
+        }
+        
+        // Parse dates
+        const startDateObj = new Date(startDate);
+        startDateObj.setHours(0, 0, 0, 0);
+        
+        const endDateObj = new Date(endDate);
+        endDateObj.setHours(23, 59, 59, 999);
+        
+        // Build query
+        const query = {
+            date: { $gte: startDateObj, $lte: endDateObj }
+        };
+        
+        // Add psychologist filter if provided
+        if (psychologistId) {
+            query.psychologistId = psychologistId;
+        }
+        
+        console.log(`Fetching availability slots with query:`, query);
+        
+        // Get slots
+        const slots = await Availability.find(query);
+        
+        console.log(`Found ${slots.length} slots`);
+
+        // Process slots to include appointment info if booked
+        let processedSlots = slots;
+        
+        // Look up appointments for booked slots
+        const bookedSlots = slots.filter(slot => slot.isBooked && slot.appointmentId);
+        
+        if (bookedSlots.length > 0) {
+            // Get appointment IDs
+            const appointmentIds = bookedSlots
+                .map(slot => slot.appointmentId)
+                .filter(id => id); // Filter out null/undefined
+            
+            // Fetch appointments
+            const appointments = await Appointment.find({
+                _id: { $in: appointmentIds }
+            });
+            
+            // Create a map for quick lookup
+            const appointmentMap = new Map();
+            appointments.forEach(app => {
+                appointmentMap.set(app._id.toString(), app);
+            });
+            
+            // Add appointment data to slots
+            processedSlots = slots.map(slot => {
+                const slotObj = slot.toObject();
+                
+                if (slot.isBooked && slot.appointmentId) {
+                    const appointment = appointmentMap.get(slot.appointmentId.toString());
+                    if (appointment) {
+                        slotObj.appointment = {
+                            _id: appointment._id,
+                            status: appointment.status,
+                            patientId: appointment.patientId
+                        };
+                    }
+                }
+                
+                return slotObj;
+            });
+        }
+        
+        res.status(200).json(processedSlots);
+    } catch (error) {
+        console.error("Error fetching availability slots by date range:", error);
+        res.status(500).json({ message: "Failed to fetch availability slots", error: error.message });
+    }
+};
+
 export default { 
     createPsychologistAvailability, 
     getAvailabilitiesById, 
     getAvailabilityById,
     updateAvailabilityStatus,
     createIndividualSlot,
-    createMultipleAvailabilitySlots // Add the new function to exports
+    createMultipleAvailabilitySlots,
+    getAvailabilitySlotsByDateRange // Add the new function to exports
 };
