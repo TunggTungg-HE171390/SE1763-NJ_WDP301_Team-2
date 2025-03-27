@@ -184,6 +184,18 @@ export function Header() {
                         </NavigationMenuLink>
                     </NavigationMenuItem>
                 )}
+                {user && user.role === 'psychologist' && (
+                    <NavigationMenuItem>
+                        <NavigationMenuLink 
+                            asChild 
+                            className={`${navigationMenuTriggerStyle()} cursor-pointer text-black`}
+                        >
+                            <Link to="/psychologist/view-schedule" className="text-black">
+                                Quản lý lịch
+                            </Link>
+                        </NavigationMenuLink>
+                    </NavigationMenuItem>
+                )}
             </NavigationMenuList>
             {/* Right - Login & Sign Up Buttons */}
             <div className="flex gap-3 items-center justify-between ml-auto mr-4">
