@@ -210,8 +210,8 @@ const ManagePsychologistSchedule = () => {
               });
             }
             
-            // Mark slots as selected if they already exist and are available
-            if (slot.status === "Available") {
+            // Mark slots as selected if they already exist and are not booked
+            if (!slot.isBooked) {
               newSelectedSlots[dateKey][timeKey] = true;
             }
           });
@@ -261,7 +261,8 @@ const ManagePsychologistSchedule = () => {
       const slotStart = new Date(slot.startTime);
       return isSameDay(slotStart, date) && 
              format(slotStart, 'HH:mm') === time &&
-             slot.status === "Available";
+             // Use isBooked field with ! operator instead of checking status
+             !slot.isBooked;
     });
   };
   
