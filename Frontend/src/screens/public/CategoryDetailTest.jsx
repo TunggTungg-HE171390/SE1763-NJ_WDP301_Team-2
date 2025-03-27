@@ -37,7 +37,7 @@ export function CategoryDetailTest() {
 
     return (
         <div className="flex justify-center items-center min-h-[80vh] p-8">
-            <div className="gap-6">
+            <div className="gap-10 flex flex-row">
                 {/* Only staff can access this card */}
                 {user?.role === "staff" && (
                     <Card className="w-[500px] p-4 border rounded-md shadow-lg hover:scale-105 hover:border-yellow-500 transition-all duration-300 ease-in-out mb-8">

@@ -11,20 +11,20 @@ const StatsSection = () => {
         },
         {
             value: "0",
-            label: "Top medical facilities",
-            subLabel: "Partnering with",
+            label: "Cơ sở ý tế",
+            subLabel: "Hợp tác với",
             icon: <Building2 className="w-12 h-12" />,
         },
         {
-            value: "2",
-            label: "Customers",
-            subLabel: "Supporting",
+            value: "48",
+            label: "Khách hàng",
+            subLabel: "Đã hỗ trợ",
             icon: <HeartPulse className="w-12 h-12" />,
         },
         {
-            value: "0",
-            label: "Questions per day",
-            subLabel: "Free answers",
+            value: "354",
+            label: "Lượt làm bài tâm lý",
+            subLabel: "Đã có",
             icon: <MessageSquareText className="w-12 h-12" />,
         },
     ];

@@ -112,14 +112,7 @@ const HealthcareBlogListing = () => {
                     </button>
                 </div>
                 <div className="p-1">
-                    <Link
-                        to="#"
-                        onClick={() =>
-                            window.open(
-                                "https://www.youtube.com/watch?v=LXyV5hKqA98&list=RDLXyV5hKqA98&start_radio=1",
-                                "_blank"
-                            )
-                        }>
+                    <Link to="#" onClick={() => window.open("https://www.facebook.com/yogamastertaybac", "_blank")}>
                         <img
                             src="https://i.imgur.com/6K15bgv.png"
                             alt="Advertisement"
