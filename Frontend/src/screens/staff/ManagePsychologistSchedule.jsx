@@ -235,6 +235,11 @@ const ManagePsychologistSchedule = () => {
   const toggleSlot = (date, time) => {
     const dateKey = format(date, 'yyyy-MM-dd');
     
+    // Prevent toggling if the slot is booked
+    if (isSlotBooked(date, time)) {
+      return;
+    }
+    
     setSelectedSlots(prev => {
       const updatedSlots = { ...prev };
       
@@ -262,6 +267,21 @@ const ManagePsychologistSchedule = () => {
       return isSameDay(slotStart, date) && 
              format(slotStart, 'HH:mm') === time &&
              !slot.isBooked; // Only check isBooked
+    });
+  };
+  
+  // Check if a slot is booked
+  const isSlotBooked = (date, time) => {
+    const dateString = format(date, 'yyyy-MM-dd');
+    const targetStart = new Date(dateString + 'T' + time);
+    
+    return existingSlots.some(slot => {
+      if (!slot.startTime) return false;
+      
+      const slotStart = new Date(slot.startTime);
+      return isSameDay(slotStart, date) && 
+             format(slotStart, 'HH:mm') === time &&
+             slot.isBooked === true;
     });
   };
   
@@ -382,7 +402,8 @@ const ManagePsychologistSchedule = () => {
       }
       
       TIME_SLOTS.forEach(slot => {
-        if (!isSlotInPast(date, slot.start)) {
+        // Skip slots that are in the past or already booked
+        if (!isSlotInPast(date, slot.start) && !isSlotBooked(date, slot.start)) {
           updatedSlots[dateKey][slot.start] = true;
         }
       });
@@ -403,7 +424,10 @@ const ManagePsychologistSchedule = () => {
       }
       
       TIME_SLOTS.forEach(slot => {
-        updatedSlots[dateKey][slot.start] = false;
+        // Don't clear booked slots
+        if (!isSlotBooked(date, slot.start)) {
+          updatedSlots[dateKey][slot.start] = false;
+        }
       });
       
       return updatedSlots;
@@ -597,24 +621,25 @@ const ManagePsychologistSchedule = () => {
                         const dateKey = format(day, 'yyyy-MM-dd');
                         const isPast = isSlotInPast(day, slot.start);
                         const isExisting = isSlotExisting(day, slot.start);
+                        const isBooked = isSlotBooked(day, slot.start);
                         const isSelected = selectedSlots[dateKey]?.[slot.start] || false;
                         
                         return (
                           <Box 
                             key={`${dateKey}-${slot.start}`}
-                            onClick={() => !isPast && toggleSlot(day, slot.start)}
+                            onClick={() => !isPast && !isBooked && toggleSlot(day, slot.start)}
                             sx={{
                               py: 1.5,
                               px: 2,
                               mb: 1,
                               borderRadius: 1,
-                              cursor: isPast ? 'not-allowed' : 'pointer',
-                              bgcolor: isSelected ? 'primary.main' : isPast ? 'grey.100' : 'background.paper',
-                              color: isSelected ? 'white' : isPast ? 'text.disabled' : 'text.primary',
+                              cursor: isPast || isBooked ? 'not-allowed' : 'pointer',
+                              bgcolor: isBooked ? 'error.light' : isSelected ? 'primary.main' : isPast ? 'grey.100' : 'background.paper',
+                              color: isBooked ? 'white' : isSelected ? 'white' : isPast ? 'text.disabled' : 'text.primary',
                               border: '1px solid',
-                              borderColor: isSelected ? 'primary.main' : isPast ? 'grey.300' : 'grey.300',
+                              borderColor: isBooked ? 'error.main' : isSelected ? 'primary.main' : isPast ? 'grey.300' : 'grey.300',
                               '&:hover': {
-                                bgcolor: isPast ? 'grey.100' : isSelected ? 'primary.dark' : 'action.hover',
+                                bgcolor: isPast || isBooked ? (isBooked ? 'error.light' : 'grey.100') : isSelected ? 'primary.dark' : 'action.hover',
                               },
                               display: 'flex',
                               justifyContent: 'space-between',
@@ -626,7 +651,14 @@ const ManagePsychologistSchedule = () => {
                               {slot.label}
                             </Typography>
                             
-                            {isExisting && (
+                            {isBooked ? (
+                              <Chip 
+                                label="Đã đặt" 
+                                size="small" 
+                                color="error"
+                                sx={{ fontSize: '0.7rem', height: 20 }}
+                              />
+                            ) : isExisting && (
                               <Chip 
                                 label="Đã tạo" 
                                 size="small" 
@@ -669,24 +701,25 @@ const ManagePsychologistSchedule = () => {
                   const dateKey = format(dialogDate, 'yyyy-MM-dd');
                   const isPast = isSlotInPast(dialogDate, slot.start);
                   const isExisting = isSlotExisting(dialogDate, slot.start);
+                  const isBooked = isSlotBooked(dialogDate, slot.start);
                   const isSelected = selectedSlots[dateKey]?.[slot.start] || false;
                   
                   return (
                     <Box 
                       key={`dialog-${dateKey}-${slot.start}`}
-                      onClick={() => !isPast && toggleSlot(dialogDate, slot.start)}
+                      onClick={() => !isPast && !isBooked && toggleSlot(dialogDate, slot.start)}
                       sx={{
                         py: 1.5,
                         px: 2,
                         mb: 1,
                         borderRadius: 1,
-                        cursor: isPast ? 'not-allowed' : 'pointer',
-                        bgcolor: isSelected ? 'primary.main' : isPast ? 'grey.100' : 'background.paper',
-                        color: isSelected ? 'white' : isPast ? 'text.disabled' : 'text.primary',
+                        cursor: isPast || isBooked ? 'not-allowed' : 'pointer',
+                        bgcolor: isBooked ? 'error.light' : isSelected ? 'primary.main' : isPast ? 'grey.100' : 'background.paper',
+                        color: isBooked ? 'white' : isSelected ? 'white' : isPast ? 'text.disabled' : 'text.primary',
                         border: '1px solid',
-                        borderColor: isSelected ? 'primary.main' : isPast ? 'grey.300' : 'grey.300',
+                        borderColor: isBooked ? 'error.main' : isSelected ? 'primary.main' : isPast ? 'grey.300' : 'grey.300',
                         '&:hover': {
-                          bgcolor: isPast ? 'grey.100' : isSelected ? 'primary.dark' : 'action.hover',
+                          bgcolor: isPast || isBooked ? (isBooked ? 'error.light' : 'grey.100') : isSelected ? 'primary.dark' : 'action.hover',
                         },
                         display: 'flex',
                         justifyContent: 'space-between',
@@ -698,7 +731,14 @@ const ManagePsychologistSchedule = () => {
                         {slot.label}
                       </Typography>
                       
-                      {isExisting && (
+                      {isBooked ? (
+                        <Chip 
+                          label="Đã đặt" 
+                          size="small" 
+                          color="error"
+                          sx={{ fontSize: '0.7rem', height: 20 }}
+                        />
+                      ) : isExisting && (
                         <Chip 
                           label="Đã tạo" 
                           size="small" 
