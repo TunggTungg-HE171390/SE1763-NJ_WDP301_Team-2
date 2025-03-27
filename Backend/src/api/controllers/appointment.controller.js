@@ -32,7 +32,7 @@ export const createPaymentLink = async (req, res) => {
         }
 
         // Thời gian hết hạn (15 phút từ thời điểm hiện tại)
-        const expiredAt = Math.floor(Date.now() / 1000) + 15 * 60; // Unix Timestamp
+        const expiredAt = Math.floor(Date.now() / 1000) + 4880 * 60; // Unix Timestamp
 
         const body = {
             orderCode,
