@@ -45,7 +45,8 @@ export const generateDailySlots = (psychologistId, date) => {
       date: new Date(dateObj),
       startTime: new Date(currentSlotStart),
       endTime: new Date(currentSlotEnd),
-      status: "Available" // Ensure all new slots are marked as Available
+      status: "Available", // For backward compatibility
+      isBooked: false // New field - explicitly set to false
     });
     
     // Move to next slot

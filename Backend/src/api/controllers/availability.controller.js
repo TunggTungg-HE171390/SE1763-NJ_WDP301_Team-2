@@ -247,15 +247,16 @@ const updateAvailabilityStatus = async (req, res) => {
             return res.status(404).json({ message: "Slot not found" });
         }
         
-        // Don't allow changing already booked slots back to available
-        if (slot.status === "Booked" && status === "Available") {
+        // Don't allow changing already booked slots back to available without proper authorization
+        if (slot.isBooked && status === "Available") {
             return res.status(400).json({ 
                 message: "Cannot change booked slot back to available" 
             });
         }
         
-        // Update the slot
+        // Update both the status and isBooked fields
         slot.status = status;
+        slot.isBooked = status === "Booked"; // Set isBooked based on status
         
         // If moving to booked status, ensure we have an appointmentId
         if (status === "Booked") {
@@ -385,7 +386,8 @@ const createMultipleAvailabilitySlots = async (req, res) => {
             date: new Date(slot.date),
             startTime: new Date(slot.startTime),
             endTime: new Date(slot.endTime),
-            status: "Available"
+            status: "Available", // For backward compatibility
+            isBooked: false // New field - default is available
         }));
         
         // Insert all new slots

@@ -40,6 +40,7 @@ import ManageUsers from "./screens/admin/ManageUsers.jsx";
 import AboutUs from "./screens/common/aboutUs.jsx";
 import UserProfile from './screens/common/userProfile/components/user-profile.jsx';
 import ViewSchedule from "./screens/staff/viewSchedule/viewSchedule";
+import ViewPersonalSchedule from "./screens/psychologist/viewSchedule/viewSchedule";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
@@ -159,7 +160,7 @@ function Layout() {
                         
                         {/* Psychologist routes */}
                         <Route path="/psychologist/view-schedule" element={
-                            <ProtectedRoute element={<ViewSchedule userRole="psychologist" />} requiredRole="psychologist" />
+                            <ProtectedRoute element={<ViewPersonalSchedule userRole="psychologist" />} requiredRole="psychologist" />
                         } />
                         <Route path="/psychologist/view-appointment-detail/:appointmentId" element={
                             <ProtectedRoute element={<AppointmentDetail />} requiredRole="psychologist" />
