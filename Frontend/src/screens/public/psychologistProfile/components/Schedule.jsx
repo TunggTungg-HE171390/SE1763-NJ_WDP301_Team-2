@@ -30,18 +30,27 @@ const Schedule = ({ psychologist, profile }) => {
                         );
                         return slotDateUTC.getTime() === selectedDateUTC.getTime() && !slot.isBooked;
                     })
-                    .map((slot) => ({
-                        id: slot._id, // Extracting schedule ID
-                        time: `${new Date(slot.startTime).toLocaleTimeString("vi-VN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                        })} - ${new Date(slot.endTime).toLocaleTimeString("vi-VN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                        })}`,
-                    }));
+                    .map((slot) => {
+                        const startTime = new Date(slot.startTime);
+                        const endTime = new Date(slot.endTime);
+
+                        // Convert to local hours and minutes
+                        const startHours = startTime.getHours();
+                        const startMinutes = startTime.getMinutes();
+                        const endHours = endTime.getHours();
+                        const endMinutes = endTime.getMinutes();
+
+                        return {
+                            id: slot._id,
+                            startTime, // Keep the date object for sorting
+                            localStartTime: startHours * 60 + startMinutes, // Convert time to minutes for correct sorting
+                            time: `${startHours.toString().padStart(2, "0")}:${startMinutes
+                                .toString()
+                                .padStart(2, "0")} - 
+                               ${endHours.toString().padStart(2, "0")}:${endMinutes.toString().padStart(2, "0")}`,
+                        };
+                    })
+                    .sort((a, b) => a.localStartTime - b.localStartTime); // Sort using minutes-based comparison
 
                 setTimeSlots(availableSlots);
             } catch (error) {
@@ -129,7 +138,7 @@ const Schedule = ({ psychologist, profile }) => {
                                     <Check className="h-5 w-5 text-blue-500 mr-2" />
                                     <p className="text-md font-medium">
                                         Tư vấn trực tuyến với {psychologist.fullName}{" "}
-                                        <span className="font-bold text-blue-600">150.000đ</span>
+                                        <span className="font-bold text-blue-600">350.000đ</span>
                                     </p>
                                 </div>
                                 <div className="mt-4">
@@ -145,8 +154,15 @@ const Schedule = ({ psychologist, profile }) => {
                     )}
                 </div>
 
-                <div className="pl-8">
+                <div className="px-8 py-4">
                     <h3 className="text-lg font-semibold uppercase mb-4 text-left">Kinh nghiệm và Lịch sử làm việc</h3>
+                    <div className="text-lg px-6 text-left [line-height:2]">
+                        <div
+                            className="[&>ul]:list-disc [&>ul]:px-12"
+                            dangerouslySetInnerHTML={{ __html: profile.overallProfile }}
+                        />
+                    </div>
+
                     <ul className="text-base pl-6 text-left">
                         {profile.medicalExperience.concat(profile.workHistory).map((exp, index) => (
                             <li key={index} className="flex items-start mb-3">
@@ -167,6 +183,7 @@ Schedule.propTypes = {
         fullName: PropTypes.string.isRequired,
     }).isRequired,
     profile: PropTypes.shape({
+        overallProfile: PropTypes.string,
         professionalLevel: PropTypes.string,
         educationalLevel: PropTypes.string,
         specialization: PropTypes.string,
