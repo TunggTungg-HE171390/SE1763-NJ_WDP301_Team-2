@@ -10,8 +10,8 @@ availabilityRouter.get("/slots", availabilityController.getAvailabilitySlotsByDa
 // Get specific slot by ID
 availabilityRouter.get("/:slotId", availabilityController.getAvailabilityById);
 
-// Update slot status
-availabilityRouter.patch("/:slotId/status", availabilityController.updateAvailabilityStatus);
+// Update slot booking status
+availabilityRouter.patch("/:slotId/booking", availabilityController.updateAvailabilityStatus);
 
 // Create a new availability slot
 availabilityRouter.post("/create", availabilityController.createIndividualSlot);

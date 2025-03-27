@@ -261,8 +261,7 @@ const ManagePsychologistSchedule = () => {
       const slotStart = new Date(slot.startTime);
       return isSameDay(slotStart, date) && 
              format(slotStart, 'HH:mm') === time &&
-             // Use isBooked field with ! operator instead of checking status
-             !slot.isBooked;
+             !slot.isBooked; // Only check isBooked
     });
   };
   

@@ -39,14 +39,13 @@ export const generateDailySlots = (psychologistId, date) => {
     // Ensure we don't exceed end time
     if (currentSlotEnd > scheduleEndTime) break;
     
-    // Create the slot - explicitly set status to "Available"
+    // Create the slot - only set isBooked
     slots.push({
       psychologistId,
       date: new Date(dateObj),
       startTime: new Date(currentSlotStart),
       endTime: new Date(currentSlotEnd),
-      status: "Available", // For backward compatibility
-      isBooked: false // New field - explicitly set to false
+      isBooked: false // Only use the isBooked field
     });
     
     // Move to next slot

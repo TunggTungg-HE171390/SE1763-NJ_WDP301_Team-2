@@ -20,17 +20,11 @@ const AvailabilitySlotSchema = new Schema(
             type: Date,
             required: true, // Store the exact end time for the availability
         },
-        // Add isBooked field (boolean) to replace status
         isBooked: {
             type: Boolean,
             default: false,
         },
-        // Keep status field for backward compatibility but deprecate its usage
-        status: {
-            type: String,
-            enum: ["Available", "Pending", "Booked"],
-            default: "Available",
-        },
+        // Removed status field
         appointmentId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Appointment",

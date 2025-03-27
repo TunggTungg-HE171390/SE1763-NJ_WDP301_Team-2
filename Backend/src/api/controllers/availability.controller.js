@@ -69,10 +69,10 @@ const createPsychologistAvailability = async (req, res) => {
         
         // Save new slots
         if (newSlots.length > 0) {
-            // Explicitly ensure all slots have "Available" status
+            // Ensure all slots have isBooked = false
             newSlots = newSlots.map(slot => ({
                 ...slot,
-                status: "Available"
+                isBooked: false // Set isBooked explicitly (removed status field)
             }));
             
             const result = await Availability.insertMany(newSlots);
@@ -229,15 +229,10 @@ const getAvailabilityById = async (req, res) => {
 const updateAvailabilityStatus = async (req, res) => {
     try {
         const { slotId } = req.params;
-        const { status, appointmentId } = req.body;
+        const { isBooked, appointmentId } = req.body;
         
-        if (!slotId || !status) {
+        if (!slotId || isBooked === undefined) {
             return res.status(400).json({ message: "Missing required fields" });
-        }
-        
-        // Validate status
-        if (!["Available", "Pending", "Booked"].includes(status)) {
-            return res.status(400).json({ message: "Invalid status" });
         }
         
         // Find and update the slot
@@ -248,21 +243,20 @@ const updateAvailabilityStatus = async (req, res) => {
         }
         
         // Don't allow changing already booked slots back to available without proper authorization
-        if (slot.isBooked && status === "Available") {
+        if (slot.isBooked && !isBooked) {
             return res.status(400).json({ 
                 message: "Cannot change booked slot back to available" 
             });
         }
         
-        // Update both the status and isBooked fields
-        slot.status = status;
-        slot.isBooked = status === "Booked"; // Set isBooked based on status
+        // Update isBooked field
+        slot.isBooked = isBooked;
         
         // If moving to booked status, ensure we have an appointmentId
-        if (status === "Booked") {
+        if (isBooked) {
             if (!appointmentId) {
                 return res.status(400).json({ 
-                    message: "appointmentId is required when setting status to Booked" 
+                    message: "appointmentId is required when setting isBooked to true" 
                 });
             }
             slot.appointmentId = appointmentId;
@@ -320,7 +314,7 @@ const createIndividualSlot = async (req, res) => {
       date: new Date(date),
       startTime: slotStartTime,
       endTime: new Date(endTime),
-      status: "Available"
+      isBooked: false // Set isBooked instead of status
     });
     
     await newSlot.save();
@@ -352,7 +346,7 @@ const createMultipleAvailabilitySlots = async (req, res) => {
         // Check for existing slots to avoid duplicates
         const existingSlots = await Availability.find({
             psychologistId,
-            status: "Available"
+            isBooked: false
         });
         
         console.log(`Found ${existingSlots.length} existing available slots`);
@@ -386,8 +380,7 @@ const createMultipleAvailabilitySlots = async (req, res) => {
             date: new Date(slot.date),
             startTime: new Date(slot.startTime),
             endTime: new Date(slot.endTime),
-            status: "Available", // For backward compatibility
-            isBooked: false // New field - default is available
+            isBooked: false // Only using isBooked field
         }));
         
         // Insert all new slots
