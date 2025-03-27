@@ -23,7 +23,7 @@ import {
   NavigateNext as NextIcon,
   Event as EventIcon,
 } from '@mui/icons-material';
-import { format, addDays, startOfWeek, endOfWeek, isSameDay, isToday, addWeeks, subWeeks } from 'date-fns';
+import { format, addDays, startOfWeek, endOfWeek, isSameDay, isToday, addWeeks, subWeeks, addMonths, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useAuth } from '../../../components/auth/authContext';
 import { getSchedulesByPsychologistId, getSchedulesByTimePeriod } from '../../../api/schedule.api';
@@ -47,6 +47,7 @@ const ViewSchedule = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [timePeriod, setTimePeriod] = useState('week');
   const [tab, setTab] = useState(0);
+  const [currentDate, setCurrentDate] = useState(new Date());
   
   // Make sure we have user ID
   const psychologistId = user?._id;
@@ -56,10 +57,14 @@ const ViewSchedule = () => {
     addDays(currentWeekStart, i)
   );
   
+  // Calculate month days if using month view
+  const monthStart = startOfMonth(currentDate);
+  const monthEnd = endOfMonth(currentDate);
+  
   // Fetch schedules on component mount and when time period changes
   useEffect(() => {
     fetchSchedules();
-  }, [psychologistId, currentWeekStart, timePeriod]);
+  }, [psychologistId, currentWeekStart, timePeriod, currentDate]);
   
   const fetchSchedules = async () => {
     if (!psychologistId) return;
@@ -82,6 +87,7 @@ const ViewSchedule = () => {
         // First try with the date range API
         try {
           schedulesData = await getSchedulesByTimePeriod(startDate, endDate, psychologistId);
+          console.log("Retrieved schedules using time period API:", schedulesData.length);
         } catch (dateRangeError) {
           console.error('Error with date range API, falling back to all schedules:', dateRangeError);
           // Fallback to getting all schedules and filtering client-side
@@ -91,10 +97,31 @@ const ViewSchedule = () => {
             const scheduleDate = new Date(schedule.date || schedule.startTime);
             return scheduleDate >= startDate && scheduleDate <= endDate;
           });
+          console.log("Retrieved filtered schedules using fallback:", schedulesData.length);
+        }
+      } else if (timePeriod === 'month') {
+        // For month view
+        const startDate = monthStart;
+        const endDate = monthEnd;
+        
+        console.log(`Fetching for month from ${format(startDate, 'yyyy-MM-dd')} to ${format(endDate, 'yyyy-MM-dd')}`);
+        
+        try {
+          schedulesData = await getSchedulesByTimePeriod(startDate, endDate, psychologistId);
+          console.log("Retrieved schedules for month:", schedulesData.length);
+        } catch (dateRangeError) {
+          console.error('Error with date range API for month, falling back:', dateRangeError);
+          const allSchedules = await getSchedulesByPsychologistId(psychologistId);
+          
+          schedulesData = allSchedules.filter(schedule => {
+            const scheduleDate = new Date(schedule.date || schedule.startTime);
+            return scheduleDate >= startDate && scheduleDate <= endDate;
+          });
         }
       } else {
-        // For now, get all schedules (can implement month view later)
+        // For all schedules
         schedulesData = await getSchedulesByPsychologistId(psychologistId);
+        console.log("Retrieved all schedules:", schedulesData.length);
       }
       
       console.log(`Fetched ${schedulesData.length} schedules`);
@@ -108,19 +135,35 @@ const ViewSchedule = () => {
     }
   };
   
-  // Navigate to previous week
-  const handlePrevWeek = () => {
-    setCurrentWeekStart(subWeeks(currentWeekStart, 1));
+  // Navigate to previous week/month
+  const handlePrevPeriod = () => {
+    if (timePeriod === 'week') {
+      setCurrentWeekStart(subWeeks(currentWeekStart, 1));
+    } else if (timePeriod === 'month') {
+      setCurrentDate(subMonths(currentDate, 1));
+    }
   };
   
-  // Navigate to next week
-  const handleNextWeek = () => {
-    setCurrentWeekStart(addWeeks(currentWeekStart, 1));
+  // Navigate to next week/month
+  const handleNextPeriod = () => {
+    if (timePeriod === 'week') {
+      setCurrentWeekStart(addWeeks(currentWeekStart, 1));
+    } else if (timePeriod === 'month') {
+      setCurrentDate(addMonths(currentDate, 1));
+    }
   };
   
   // Handle time period change
   const handleTimePeriodChange = (event) => {
-    setTimePeriod(event.target.value);
+    const newPeriod = event.target.value;
+    setTimePeriod(newPeriod);
+    
+    // Reset to current date for different views
+    if (newPeriod === 'week') {
+      setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
+    } else if (newPeriod === 'month') {
+      setCurrentDate(new Date());
+    }
   };
   
   // Handle tab change
@@ -198,15 +241,19 @@ const ViewSchedule = () => {
       <Paper sx={{ p: 3, mb: 3, borderRadius: 2, backgroundColor: '#f8f9fa' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <IconButton onClick={handlePrevWeek} sx={{ mr: 1 }}>
+            <IconButton onClick={handlePrevPeriod} sx={{ mr: 1 }}>
               <PrevIcon />
             </IconButton>
             
             <Typography variant="h6">
-              {format(currentWeekStart, 'dd/MM/yyyy')} - {format(weekDays[6], 'dd/MM/yyyy')}
+              {timePeriod === 'week' 
+                ? `${format(currentWeekStart, 'dd/MM/yyyy')} - ${format(weekDays[6], 'dd/MM/yyyy')}`
+                : timePeriod === 'month'
+                  ? format(currentDate, 'MMMM yyyy', { locale: vi })
+                  : 'Tất cả lịch làm việc'}
             </Typography>
             
-            <IconButton onClick={handleNextWeek} sx={{ ml: 1 }}>
+            <IconButton onClick={handleNextPeriod} sx={{ ml: 1 }}>
               <NextIcon />
             </IconButton>
           </Box>
@@ -240,7 +287,7 @@ const ViewSchedule = () => {
       
       {/* Schedule grid */}
       <Grid container spacing={2}>
-        {weekDays.map((day) => (
+        {timePeriod === 'week' && weekDays.map((day) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={day.toString()}>
             <Paper 
               sx={{ 
@@ -308,6 +355,139 @@ const ViewSchedule = () => {
             </Paper>
           </Grid>
         ))}
+        
+        {timePeriod === 'month' && (
+          <Grid item xs={12}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Chế độ xem theo tháng hiển thị tất cả lịch trong tháng {format(currentDate, 'MM/yyyy')}
+            </Alert>
+            
+            <Grid container spacing={2}>
+              {Array.from({ length: monthEnd.getDate() }, (_, i) => new Date(monthStart.getFullYear(), monthStart.getMonth(), i + 1))
+                .map((day) => {
+                  const daySchedules = getSchedulesForDay(day);
+                  
+                  if (daySchedules.length === 0) return null;
+                  
+                  return (
+                    <Grid item xs={12} sm={6} md={4} key={day.toISOString()}>
+                      <Paper sx={{ p: 2, mb: 2 }}>
+                        <Typography variant="subtitle1" fontWeight="bold" color={isToday(day) ? 'primary' : 'inherit'}>
+                          {formatDate(day)}
+                        </Typography>
+                        
+                        <Box sx={{ mt: 1 }}>
+                          {daySchedules.map((schedule, index) => (
+                            <Box 
+                              key={schedule._id || index}
+                              sx={{
+                                p: 1.5,
+                                mb: 1,
+                                borderRadius: 1,
+                                backgroundColor: schedule.isBooked ? '#ffebee' : '#e8f5e9',
+                                border: '1px solid',
+                                borderColor: schedule.isBooked ? '#ffcdd2' : '#c8e6c9',
+                              }}
+                            >
+                              <Typography variant="body2">
+                                {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {schedule.isBooked ? 'Đã đặt lịch' : 'Còn trống'}
+                              </Typography>
+                            </Box>
+                          ))}
+                        </Box>
+                      </Paper>
+                    </Grid>
+                  );
+                })
+                .filter(Boolean)}
+            </Grid>
+            
+            {filteredSchedules.length === 0 && (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body1">
+                  Không có lịch nào trong tháng này
+                </Typography>
+              </Box>
+            )}
+          </Grid>
+        )}
+        
+        {timePeriod === 'all' && (
+          <Grid item xs={12}>
+            <Alert severity="info" sx={{ mb: 2 }}>
+              Hiển thị tất cả lịch làm việc
+            </Alert>
+            
+            {Object.entries(
+              filteredSchedules.reduce((days, schedule) => {
+                const dateKey = format(new Date(schedule.date || schedule.startTime), 'yyyy-MM-dd');
+                if (!days[dateKey]) days[dateKey] = [];
+                days[dateKey].push(schedule);
+                return days;
+              }, {})
+            )
+              .sort(([dateA], [dateB]) => new Date(dateA) - new Date(dateB))
+              .map(([dateKey, daySchedules]) => (
+                <Paper key={dateKey} sx={{ p: 2, mb: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold" color={isToday(new Date(dateKey)) ? 'primary' : 'inherit'}>
+                    {formatDate(new Date(dateKey))}
+                  </Typography>
+                  
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    {daySchedules
+                      .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
+                      .map((schedule, index) => (
+                        <Grid item xs={12} sm={6} md={4} key={schedule._id || index}>
+                          <Box 
+                            sx={{
+                              p: 1.5,
+                              borderRadius: 1,
+                              backgroundColor: schedule.isBooked ? '#ffebee' : '#e8f5e9',
+                              border: '1px solid',
+                              borderColor: schedule.isBooked ? '#ffcdd2' : '#c8e6c9',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center'
+                            }}
+                          >
+                            <Box>
+                              <Typography variant="body2">
+                                {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {schedule.isBooked ? 'Đã đặt lịch' : 'Còn trống'}
+                              </Typography>
+                            </Box>
+                            
+                            {schedule.isBooked && schedule.appointmentId && (
+                              <IconButton 
+                                size="small" 
+                                color="primary"
+                                component={Link}
+                                to={`/psychologist/view-appointment-detail/${schedule.appointmentId}`}
+                              >
+                                <EventIcon fontSize="small" />
+                              </IconButton>
+                            )}
+                          </Box>
+                        </Grid>
+                      ))}
+                  </Grid>
+                </Paper>
+              ))}
+            
+            {filteredSchedules.length === 0 && (
+              <Box sx={{ textAlign: 'center', py: 4 }}>
+                <Typography variant="body1">
+                  Không có lịch nào
+                </Typography>
+              </Box>
+            )}
+          </Grid>
+        )}
       </Grid>
     </Container>
   );
