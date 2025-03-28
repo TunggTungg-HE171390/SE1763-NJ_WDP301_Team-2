@@ -89,7 +89,7 @@ const UpdatePost = () => {
             
             // Redirect after successful update
             setTimeout(() => {
-                navigate("/manage-posts");
+                navigate("/staff/manage-posts");
             }, 2000);
         } catch (error) {
             setAlertMessage(`Error: ${error.message}`);
@@ -124,7 +124,7 @@ const UpdatePost = () => {
                 <Button
                     variant="outlined"
                     startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate("/manage-posts")}
+                    onClick={() => navigate("/staff/manage-posts")}
                 >
                     Back to Manage Posts
                 </Button>

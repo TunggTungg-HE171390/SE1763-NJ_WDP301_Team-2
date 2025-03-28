@@ -95,8 +95,8 @@ const ManagePosts = () => {
 
   // Xử lý cập nhật bài viết (chỉ cần hiển thị alert tạm thời)
   const handleUpdate = (postId) => {
-    navigate(`/update-post/${postId}`);
-  };
+    navigate(`/staff/update-post/${postId}`);
+  }; 
 
   // Get current posts
   const indexOfLastPost = currentPage * postsPerPage;
