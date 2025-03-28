@@ -5,7 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect, useRef } from "react";
 import { usePayOS } from "payos-checkout";
-import * as API from "@/api";
+import appointmentAPI from "@/api/appointment.api";
+import psychologistAPI from "@/api/psychologist.api";
 // import { useAuth } from "@/hooks/useAuth";
 
 const BookingSuccess = () => {
@@ -31,7 +32,8 @@ const BookingSuccess = () => {
     // Fetch appointment details when component mounts
     useEffect(() => {
         if (appointmentId) {
-            API.getAppointmentById(appointmentId)
+            psychologistAPI
+                .getAppointmentById(appointmentId)
                 .then((response) => {
                     setAppointmentDetails(response.data);
                     // Set payment link for PayOS
@@ -60,7 +62,7 @@ const BookingSuccess = () => {
             console.log("Opening PayOS checkout...");
             pollingRef.current = setInterval(async () => {
                 try {
-                    const response = await API.getAppointmentById(appointmentId);
+                    const response = await psychologistAPI.getAppointmentById(appointmentId);
                     const status = response.data.paymentInformation.status;
                     // const responsePayment = await API.checkPaymentStatus({ orderCode });
 
@@ -105,7 +107,7 @@ const BookingSuccess = () => {
 
         try {
             // Cancel appointment
-            await API.cancelPayment({ appointmentId });
+            await appointmentAPI.cancelPayment({ appointmentId });
             alert("Lịch hẹn đã được hủy.");
 
             // Stop polling if active

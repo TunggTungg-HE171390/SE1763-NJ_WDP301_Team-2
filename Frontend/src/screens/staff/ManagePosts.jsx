@@ -112,7 +112,7 @@ const ManagePosts = () => {
       <Button
         variant="info"
         className="me-2 mb-2 justify-end"
-        onClick={() => navigate("/create-post")}
+        onClick={() => navigate("/staff/create-post")}
       >
         Create new post
       </Button>

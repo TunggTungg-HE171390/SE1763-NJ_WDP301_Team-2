@@ -15,4 +15,24 @@ export default defineConfig({
         },
     },
     // base: "/tamgiao",
+    optimizeDeps: {
+        include: [
+            "@mui/material",
+            "@mui/icons-material",
+            "@mui/x-date-pickers",
+            "dayjs",
+            "dayjs/locale/vi",
+            "react-router-dom",
+            // Add other commonly used dependencies here
+        ],
+        exclude: [],
+    },
+    server: {
+        watch: {
+            usePolling: true,
+        },
+        hmr: {
+            overlay: true,
+        },
+    },
 });

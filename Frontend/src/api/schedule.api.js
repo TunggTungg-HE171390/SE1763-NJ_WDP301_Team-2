@@ -1,140 +1,133 @@
-// Import mock API for development environment
-import mockScheduleApi from './mockApi/schedule.mock';
+import apiClient from './apiClient';
+import { isSameDay, parseISO } from 'date-fns';
+import mockApi from './mockApi/schedule.mock';
 
-// Check if we're in development mode to use mock API
-const isDevEnvironment = process.env.NODE_ENV === 'development';
+// Flag to use mock API for development (set to false to use real API)
+const USE_MOCK_API = false;
 
-const scheduleApi = {
-  getSchedules: async () => {
-    if (isDevEnvironment) {
-      return mockScheduleApi.getSchedules();
+/**
+ * Get all schedule slots for a psychologist
+ * @param {string} psychologistId - The ID of the psychologist
+ * @returns {Promise<Array>} - Array of schedule slots
+ */
+export const getSchedulesByPsychologistId = async (psychologistId) => {
+  try {
+    console.log(`Fetching schedules for psychologist: ${psychologistId}`);
+    
+    if (USE_MOCK_API) {
+      return await mockApi.getSchedulesByPsychologistId(psychologistId);
     }
     
-    try {
-      // Real API call would go here for production
-      const response = await fetch('/api/schedules');
-      if (!response.ok) {
-        throw new Error('Failed to fetch schedules');
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching schedules:', error);
-      throw error;
-    }
-  },
-  
-  getScheduleById: async (id) => {
-    if (isDevEnvironment) {
-      return mockScheduleApi.getScheduleById(id);
-    }
+    // Use the correct endpoint from the backend (scheduleList route)
+    const response = await apiClient.get(`/psychologist/scheduleList/${psychologistId}`);
     
-    try {
-      const response = await fetch(`/api/schedules/${id}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch schedule ${id}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error(`Error fetching schedule ${id}:`, error);
-      throw error;
+    if (response.data && Array.isArray(response.data)) {
+      return response.data;
+    } else {
+      return [];
     }
-  },
-  
-  createSchedule: async (scheduleData) => {
-    if (isDevEnvironment) {
-      return mockScheduleApi.createSchedule(scheduleData);
-    }
-    
-    try {
-      const response = await fetch('/api/schedules', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(scheduleData)
-      });
-      if (!response.ok) {
-        throw new Error('Failed to create schedule');
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Error creating schedule:', error);
-      throw error;
-    }
-  },
-  
-  updateSchedule: async (id, scheduleData) => {
-    if (isDevEnvironment) {
-      return mockScheduleApi.updateSchedule(id, scheduleData);
-    }
-    
-    try {
-      const response = await fetch(`/api/schedules/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(scheduleData)
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to update schedule ${id}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error(`Error updating schedule ${id}:`, error);
-      throw error;
-    }
-  },
-  
-  deleteSchedule: async (id) => {
-    if (isDevEnvironment) {
-      return mockScheduleApi.deleteSchedule(id);
-    }
-    
-    try {
-      const response = await fetch(`/api/schedules/${id}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to delete schedule ${id}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error(`Error deleting schedule ${id}:`, error);
-      throw error;
-    }
-  },
-
-  getSchedulesByTimePeriod: async (startDate, endDate) => {
-    if (isDevEnvironment) {
-      // If using mock API, filter the mock data by date range
-      const allSchedules = await mockScheduleApi.getSchedules();
-      return allSchedules.filter(schedule => {
-        const scheduleDate = new Date(schedule.date);
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        
-        // Reset time part for accurate date comparison
-        scheduleDate.setHours(0, 0, 0, 0);
-        start.setHours(0, 0, 0, 0);
-        end.setHours(0, 0, 0, 0);
-        
-        return scheduleDate >= start && scheduleDate <= end;
-      });
-    }
-    
-    try {
-      // Real API call would go here for production
-      const response = await fetch(`/api/schedules?startDate=${startDate}&endDate=${endDate}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch schedules for the specified time period');
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching schedules by time period:', error);
-      throw error;
-    }
+  } catch (error) {
+    console.error('Error fetching schedules:', error);
+    return [];
   }
 };
 
-export default scheduleApi;
+/**
+ * Get schedule slots within a specific date range
+ * @param {string} psychologistId - The ID of the psychologist (optional)
+ * @param {Date|string} startDate - Start date of the range
+ * @param {Date|string} endDate - End date of the range
+ * @returns {Promise<Array>} - Array of schedule slots
+ */
+export const getSchedulesByTimePeriod = async (startDate, endDate, psychologistId = null) => {
+  try {
+    console.log(`Fetching schedules from ${startDate} to ${endDate}`);
+    
+    if (USE_MOCK_API) {
+      return await mockApi.getSchedulesByTimePeriod(startDate, endDate, psychologistId);
+    }
+    
+    // Format dates if they're Date objects
+    const formattedStartDate = typeof startDate === 'object' ? 
+      startDate.toISOString().split('T')[0] : startDate;
+    
+    const formattedEndDate = typeof endDate === 'object' ? 
+      endDate.toISOString().split('T')[0] : endDate;
+    
+    // Build the URL with query parameters
+    let url = `/availability/slots?startDate=${formattedStartDate}&endDate=${formattedEndDate}`;
+    
+    // Add psychologistId if provided
+    if (psychologistId) {
+      url += `&psychologistId=${psychologistId}`;
+    }
+    
+    const response = await apiClient.get(url);
+    
+    if (response.data && Array.isArray(response.data)) {
+      return response.data;
+    } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching schedules by time period:', error);
+    
+    // If the API doesn't exist yet, fall back to getting all schedules and filtering
+    if (psychologistId) {
+      try {
+        const allSchedules = await getSchedulesByPsychologistId(psychologistId);
+        
+        // Parse dates if they're strings
+        const start = typeof startDate === 'string' ? parseISO(startDate) : startDate;
+        const end = typeof endDate === 'string' ? parseISO(endDate) : endDate;
+        
+        // Filter by date range
+        return allSchedules.filter(slot => {
+          const slotDate = new Date(slot.date || slot.startTime);
+          return slotDate >= start && slotDate <= end;
+        });
+      } catch (fallbackError) {
+        console.error('Fallback filtering failed:', fallbackError);
+        return [];
+      }
+    }
+    
+    return [];
+  }
+};
+
+/**
+ * Get all confirmed appointments for a psychologist or patient
+ * @param {string} userId - The user ID (psychologist or patient)
+ * @param {string} role - The role ('psychologist' or 'patient')
+ * @returns {Promise<Array>} - Array of appointments
+ */
+export const getAppointmentsByUser = async (userId, role) => {
+  try {
+    if (USE_MOCK_API) {
+      return await mockApi.getAppointmentsByUser(userId, role);
+    }
+    
+    const response = await apiClient.get(`/appointments/user/${userId}?role=${role}`);
+    
+    if (response.data && Array.isArray(response.data)) {
+      return response.data;
+    } else if (response.data && response.data.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    } else {
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    return [];
+  }
+};
+
+// Export all functions
+export default {
+  getSchedulesByPsychologistId,
+  getSchedulesByTimePeriod,
+  getAppointmentsByUser
+};

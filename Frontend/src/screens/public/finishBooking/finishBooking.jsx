@@ -4,7 +4,7 @@ import ToastReceiver from "@/components/common/toast/toast-receiver";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState, useEffect } from "react";
-import * as API from "@/api";
+import API from "@/api/psychologist.api";
 
 const FinishBooking = () => {
     const navigate = useNavigate();

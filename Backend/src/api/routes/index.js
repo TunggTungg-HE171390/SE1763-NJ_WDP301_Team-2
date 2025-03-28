@@ -19,5 +19,9 @@ router.use("/test", testRouter);
 router.use("/test-history", testHistoryRouter);
 router.use("/admin", adminRouter);
 router.use("/appointment", appointmentRouter);
+router.use("/users", userRouter);
+
+// Remove this duplicate route as we'll add it to the psychologist router
+// router.get("/psychologists", UserController.getAllPsychologists);
 
 export default router;

@@ -1,34 +1,60 @@
 import React, { useState, useEffect } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css"; // Import style cho Quill
-import "./quill-custom.css"; // Add custom styles import
-import { Button, Form, Container, Row, Col, Card, Stack } from "react-bootstrap";
-import { getBlogPostById, updateBlogPost } from "../../api/blogPosts.api";
-import { useBootstrap } from "@/hooks/useBootstrap";
 import { useNavigate, useParams } from "react-router-dom";
+import { getBlogPostById, updateBlogPost } from "../../api/blogPosts.api";
+import TinyEditor from "../../components/editor/TinyEditor";
+import {
+    Container,
+    Typography,
+    Box,
+    TextField,
+    Button,
+    Card,
+    CardContent,
+    Grid,
+    MenuItem,
+    Select,
+    FormControl,
+    InputLabel,
+    Stack,
+    Paper,
+    CircularProgress,
+    Alert,
+    Snackbar
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SaveIcon from "@mui/icons-material/Save";
 
 const UpdatePost = () => {
-    useBootstrap();
     const navigate = useNavigate();
     const { postId } = useParams();
+    const [loading, setLoading] = useState(true);
 
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [status, setStatus] = useState("Draft");
     const [image, setImage] = useState("");
     const [preview, setPreview] = useState("");
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
+    const [alertSeverity, setAlertSeverity] = useState("success");
 
     useEffect(() => {
         const fetchPost = async () => {
+            setLoading(true);
             try {
                 const post = await getBlogPostById(postId);
-                setTitle(post.title);
-                setContent(post.content);
-                setStatus(post.status);
-                setImage(post.image);
-                setPreview(post.image);
+                setTitle(post.title || "");
+                setContent(post.content || "");
+                setStatus(post.status || "Draft");
+                setImage(post.image || "");
+                setPreview(post.image || "");
             } catch (error) {
                 console.error("Error fetching post:", error);
+                setAlertMessage("Error loading post: " + error.message);
+                setAlertSeverity("error");
+                setAlertOpen(true);
+            } finally {
+                setLoading(false);
             }
         };
         fetchPost();
@@ -37,24 +63,41 @@ const UpdatePost = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!title.trim()) {
+            setAlertMessage("Please enter a title for your post");
+            setAlertSeverity("warning");
+            setAlertOpen(true);
+            return;
+        }
+
+        if (!content) {
+            setAlertMessage("Please add some content to your post");
+            setAlertSeverity("warning");
+            setAlertOpen(true);
+            return;
+        }
+
         const postData = { title, content, status, image };
 
         try {
-            const result = await updateBlogPost(postId, postData); // ✅ Gọi API từ file riêng
-            alert("✅ Post updated successfully!");
+            setLoading(true);
+            const result = await updateBlogPost(postId, postData);
+            setAlertMessage("Post updated successfully!");
+            setAlertSeverity("success");
+            setAlertOpen(true);
             console.log("Post updated:", result);
-            navigate("/manage-posts");
+            
+            // Redirect after successful update
+            setTimeout(() => {
+                navigate("/manage-posts");
+            }, 2000);
         } catch (error) {
-            alert(`❌ Error: ${error.message}`);
+            setAlertMessage(`Error: ${error.message}`);
+            setAlertSeverity("error");
+            setAlertOpen(true);
+        } finally {
+            setLoading(false);
         }
-    };
-
-    const handleReset = () => {
-        setTitle("");
-        setContent("");
-        setStatus("Draft");
-        setImage("");
-        setPreview("");
     };
 
     const handleImageChange = (e) => {
@@ -63,139 +106,134 @@ const UpdatePost = () => {
         setPreview(url);
     };
 
-    // Customize ReactQuill modules with better toolbar configuration
-    const quillModules = {
-        toolbar: {
-            container: [
-                [{ header: [1, 2, false] }],
-                [{ list: "ordered" }, { list: "bullet" }],
-                [{ align: [] }],
-                ["bold", "italic", "underline"],
-                ["link", "image"],
-                [{ script: "sub" }, { script: "super" }],
-                ["blockquote", "code-block"],
-                ["clean"],
-            ],
-        },
+    const handleCloseAlert = () => {
+        setAlertOpen(false);
     };
 
-    const quillFormats = [
-        "header",
-        "list", "bullet", 
-        "align",
-        "bold", "italic", "underline",
-        "link", "image", 
-        "script",
-        "blockquote", "code-block"
-    ];
+    if (loading && !title) {
+        return (
+            <Container maxWidth="md" sx={{ mt: 12, mb: 4, display: 'flex', justifyContent: 'center' }}>
+                <CircularProgress />
+            </Container>
+        );
+    }
 
     return (
-        <Container style={{ maxWidth: "800px", marginTop: "200px" }} className="my-5">
-            <Button variant="secondary" onClick={() => navigate("/manage-posts")}>
-                Back to Manage Posts
-            </Button>
-            <Card className="p-4 shadow-sm mt-3" style={{ borderRadius: "10px", backgroundColor: "#ffffff" }}>
-                <h2 className="text-center mb-4">Update Post</h2>
-                <Form onSubmit={handleSubmit}>
-                    <Form.Group controlId="title">
-                        <Form.Label className="text-start d-block mb-2">Title</Form.Label>
-                        <Form.Control
-                            className="form-control-lg mb-3"
-                            type="text"
-                            placeholder="Enter post title"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            required
-                        />
-                    </Form.Group>
+        <Container maxWidth="md" sx={{ mt: 12, mb: 4 }}>
+            <Box sx={{ mb: 2 }}>
+                <Button
+                    variant="outlined"
+                    startIcon={<ArrowBackIcon />}
+                    onClick={() => navigate("/manage-posts")}
+                >
+                    Back to Manage Posts
+                </Button>
+            </Box>
 
-                    <Form.Group controlId="content">
-                        <Form.Label className="text-start d-block mb-2">Content</Form.Label>
-                        <div className="quill-editor-container">
-                            <ReactQuill
-                                className="mb-3"
-                                value={content}
-                                onChange={setContent}
-                                modules={quillModules}
-                                formats={quillFormats}
-                                placeholder="Write your post content here..."
-                                required
-                            />
-                        </div>
-                    </Form.Group>
+            <Card elevation={3} sx={{ borderRadius: 2 }}>
+                <CardContent sx={{ p: 4 }}>
+                    <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="bold" sx={{ mb: 4 }}>
+                        Update Post
+                    </Typography>
 
-                    <Row className="mb-3">
-                        <Col md={12}>
-                            <Form.Group controlId="status">
-                                <Form.Label className="text-start d-block mb-2">Status</Form.Label>
-                                <Form.Control
-                                    className="form-control-lg mb-3"
-                                    as="select"
-                                    value={status}
-                                    onChange={(e) => setStatus(e.target.value)}>
-                                    <option value="Draft">Draft</option>
-                                    <option value="Published">Published</option>
-                                </Form.Control>
-                            </Form.Group>
-                        </Col>
+                    <Box component="form" onSubmit={handleSubmit} noValidate>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    required
+                                    id="title"
+                                    label="Title"
+                                    variant="outlined"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    disabled={loading}
+                                />
+                            </Grid>
 
-                        <Col md={12}>
-                            <Form.Group controlId="image">
-                                <Form.Label className="text-start d-block mb-2">Image URL</Form.Label>
-                                <Form.Control
-                                    className="form-control-lg mb-3"
-                                    type="text"
-                                    placeholder="Enter image URL"
+                            <Grid item xs={12}>
+                                <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                                    Content
+                                </Typography>
+                                <TinyEditor 
+                                    value={content}
+                                    onChange={setContent}
+                                    placeholder="Write your post content here..."
+                                    height={350}
+                                />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <FormControl fullWidth>
+                                    <InputLabel id="status-label">Status</InputLabel>
+                                    <Select
+                                        labelId="status-label"
+                                        id="status"
+                                        value={status}
+                                        label="Status"
+                                        onChange={(e) => setStatus(e.target.value)}
+                                        disabled={loading}
+                                    >
+                                        <MenuItem value="Draft">Draft</MenuItem>
+                                        <MenuItem value="Published">Published</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <TextField
+                                    fullWidth
+                                    id="image"
+                                    label="Featured Image URL"
+                                    variant="outlined"
                                     value={image}
                                     onChange={handleImageChange}
+                                    placeholder="Enter image URL"
+                                    disabled={loading}
                                 />
-                            </Form.Group>
-                        </Col>
-                    </Row>
+                            </Grid>
 
-                    {preview && (
-                        <div className="text-center mb-3">
-                            <img
-                                src={preview}
-                                alt="Preview"
-                                style={{
-                                    maxWidth: "100%",
-                                    height: "auto",
-                                    borderRadius: "5px",
-                                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                                    objectFit: "cover",
-                                }}
-                            />
-                        </div>
-                    )}
+                            {preview && (
+                                <Grid item xs={12}>
+                                    <Paper elevation={1} sx={{ p: 2, textAlign: 'center' }}>
+                                        <img
+                                            src={preview}
+                                            alt="Preview"
+                                            style={{
+                                                maxWidth: "100%",
+                                                maxHeight: "300px",
+                                                objectFit: "contain",
+                                                borderRadius: "4px",
+                                            }}
+                                        />
+                                    </Paper>
+                                </Grid>
+                            )}
 
-                    <Stack direction="horizontal" gap={3} className="d-flex justify-content-center mt-3">
-                        <Button
-                            variant="secondary"
-                            onClick={handleReset}
-                            style={{
-                                fontSize: "18px",
-                                padding: "10px",
-                                borderRadius: "5px",
-                                width: "150px",
-                            }}>
-                            Reset
-                        </Button>
-
-                        <Button
-                            variant="primary"
-                            type="submit"
-                            style={{
-                                fontSize: "18px",
-                                padding: "10px",
-                                borderRadius: "5px",
-                                width: "150px",
-                            }}>
-                            Update Post
-                        </Button>
-                    </Stack>
-                </Form>
+                            <Grid item xs={12}>
+                                <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2 }}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        type="submit"
+                                        startIcon={<SaveIcon />}
+                                        size="large"
+                                        disabled={loading}
+                                    >
+                                        {loading ? "Updating..." : "Update Post"}
+                                    </Button>
+                                </Stack>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </CardContent>
             </Card>
+
+            <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleCloseAlert}>
+                <Alert onClose={handleCloseAlert} severity={alertSeverity} sx={{ width: '100%' }}>
+                    {alertMessage}
+                </Alert>
+            </Snackbar>
         </Container>
     );
 };

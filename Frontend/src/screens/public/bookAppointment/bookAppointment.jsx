@@ -87,23 +87,32 @@ const BookAppointment = () => {
                 maxPendingLimit: 2,
             });
 
-            if (responsePending.data.canBookMore) {
-                const formData = new FormData();
-                formData.append("patientId", user._id);
-                formData.append("psychologistId", psychologistId);
-                formData.append("scheduleId", scheduleId);
-                formData.append("symptoms", symptoms);
+            if (user.role === "patient" || user.role === "user") {
+                if (responsePending.data.canBookMore) {
+                    const formData = new FormData();
+                    formData.append("patientId", user._id);
+                    formData.append("psychologistId", psychologistId);
+                    formData.append("scheduleId", scheduleId);
+                    formData.append("symptoms", symptoms);
 
-                const response = await API.saveAppointment(formData);
-                const { appointmentId, expiredAt } = response.data;
-                await API.waitForPayment({ appointmentId, scheduleId, expiredAt });
+                    const response = await API.saveAppointment(formData);
+                    const { appointmentId, expiredAt } = response.data;
+                    await API.waitForPayment({ appointmentId, scheduleId, expiredAt });
 
-                navigate(`/checkout-booking?appointmentId=${appointmentId}`);
+                    navigate(`/checkout-booking?appointmentId=${appointmentId}`);
+                } else {
+                    toast({
+                        variant: "destructive",
+                        title: "Lỗi đặt lịch",
+                        description: `Bạn đã có ${responsePending.data.pendingCount} lịch đang chờ thanh toán. Vui lòng thanh toán trước!`,
+                        action: <ToastAction altText="Close">Thử lại</ToastAction>,
+                    });
+                }
             } else {
                 toast({
                     variant: "destructive",
                     title: "Lỗi đặt lịch",
-                    description: `Bạn đã có ${responsePending.data.pendingCount} lịch đang chờ thanh toán. Vui lòng thanh toán trước!`,
+                    description: `Chỉ bệnh nhân mới được đặt lịch!`,
                     action: <ToastAction altText="Close">Thử lại</ToastAction>,
                 });
             }

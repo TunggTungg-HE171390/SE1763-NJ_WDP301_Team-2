@@ -168,6 +168,38 @@ export function Header() {
                         </Link>
                     </NavigationMenuLink>
                 </NavigationMenuItem>
+                {user && user.role === 'staff' && (
+                    <NavigationMenuItem>
+                        <NavigationMenuLink 
+                            asChild 
+                            className={`${navigationMenuTriggerStyle()} cursor-pointer text-black`}
+                        >
+                            <Link to="/staff/manage-psychologists" className="text-black">
+                                Quản lý chuyên gia
+                            </Link>
+                        </NavigationMenuLink>
+                        <NavigationMenuLink 
+                            asChild 
+                            className={`${navigationMenuTriggerStyle()} cursor-pointer text-black`}
+                        >
+                            <Link to="/staff/manage-posts" className="text-black">
+                                Quản lý bài viết
+                            </Link>
+                        </NavigationMenuLink>
+                    </NavigationMenuItem>
+                )}
+                {user && user.role === 'psychologist' && (
+                    <NavigationMenuItem>
+                        <NavigationMenuLink 
+                            asChild 
+                            className={`${navigationMenuTriggerStyle()} cursor-pointer text-black`}
+                        >
+                            <Link to="/psychologist/view-schedule" className="text-black">
+                                Quản lý lịch
+                            </Link>
+                        </NavigationMenuLink>
+                    </NavigationMenuItem>
+                )}
             </NavigationMenuList>
             {/* Right - Login & Sign Up Buttons */}
             <div className="flex gap-3 items-center justify-between ml-auto mr-4">

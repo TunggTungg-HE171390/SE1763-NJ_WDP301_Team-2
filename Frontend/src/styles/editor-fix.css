@@ -1,0 +1,48 @@
+/* Fix for Editor.js styling issues */
+
+/* Use forced-colors media query instead of -ms-high-contrast */
+@media (forced-colors: active) {
+  .codex-editor, 
+  .ce-block,
+  .ce-toolbar,
+  .ce-toolbox {
+    /* Reset -ms-high-contrast properties */
+    -ms-high-contrast-adjust: none !important;
+    
+    /* Use modern high contrast styles */
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+  
+  .ce-toolbar__plus,
+  .ce-toolbar__settings-btn {
+    border: 1px solid ButtonText;
+  }
+  
+  .ce-toolbar__plus:hover,
+  .ce-toolbar__settings-btn:hover {
+    background-color: SelectedItem;
+  }
+}
+
+/* Fix editor block styling */
+.codex-editor .ce-block {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Improve editor toolbar */
+.codex-editor .ce-toolbar {
+  z-index: 2;
+}
+
+/* Ensure paragraph blocks are properly styled */
+.codex-editor .ce-paragraph {
+  line-height: 1.6em;
+  outline: none;
+}
+
+/* Fix content max width */
+.codex-editor .ce-block__content {
+  max-width: 100%;
+}

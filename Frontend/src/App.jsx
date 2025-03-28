@@ -33,6 +33,7 @@ import BookAppointment from "./screens/public/bookAppointment/bookAppointment";
 import FinishBooking from "./screens/public/finishBooking/finishBooking";
 import UpdatePost from "./screens/staff/UpdatePost";
 import ViewAppointmentDetail from "./screens/psychologist/viewAppointmentDetail/viewAppointmentDetail";
+import AppointmentDetail from "./screens/staff/AppointmentDetail";
 import BlogScreen from "./screens/public/blog/blog.jsx";
 import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
 import ManageUsers from "./screens/admin/ManageUsers.jsx";
@@ -46,6 +47,14 @@ import ViewAppointmentList from "./screens/public/appointmentList/AppointmentMan
 import ViewUserAppointmentDetail from "./screens/public/appointmentDetail/viewAppointmentDetail.jsx";
 // import dayjs from "dayjs";
 import "dayjs/locale/vi"; // Import Vietnamese locale for dayjs
+import ViewPersonalSchedule from "./screens/psychologist/viewSchedule/viewSchedule";
+import "dayjs/locale/vi"; // Import Vietnamese locale for dayjs
+import ManagePsychologists from "./screens/staff/ManagePsychologists";
+import PsychologistDetail from "./screens/staff/PsychologistDetail";
+import ManagePsychologistSchedule from "./screens/staff/ManagePsychologistSchedule";
+import EditPsychologistExperience from "./screens/staff/EditPsychologistExperience";
+import EditPsychologistWorkHistory from "./screens/staff/EditPsychologistWorkHistory";
+import ManageAppointments from "./screens/staff/ManageAppointments";
 
 // Create MUI theme
 const theme = createTheme({
@@ -87,11 +96,20 @@ const theme = createTheme({
 function ProtectedRoute({ element, requiredRole }) {
     const { user } = useAuth();
 
+    console.log("ProtectedRoute check:", {
+        isAuthenticated: !!user,
+        userRole: user?.role,
+        requiredRole,
+        hasAccess: user?.role === requiredRole,
+    });
+
     if (!user) {
+        console.log("Redirecting to login: User not authenticated");
         return <Navigate to="/login" replace />;
     }
 
     if (requiredRole && user.role !== requiredRole) {
+        console.log(`Access denied: User role '${user.role}' doesn't match required role '${requiredRole}'`);
         return <Navigate to="/" replace />; // Redirect unauthorized users to homepage
     }
 
@@ -133,6 +151,7 @@ function Layout() {
                 <div>
                     <Routes>
                         <Route path="/" element={<Homepage />} />
+                        {/* Public routes */}
                         <Route path="/CategoryTestSelected" element={<CategoryTestSelected />} />
                         <Route path="/getTest/:categoryId" element={<CategoryDetailTest />} />
                         <Route path="/questions-on-test/:testId" element={<TestForm />} />
@@ -142,16 +161,73 @@ function Layout() {
                         <Route path="/login" element={<PublicRoute element={<Login />} />} />
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
                         <Route path="/verify" element={<PublicRoute element={<Verify />} />} />
-                        <Route path="/manage-posts" element={<ManagePosts />} />
-                        <Route path="/create-post" element={<CreateNewPost />} />
-                        <Route path="/update-post/:postId" element={<UpdatePost />} />
-                        <Route path="/manage-posts" element={<ManagePosts />} />
-                        <Route path="/psychologist/view-schedule" element={<ViewSchedule />} />
+
+                        {/* Psychologist routes */}
+                        <Route
+                            path="/psychologist/view-schedule"
+                            element={<ProtectedRoute element={<ViewPersonalSchedule />} requiredRole="psychologist" />}
+                        />
                         <Route
                             path="/psychologist/view-appointment-detail/:appointmentId"
-                            element={<ViewAppointmentDetail />}
+                            element={<ProtectedRoute element={<ViewAppointmentDetail />} requiredRole="psychologist" />}
                         />
-                        <Route path="/create-post" element={<CreateNewPost />} />
+
+                        {/* Staff routes - properly protected with role-based access */}
+                        <Route
+                            path="/staff/view-schedule"
+                            element={
+                                <ProtectedRoute element={<ViewSchedule userRole="staff" />} requiredRole="staff" />
+                            }
+                        />
+                        <Route
+                            path="/staff/view-appointment-detail/:appointmentId"
+                            element={<ProtectedRoute element={<AppointmentDetail />} requiredRole="staff" />}
+                        />
+                        <Route
+                            path="/staff/appointment-details/:appointmentId"
+                            element={<ProtectedRoute element={<AppointmentDetail />} requiredRole="staff" />}
+                        />
+                        <Route
+                            path="/staff/manage-appointments"
+                            element={<ProtectedRoute element={<ManageAppointments />} requiredRole="staff" />}
+                        />
+                        <Route
+                            path="/staff/manage-psychologists"
+                            element={<ProtectedRoute element={<ManagePsychologists />} requiredRole="staff" />}
+                        />
+                        <Route
+                            path="/staff/psychologist-detail/:id"
+                            element={<ProtectedRoute element={<PsychologistDetail />} requiredRole="staff" />}
+                        />
+
+                        {/* Make sure this route is properly defined */}
+                        <Route
+                            path="/staff/manage-psychologist-schedule/:id"
+                            element={<ProtectedRoute element={<ManagePsychologistSchedule />} requiredRole="staff" />}
+                        />
+
+                        <Route
+                            path="/staff/edit-psychologist-experience/:id"
+                            element={<ProtectedRoute element={<EditPsychologistExperience />} requiredRole="staff" />}
+                        />
+                        <Route
+                            path="/staff/edit-psychologist-work-history/:id"
+                            element={<ProtectedRoute element={<EditPsychologistWorkHistory />} requiredRole="staff" />}
+                        />
+                        <Route
+                            path="/staff/manage-posts"
+                            element={<ProtectedRoute element={<ManagePosts />} requiredRole="staff" />}
+                        />
+                        <Route
+                            path="/staff/create-post"
+                            element={<ProtectedRoute element={<CreateNewPost />} requiredRole="staff" />}
+                        />
+                        <Route
+                            path="/staff/update-post/:postId"
+                            element={<ProtectedRoute element={<UpdatePost />} requiredRole="staff" />}
+                        />
+
+                        {/* Public doctor routes */}
                         <Route path="/doctor" element={<DoctorBooking />} />
                         <Route path="/doctor/profile/:doctorId" element={<PsychologistProfile />} />
                         <Route path="/book-appointment" element={<BookAppointment />} />

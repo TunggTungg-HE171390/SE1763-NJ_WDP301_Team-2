@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 
-// Availability schema
-const AvailabilitySchema = new Schema(
+// Simplified availability slot schema for fixed schedule approach
+const AvailabilitySlotSchema = new Schema(
     {
         psychologistId: {
             type: Schema.Types.ObjectId,
@@ -22,7 +22,17 @@ const AvailabilitySchema = new Schema(
         },
         isBooked: {
             type: Boolean,
-            default: false, // Default is false, meaning the time slot is available
+            default: false,
+        },
+        // Removed status field
+        appointmentId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Appointment",
+            default: null,
+        },
+        createdBy: {
+            type: String,
+            default: "system",
         },
     },
     {
@@ -31,6 +41,6 @@ const AvailabilitySchema = new Schema(
 );
 
 // Create the Availability model
-const Availability = mongoose.model("availabilities", AvailabilitySchema);
+const AvailabilitySlot = mongoose.model("availabilities", AvailabilitySlotSchema);
 
-export default Availability;
+export default AvailabilitySlot;
