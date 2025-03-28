@@ -80,6 +80,17 @@ export const cancelAppointment = async (appointmentId, cancelReason) => {
     }
 };
 
+export const cancelAppointmentByPatientId = async (appointmentId, cancelReason) => {
+    try {
+        console.log("Cancel reason 3:", cancelReason, appointmentId);
+        const response = await apiClient.put(`/appointment/cancel-schedule/${appointmentId}`, { cancelReason });
+        return response.data;
+    } catch (error) {
+        console.error(`Error cancelling appointment ${appointmentId}:`, error);
+        throw error;
+    }
+};
+
 // Reschedule an appointment
 export const rescheduleAppointment = async (appointmentId, date, time, rescheduleReason) => {
     try {
@@ -94,6 +105,19 @@ export const rescheduleAppointment = async (appointmentId, date, time, reschedul
         });
     } catch (error) {
         console.error(`Error rescheduling appointment ${appointmentId}:`, error);
+        throw error;
+    }
+};
+
+export const rescheduleAppointmentByPatientId = async (appointmentId, newAvailabilityId, rescheduleReason) => {
+    try {
+        const response = await apiClient.post(`/appointment/reschedule/${appointmentId}`, {
+            newAvailabilityId,
+            rescheduleReason,
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching count:", error);
         throw error;
     }
 };
@@ -171,10 +195,41 @@ export const getAppointmentListByUserId = async (id) => await apiClient.get(`/ap
 export const countPendingAppointment = async (credentials) =>
     await apiClient.post("/appointment/count-pending-appointment", credentials);
 
+export const schedulePsychologistId = async (psychologistId) => {
+    try {
+        const response = await apiClient.get(`/appointment/${psychologistId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error submitting test:", error);
+        throw error;
+    }
+};
+
 export const getUserAppointmentById = async (credentials) =>
     await apiClient.post("/appointment/appointment-details", credentials);
 
 export const getZoomMeetURL = async (credentials) => await apiClient.post("/appointment/get-zoom-url", credentials);
 
-// Default export
+export const getCountRequestReschedule = async () => {
+    try {
+        const response = await apiClient.get(`/appointment/countRequestReschedule`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching count:", error);
+        throw error;
+    }
+};
+
+export const changeBooleanIsReschedule = async (appointmentId, status) => {
+    try {
+        console.log("2", appointmentId, status);
+
+        const response = await apiClient.put(`/appointment/reschedule-appointment/${appointmentId}`, { status });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching count:", error);
+        throw error;
+    }
+};
+
 export default appointmentAPI;

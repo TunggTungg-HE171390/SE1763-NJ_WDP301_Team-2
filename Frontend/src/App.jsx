@@ -38,6 +38,9 @@ import BlogScreen from "./screens/public/blog/blog.jsx";
 import BlogDetail from "./screens/public/blog/Blogdetail.jsx";
 import ManageUsers from "./screens/admin/ManageUsers.jsx";
 import AboutUs from "./screens/common/aboutUs.jsx";
+import PsychologistList from "./screens/staff/PsychologistList";
+import PsychologistSchedule from "./screens/staff/PsychologistSchedule";
+import EditTestScreen from "./screens/admin/EditTestScreen.jsx";
 import PaymentPage from "./screens/public/paymentAppointment/PaymentPage.jsx";
 import UserProfile from "./screens/common/userProfile/components/user-profile.jsx";
 import ViewSchedule from "./screens/psychologist/viewAppointment/viewAppointment";
@@ -45,6 +48,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ViewAppointmentList from "./screens/public/appointmentList/AppointmentManagement.jsx";
 import ViewUserAppointmentDetail from "./screens/public/appointmentDetail/viewAppointmentDetail.jsx";
+import StaticChart from "./screens/staticChart/StaticChart.jsx";
 // import dayjs from "dayjs";
 import "dayjs/locale/vi"; // Import Vietnamese locale for dayjs
 import ViewPersonalSchedule from "./screens/psychologist/viewSchedule/viewSchedule";
@@ -157,6 +161,7 @@ function Layout() {
                         <Route path="/questions-on-test/:testId" element={<TestForm />} />
                         <Route path="/Test" element={<Test />} />
                         <Route path="/create-test/:categoryId" element={<CreateTestScreen />} />
+                        <Route path="/edit-test/:testId" element={<EditTestScreen />} />
                         <Route path="/test-outcome" element={<TestOutCome />} />
                         <Route path="/login" element={<PublicRoute element={<Login />} />} />
                         <Route path="/signup" element={<PublicRoute element={<SignUp />} />} />
@@ -238,9 +243,13 @@ function Layout() {
                         <Route path="/about-us" element={<AboutUs />} />
                         <Route path="/changePassword" element={<ChangePassword />} />
                         <Route path="/forgotPassword" element={<ForgotPassword />} />
+                        <Route path="/psychologists" element={<PsychologistList />} />
+                        <Route path="/psychologist-schedule/:psychologistId" element={<PsychologistSchedule />} />
                         <Route path="/checkout-booking" element={<PaymentPage />} />
                         <Route path="user-profile/:id" element={<UserProfile />} />
                         <Route path="/user/view-appointment-list" element={<ViewAppointmentList />} />
+                        <Route path="/view-statistics" element={<StaticChart />} />
+
                         <Route
                             path="/user/view-appointment-detail/:appointmentId"
                             element={<ViewUserAppointmentDetail />}

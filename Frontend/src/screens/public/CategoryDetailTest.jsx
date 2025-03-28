@@ -5,15 +5,18 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { useBootstrap } from "@/hooks/useBootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import { getQuestionByTestId } from "../../api/Questions.api";
+import { deleteTest } from "../../api/Test.api";
+import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 
 export function CategoryDetailTest() {
+    useBootstrap();
     const { user } = useAuth();
+
     const { categoryId } = useParams();
     const [testData, setTestData] = useState([]);
-    const [countQuestion, setCountQuestion] = useState([]);
 
     const navigate = useNavigate();
 
@@ -35,102 +38,139 @@ export function CategoryDetailTest() {
         navigate(`/questions-on-test/${testId}`);
     };
 
+    const handleEdit = (testId) => {
+        navigate(`/edit-test/${testId}`);
+    };
+
+    const handleCloseCard = async (testId) => {
+        const isConfirmed = window.confirm(`Are you sure you want to delete this test ${testId}?`);
+        if (isConfirmed) {
+            try {
+                await deleteTest(testId);
+                const updatedTestData = testData.filter(test => test._id !== testId);
+                setTestData(updatedTestData);
+                alert(`Test with ID ${testId} has been deleted.`);
+            } catch (error) {
+                console.error("Error deleting test:", error);
+                alert("Failed to delete the test.");
+            }
+        }
+    };
+
     return (
-        <div className="flex justify-center items-center min-h-[80vh] p-8">
-            <div className="gap-10 flex flex-row">
-                {/* Only staff can access this card */}
-                {user?.role === "staff" && (
-                    <Card className="w-[500px] p-4 border rounded-md shadow-lg hover:scale-105 hover:border-yellow-500 transition-all duration-300 ease-in-out mb-8">
-                        <CardContent className="flex-grow flex justify-center items-center h-full">
-                            <div
-                                className="rounded-full bg-gray-300 w-60 h-60 flex items-center justify-center cursor-pointer hover:bg-gray-400 transition duration-300"
-                                onClick={() => navigate(`/create-test/${categoryId}`)}>
-                                <span className="text-6xl font-bold text-gray-600">+</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+            {user?.role === "staff" && (
+                <Card className="w-[500px] p-4 border rounded-md shadow-lg hover:scale-105 hover:border-yellow-500 transition-all duration-300 ease-in-out mb-8">
+                    <CardContent className="flex-grow flex justify-center items-center h-full">
+                        <div
+                            className="rounded-full bg-gray-300 w-60 h-60 flex items-center justify-center cursor-pointer hover:bg-gray-400 transition duration-300"
+                            onClick={() => navigate(`/create-test/${categoryId}`)}>
+                            {" "}
+                            {/* Larger circle */}
+                            <span className="text-6xl font-bold text-gray-600">+</span>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
-                {testData.map((test) => (
-                    <Card
-                        key={test.id}
-                        className="min-w-[50vh] max-w-[500px] p-4 border rounded-md shadow-lg hover:scale-105 hover:border-yellow-500 transition-all duration-300 ease-in-out mb-8">
-                        <CardHeader>
-                            <CardTitle className="text-2xl font-semibold text-left text-gray-800 mb-2">
-                                Bài kiểm tra:
-                                <Label className="ml-2 text-red-500 font-bold" style={{ fontSize: "1.25rem" }}>
-                                    {test.title}
-                                </Label>
-                            </CardTitle>
-                            <CardDescription className="text-sm text-left mb-4">
-                                <Label className="text-black-500" style={{ fontSize: "1rem" }}>
-                                    Mô tả:
-                                </Label>
-                                {test.description}
-                            </CardDescription>
-                            <CardDescription className="text-sm text-left mb-4">
-                                <Label className="text-black-500" style={{ fontSize: "1rem" }}>
-                                    Số câu hỏi:
-                                </Label>
-                            </CardDescription>
-                        </CardHeader>
+            {testData.map((test) => (
+                <Card
+                    key={test.id}
+                    className="relative w-[500px] p-4 border rounded-md shadow-lg hover:scale-105 hover:border-yellow-500 transition-all duration-300 ease-in-out mb-8"
+                >
+                    {user?.role === "staff" && (
+                        <>
+                            <button
+                                className="absolute top-2 left-2 text-3xl text-gray-600 hover:text-gray-900"
+                                onClick={() => handleEdit(test._id)}
+                            >
+                                <label>✎</label>
+                            </button>
 
-                        <CardContent className="flex-grow">
-                            <form className="space-y-6">
-                                <div className="space-y-4">
-                                    <Label htmlFor="outcomes" className="text-left text-lg font-medium">
-                                        Thang điểm đánh giá:
-                                    </Label>
+                            <button
+                                className="absolute top-2 right-2 text-3xl text-gray-600 hover:text-gray-900"
+                                onClick={() => handleCloseCard(test._id)}
+                            >
+                                &times; {/* Dấu "X" */}
+                            </button>
+                        </>
+                    )}
 
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full table-auto border-collapse">
-                                            <thead>
-                                                <tr>
-                                                    <th className="border px-4 py-2 text-left" style={{ width: "35%" }}>
-                                                        Điểm
-                                                    </th>
-                                                    <th className="border px-4 py-2 text-left">Mô tả</th>
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-semibold text-left text-gray-800 mb-2">
+                            Bài kiểm tra:
+                            <Label className="ml-2 text-red-500 font-bold" style={{ fontSize: "1.25rem" }}>
+                                {test.title}
+                            </Label>
+                        </CardTitle>
+                        <CardDescription className="text-sm text-left mb-4">
+                            <Label className="text-black-500" style={{ fontSize: "1rem" }}>
+                                Mô tả:
+                            </Label>
+                            {test.description}
+                        </CardDescription>
+                        <CardDescription className="text-sm text-left mb-4">
+                            <Label className="text-black-500" style={{ fontSize: "1rem" }}>
+                                Số câu hỏi: {test.questionCount}
+                            </Label>
+                        </CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="flex-grow">
+                        <form className="space-y-6">
+                            <div className="space-y-4">
+                                <Label htmlFor="outcomes" className="text-left text-lg font-medium">
+                                    Thang điểm đánh giá:
+                                </Label>
+
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full table-auto border-collapse">
+                                        <thead>
+                                            <tr>
+                                                <th className="border px-4 py-2 text-left" style={{ width: "35%" }}>
+                                                    Điểm
+                                                </th>
+                                                <th className="border px-4 py-2 text-left">Mô tả</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {test.testOutcomes.map((outcome, index) => (
+                                                <tr key={index}>
+                                                    <td className="border px-4 py-2">{`Điểm ${outcome.minScore} - ${outcome.maxScore}`}</td>
+                                                    <td className="border px-4 py-2">
+                                                        {outcome.description
+                                                            .split(/(Kết quả tốt|Kết quả trung bình|Kết quả kém)/)
+                                                            .map((part, index) => {
+                                                                if (
+                                                                    part === "Kết quả tốt" ||
+                                                                    part === "Kết quả trung bình" ||
+                                                                    part === "Kết quả kém"
+                                                                ) {
+                                                                    return (
+                                                                        <span key={index} style={{ color: "red" }}>
+                                                                            {part}
+                                                                        </span>
+                                                                    );
+                                                                }
+                                                                return <span key={index}>{part}</span>;
+                                                            })}
+                                                    </td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {test.testOutcomes.map((outcome, index) => (
-                                                    <tr key={index}>
-                                                        <td className="border px-4 py-2">{`Điểm ${outcome.minScore} - ${outcome.maxScore}`}</td>
-                                                        <td className="border px-4 py-2">
-                                                            {outcome.description
-                                                                .split(/(Kết quả tốt|Kết quả trung bình|Kết quả kém)/)
-                                                                .map((part, index) => {
-                                                                    if (
-                                                                        part === "Kết quả tốt" ||
-                                                                        part === "Kết quả trung bình" ||
-                                                                        part === "Kết quả kém"
-                                                                    ) {
-                                                                        return (
-                                                                            <span key={index} style={{ color: "red" }}>
-                                                                                {part}
-                                                                            </span>
-                                                                        );
-                                                                    }
-                                                                    return <span key={index}>{part}</span>;
-                                                                })}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </form>
-                        </CardContent>
+                            </div>
+                        </form>
+                    </CardContent>
 
-                        <CardFooter className="mt-auto flex w-full" onClick={() => handleTestIdClick(test._id)}>
-                            <Button style={{ backgroundColor: "#ffcd1f", color: "black" }} className="w-full">
-                                Làm bài kiểm tra
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                ))}
-            </div>
+                    <CardFooter className="mt-auto flex w-full" onClick={() => handleTestIdClick(test._id)}>
+                        <Button style={{ backgroundColor: "#ffcd1f", color: "black" }} className="w-full">
+                            Làm bài kiểm tra
+                        </Button>
+                    </CardFooter>
+                </Card>
+            ))}
         </div>
     );
 }

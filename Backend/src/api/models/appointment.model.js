@@ -88,6 +88,10 @@ const AppointmentSchema = new Schema({
         enum: ["Pending", "Confirmed", "Completed", "Cancelled"],
         default: "Pending", // Default status is "Pending"
     },
+    isRescheduled: {
+        type: Boolean,
+        default: false,
+    },
     note: {
         type: String,
         required: false, // The note field is optional
