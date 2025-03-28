@@ -24,7 +24,7 @@ const CommentSchema = new Schema(
 const BlogPostSchema = new Schema(
     {
         _id: {
-            type: mongoose.Schema.Types.ObjectId, // Chuyển từ ObjectId sang String
+            type: mongoose.Schema.Types.ObjectId,
         },
         title: {
             type: String,
@@ -32,26 +32,38 @@ const BlogPostSchema = new Schema(
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "users", // Referring to the User collection
+            ref: "users",
             required: true,
+        },
+        tags: {
+            type: [String],
+            default: [],
+        },
+        category: {
+            type: String,
+            required: false,
         },
         image: {
             type: String,
-            required: false, // Optional, depending on whether image is necessary
+            required: false,
         },
         content: {
             type: String,
             required: true,
+        },
+        views: {
+            type: Number,
+            required: false,
         },
         status: {
             type: String,
             enum: ["Draft", "Published"],
             default: "Draft", // Default status is "Draft"
         },
-        comments: [CommentSchema], // Embedding the CommentSchema for comments array
+        comments: [CommentSchema],
     },
     {
-        timestamps: true, // Automatically adds createdAt and updatedAt
+        timestamps: true,
     }
 );
 

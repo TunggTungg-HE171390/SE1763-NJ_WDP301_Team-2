@@ -83,7 +83,7 @@ const HomeSection = () => {
 
                 {/* Right: Featured Doctors (2/5) */}
                 <div className="col-span-2">
-                    <h2 className="text-2xl font-semibold mb-6 text-blue-600">Bác sĩ nổi bật</h2>
+                    <h2 className="text-2xl font-semibold mb-6 text-blue-600">Tư vấn viên nổi bật</h2>
                     <div className="space-y-6">
                         {doctors.map((doctor) => (
                             <Link to={`/doctor/profile/${doctor._id}`} key={doctor._id}>

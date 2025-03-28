@@ -23,7 +23,7 @@ const Login = () => {
                     return images[(currentIndex + 1) % images.length]; // Loop through images
                 });
                 setFade(false); // Reset fade after image change
-            }, 500); // 0.5-second fade duration
+            }, 1000); // 0.5-second fade duration
         }, 5000); // Change every 5 seconds
 
         return () => clearInterval(interval); // Cleanup interval on unmount

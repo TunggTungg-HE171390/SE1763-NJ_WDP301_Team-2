@@ -1,5 +1,5 @@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import apiClient from "@/api/apiClient";
+import * as API from "@/api";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom"; // Import Link from React Router
 
@@ -9,8 +9,10 @@ const PromoCarousel = () => {
     useEffect(() => {
         const fetchArticles = async () => {
             try {
-                const response = await apiClient.get("/blogposts/allblogs");
-                setArticles(response.data.slice(0, 3)); // Get only the top 2 blogs
+                const response = await API.getAllBlogPosts();
+                // Filter blogs that have "ads" in the tag array
+                const filteredArticles = response.data.filter((blog) => blog.tags && blog.tags.includes("ads"));
+                setArticles(filteredArticles.slice(0, 3)); // Get only the top 3 filtered blogs
             } catch (err) {
                 console.error(err);
             }

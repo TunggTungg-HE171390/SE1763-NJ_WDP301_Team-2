@@ -14,17 +14,18 @@ export default defineConfig({
             "@": path.resolve(__dirname, "./src"),
         },
     },
+    // base: "/tamgiao",
     optimizeDeps: {
         include: [
-            '@mui/material',
-            '@mui/icons-material',
-            '@mui/x-date-pickers',
-            'dayjs',
-            'dayjs/locale/vi',
-            'react-router-dom',
+            "@mui/material",
+            "@mui/icons-material",
+            "@mui/x-date-pickers",
+            "dayjs",
+            "dayjs/locale/vi",
+            "react-router-dom",
             // Add other commonly used dependencies here
         ],
-        exclude: []
+        exclude: [],
     },
     server: {
         watch: {
