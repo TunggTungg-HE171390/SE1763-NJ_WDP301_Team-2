@@ -9,10 +9,12 @@ import { useNavigate } from "react-router-dom";
 import { getQuestionByTestId } from "../../api/Questions.api";
 import { submitTest } from "../../api/TestHistory.api";
 import { Modal, Spinner, Form } from "react-bootstrap";
+import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 
 export function TestForm() {
 
   useBootstrap();
+  const { user } = useAuth();
 
   const { testId } = useParams();
   const navigate = useNavigate();
@@ -35,11 +37,11 @@ export function TestForm() {
     }
   };
 
-    const handleAnswerChange = (questionIndex, answer) => {
-        setAnswers((prevAnswers) => ({
-            ...prevAnswers,
-            [questionIndex]: answer,
-        }));
+  const handleAnswerChange = (questionIndex, answer) => {
+    setAnswers((prevAnswers) => ({
+      ...prevAnswers,
+      [questionIndex]: answer,
+    }));
 
     console.log("Answers:", answers);
   };
@@ -76,62 +78,64 @@ export function TestForm() {
       console.log("Questions:", question);
 
 
-      const userId = "67a0374b7ad0db88c8b251c0";
+      // const userId = "67a0374b7ad0db88c8b251c0";
+
+      const userId = user._id;
+
       console.log("Sending data to backend:", { userId, testId, userInfo, answersArray });
 
       submitTest(userId, testId, answersArray, userInfo)  // Trả về promise
-      .then(response => {
-        console.log("API Response:", response);
-        const testOutCome = response.result;
-        console.log("testOutCome updated:", testOutCome);
-        setLoading(false);
-        setIsModalVisible(false);
-        navigate('/test-outcome', { state: { testOutCome, answersArray } });
-      })
-      
-      .catch(error => {
-        console.error("Lỗi khi gửi bài kiểm tra:", error);
-        setLoading(false);
-      });
+        .then(response => {
+          console.log("API Response:", response);
+          const testOutCome = response.result;
+          console.log("testOutCome updated:", testOutCome);
+          setLoading(false);
+          setIsModalVisible(false);
+          navigate('/test-outcome', { state: { testOutCome, answersArray } });
+        })
+
+        .catch(error => {
+          console.error("Lỗi khi gửi bài kiểm tra:", error);
+          setLoading(false);
+        });
     } catch (error) {
       console.error("Error submitting test:", error);
       setLoading(false);
     }
   };
 
-    return (
-        <div className="flex justify-center items-center min-h-screen gap-6">
-            <Card className="w-full max-w-3xl">
-                <CardHeader>
-                    <CardTitle>Bài kiểm tra: {questionData.testTitle}</CardTitle>
-                    <CardDescription>Thể loại: {questionData.category}</CardDescription>
-                </CardHeader>
+  return (
+    <div className="flex justify-center items-center min-h-screen gap-6">
+      <Card className="w-full max-w-3xl">
+        <CardHeader>
+          <CardTitle>Bài kiểm tra: {questionData.testTitle}</CardTitle>
+          <CardDescription>Thể loại: {questionData.category}</CardDescription>
+        </CardHeader>
 
-                <CardContent className="space-y-6">
-                    {questionData.questions?.map((question, index) => (
-                        <Card key={question.questionId} className="border p-4 mb-4 shadow-md">
-                            <CardHeader>
-                                <CardTitle>{question.content}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {question.answers?.map((answer, i) => (
-                                        <div
-                                            key={i}
-                                            onClick={() => handleAnswerChange(index, answer.content)}
-                                            className={`cursor-pointer border p-4 flex justify-center items-center text-center ${
-                                                answers[index] === answer.content
-                                                    ? "bg-blue-500 text-white"
-                                                    : "bg-gray-100"
-                                            } rounded-md transition-all duration-200 ease-in-out hover:bg-blue-400`}>
-                                            <Label>{answer.content}</Label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </CardContent>
+        <CardContent className="space-y-6">
+          {questionData.questions?.map((question, index) => (
+            <Card key={question.questionId} className="border p-4 mb-4 shadow-md">
+              <CardHeader>
+                <CardTitle>{question.content}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  {question.answers?.map((answer, i) => (
+                    <div
+                      key={i}
+                      onClick={() => handleAnswerChange(index, answer.content)}
+                      className={`cursor-pointer border p-4 flex justify-center items-center text-center ${answers[index] === answer.content
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-100"
+                        } rounded-md transition-all duration-200 ease-in-out hover:bg-blue-400`}>
+                      <Label>{answer.content}</Label>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </CardContent>
 
         <CardFooter className="justify-between space-x-2">
           <Button style={{ marginLeft: "10px", color: "red" }} variant="ghost" onClick={() => navigate("/")}>Cancel</Button>
@@ -178,14 +182,14 @@ export function TestForm() {
         </Modal.Body>
       </Modal>
 
-            {/* Hiển thị spinner khi loading */}
-            {loading && (
-                <div className="d-flex justify-content-center mt-3">
-                    <Spinner animation="border" variant="primary" />
-                </div>
-            )}
+      {/* Hiển thị spinner khi loading */}
+      {loading && (
+        <div className="d-flex justify-content-center mt-3">
+          <Spinner animation="border" variant="primary" />
         </div>
-    );
+      )}
+    </div>
+  );
 }
 
 export default TestForm;

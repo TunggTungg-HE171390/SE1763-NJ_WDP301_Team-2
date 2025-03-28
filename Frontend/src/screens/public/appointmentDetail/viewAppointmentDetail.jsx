@@ -36,6 +36,10 @@ import ToastReceiver from "@/components/common/toast/toast-receiver";
 import * as API from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import PaymentInformation from "./components/paymentDetail"; // Import the PaymentInformation component
+import { cancelAppointmentByPatientId } from "../../../api/appointment.api";
+import { getScheduleListByDoctorId } from "../../../api/psychologist.api";
+import { rescheduleAppointmentByPatientId } from "../../../api/appointment.api";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const ViewAppointmentDetail = () => {
     const { appointmentId } = useParams(); // Get appointment ID from URL
@@ -50,6 +54,9 @@ const ViewAppointmentDetail = () => {
     const [rescheduleReason, setRescheduleReason] = useState("");
     const [cancelReason, setCancelReason] = useState("");
     const [loading, setLoading] = useState(true);
+    const [timeSlots, setTimeSlots] = useState([]);
+    const [date, setDate] = useState(new Date());
+    const [selectedTime, setSelectedTime] = useState(null);
 
     useEffect(() => {
         const fetchAppointmentDetail = async () => {
@@ -150,6 +157,131 @@ const ViewAppointmentDetail = () => {
     const isCancelled = appointment.status === "Cancelled";
     const isCompleted = appointment.status === "Completed";
     const disableActions = isCancelled || isCompleted;
+    const handleCancelAppointment = async () => {
+        const confirmCancel = window.confirm("Bạn có chắc chắn muốn hủy lịch hẹn không?");
+        if (confirmCancel) {
+            try {
+                alert("Cancel reason: " + appointmentId + " " + cancelReason);
+                const response = await cancelAppointmentByPatientId(appointmentId, cancelReason);
+                console.log("Appointment canceled:", response);
+                setOpenCancel(false);
+                setLoading(true);
+                window.location.reload();
+            } catch (error) {
+                console.error("Error cancelling appointment:", error);
+            }
+        } else {
+            console.log("Appointment cancellation was canceled by the user.");
+        }
+    };
+
+    // const [selectedDate, setSelectedDate] = useState(null);
+
+    const fetchSchedule = async (psychologistId, selectedDate) => {
+        try {
+            console.log(psychologistId, selectedDate);
+
+            // Nếu selectedDate là chuỗi (ví dụ: "2025-03-29"), chuyển nó thành đối tượng Date
+            const selectedDateObj = new Date(selectedDate); // Chuyển đổi selectedDate thành đối tượng Date
+            console.log("Selected Date Object:", selectedDateObj);
+
+            // Kiểm tra xem selectedDateObj có hợp lệ không
+            if (isNaN(selectedDateObj.getTime())) {
+                console.error("Invalid selectedDate");
+                return; // Nếu invalid, dừng lại và không thực hiện tiếp
+            }
+
+            const response = await getScheduleListByDoctorId(psychologistId);
+            const scheduleData = response.data.map((slot) => ({
+                availabilityId: slot._id,
+                date: slot.date,
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+                isBooked: slot.isBooked, // Ensure isBooked is included
+            }));
+
+            console.log("Schedule data:", scheduleData);
+
+            // Chuyển selectedDate thành UTC để so sánh với slot.date
+            const selectedDateUTC = new Date(
+                Date.UTC(selectedDateObj.getFullYear(), selectedDateObj.getMonth(), selectedDateObj.getDate())
+            );
+
+            const availableSlots = scheduleData
+                .filter((slot) => {
+                    const slotDate = new Date(slot.date); // Chuyển slot.date thành Date đối tượng
+                    const slotDateUTC = new Date(
+                        Date.UTC(slotDate.getFullYear(), slotDate.getMonth(), slotDate.getDate())
+                    );
+
+                    return slotDateUTC.getTime() === selectedDateUTC.getTime() && !slot.isBooked;
+                })
+                .map((slot) => {
+                    const startTime = new Date(slot.startTime);
+                    const endTime = new Date(slot.endTime);
+
+                    const startHours = startTime.getHours();
+                    const startMinutes = startTime.getMinutes();
+                    const endHours = endTime.getHours();
+                    const endMinutes = endTime.getMinutes();
+
+                    //     return {
+                    //         availabilityId: slot.availabilityId,
+                    //         startTime,
+                    //         localStartTime: startHours * 60 + startMinutes,
+                    //         time: `${startHours.toString().padStart(2, "0")}:${startMinutes
+                    //             .toString()
+                    //             .padStart(2, "0")} - ${endHours.toString().padStart(2, "0")}:${endMinutes.toString().padStart(2, "0")}`,
+                    //     };
+                    // })
+
+                    return {
+                        availabilityId: slot.availabilityId,
+                        date: slot.date, // Lưu trữ date gốc
+                        startTime: slot.startTime, // Lưu trữ startTime gốc
+                        endTime: slot.endTime, // Lưu trữ endTime gốc
+                        localStartTime: startHours * 60 + startMinutes,
+                        time: `${startHours.toString().padStart(2, "0")}:${startMinutes
+                            .toString()
+                            .padStart(2, "0")} - ${endHours.toString().padStart(2, "0")}:${endMinutes
+                            .toString()
+                            .padStart(2, "0")}`,
+                    };
+                })
+                .sort((a, b) => a.localStartTime - b.localStartTime);
+
+            setTimeSlots(availableSlots);
+            console.log("availableSlots:", availableSlots);
+            // console.log("Giờ đã chọn: ", selectedTime )
+        } catch (error) {
+            console.error("Error fetching schedule:", error);
+            setTimeSlots([]);
+        }
+    };
+
+    const handleRescheduleAppointment = async () => {
+        try {
+            const newAvailabilityId = {
+                _id: selectedTime.availabilityId,
+                date: new Date(selectedTime.date).toISOString(),
+                startTime: new Date(selectedTime.startTime).toISOString(),
+                endTime: new Date(selectedTime.endTime).toISOString(),
+            };
+
+            // Gọi API với đúng định dạng
+            const response = await rescheduleAppointmentByPatientId(
+                appointment._id,
+                newAvailabilityId,
+                rescheduleReason
+            );
+            console.log("Vào reschedule:", newAvailabilityId, rescheduleReason, appointmentId);
+            setOpenReschedule(false);
+            setLoading(true);
+            window.location.reload();
+        } catch (error) {
+            console.error("Error rescheduling appointment:", error);
+        }
+    };
 
     return (
         <>
@@ -368,7 +500,7 @@ const ViewAppointmentDetail = () => {
 
             {/* Modal Dialogs - Only shown when triggered */}
             {/* Cancel Dialog */}
-            <Dialog open={openCancel} onOpenChange={setOpenCancel}>
+            <Dialog open={openCancel} onChange={setOpenCancel}>
                 <DialogContent className="border-blue-200">
                     <DialogHeader className="bg-blue-50 p-4 rounded-t-lg">
                         <DialogTitle className="text-blue-800">Xác nhận hủy cuộc hẹn</DialogTitle>
@@ -396,10 +528,7 @@ const ViewAppointmentDetail = () => {
                         </Button>
                         <Button
                             variant="destructive"
-                            onClick={() => {
-                                // Handle cancel appointment logic here
-                                setOpenCancel(false);
-                            }}
+                            onClick={() => handleCancelAppointment()}
                             className="sm:w-auto w-full bg-red-600 hover:bg-red-700">
                             Xác nhận hủy
                         </Button>
@@ -407,6 +536,7 @@ const ViewAppointmentDetail = () => {
                 </DialogContent>
             </Dialog>
 
+            {/* Reschedule Dialog */}
             {/* Reschedule Dialog */}
             <Dialog open={openReschedule} onOpenChange={setOpenReschedule}>
                 <DialogContent className="border-blue-200">
@@ -426,23 +556,53 @@ const ViewAppointmentDetail = () => {
                                     id="new-date"
                                     type="date"
                                     value={rescheduleDate}
-                                    onChange={(e) => setRescheduleDate(e.target.value)}
-                                    className="border-blue-200 focus:border-blue-400 focus:ring-blue-400"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label htmlFor="new-time" className="text-sm font-medium text-blue-700">
-                                    Thời gian mới
-                                </label>
-                                <Input
-                                    id="new-time"
-                                    type="time"
-                                    value={rescheduleTime}
-                                    onChange={(e) => setRescheduleTime(e.target.value)}
+                                    onChange={(e) => {
+                                        setRescheduleDate(e.target.value);
+                                        fetchSchedule(appointment.psychologistId._id, e.target.value);
+                                    }}
                                     className="border-blue-200 focus:border-blue-400 focus:ring-blue-400"
                                 />
                             </div>
                         </div>
+
+                        <div className="space-y-2 mt-4">
+                            <label htmlFor="new-time" className="text-sm font-medium text-blue-700">
+                                Lịch rảnh của bác sĩ
+                            </label>
+                            {timeSlots.length > 0 ? (
+                                <div className="grid grid-cols-4 gap-2 mt-4">
+                                    {timeSlots.map((slot) => (
+                                        <Button
+                                            key={slot.availabilityId}
+                                            variant="outline"
+                                            size="sm"
+                                            className={`w-full min-w-[100px] text-sm transition-colors border-blue-200 px-66 rounded-md ${
+                                                selectedTime?.availabilityId === slot.availabilityId
+                                                    ? "bg-red-600 text-white hover:bg-blue-700"
+                                                    : "bg-white text-blue-600 hover:bg-blue-50"
+                                            } px-2 py-1`}
+                                            onClick={() => {
+                                                setSelectedTime({
+                                                    availabilityId: slot.availabilityId,
+                                                    date: slot.date,
+                                                    startTime: slot.startTime,
+                                                    endTime: slot.endTime,
+                                                    time: slot.time,
+                                                });
+                                                setRescheduleTime(slot.time);
+                                            }}>
+                                            {slot.time}
+                                        </Button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 text-sm text-center py-2">
+                                    Không có lịch rảnh cho ngày này
+                                </p>
+                            )}
+                        </div>
+                        {/* </div> */}
+
                         <div className="space-y-2 mt-4">
                             <label htmlFor="reschedule-reason" className="text-sm font-medium text-blue-700">
                                 Lý do đổi lịch (sẽ thông báo đến tư vấn viên) *
@@ -465,10 +625,7 @@ const ViewAppointmentDetail = () => {
                         </Button>
                         <Button
                             variant="default"
-                            onClick={() => {
-                                // Handle reschedule appointment logic here
-                                setOpenReschedule(false);
-                            }}
+                            onClick={handleRescheduleAppointment}
                             disabled={!rescheduleDate || !rescheduleTime || !rescheduleReason}
                             className="sm:w-auto w-full bg-blue-600 hover:bg-blue-700">
                             Xác nhận đổi lịch

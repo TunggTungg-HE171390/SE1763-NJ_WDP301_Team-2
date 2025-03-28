@@ -20,6 +20,10 @@ const PsychologistProfileSchema = new Schema(
         professionalLevel: { type: String, required: true },
         educationalLevel: { type: String, required: true },
         specialization: { type: String, required: true },
+        psychologicalCategory: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "categories"
+        },
         rating: { type: Number, required: true },
         numberOfRatings: { type: Number, default: 0 },
         appointmentsAttended: { type: Number, default: 0 },

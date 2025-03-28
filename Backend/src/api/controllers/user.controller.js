@@ -111,9 +111,9 @@ export const registerUser = async (req, res) => {
             $or: [{ email: contact }, { phone: contact }],
         });
 
-        if (existingUser) {
-            return res.status(400).json({ message: "This email or phone number is already in use" });
-        }
+    if (existingUser) {
+      return res.status(400).json({ message: "This email or phone number is already in use" });
+    }
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -271,44 +271,44 @@ export const verifyOTP = async (req, res) => {
 };
 
 export const resendOTP = async (req, res) => {
-    try {
-        const { contact } = req.body;
+  try {
+    const { contact } = req.body;
 
-        if (!contact) {
-            return res.status(400).json({ message: "Email or phone number is required" });
-        }
-
-        // Kiểm tra người dùng có tồn tại không
-        const user = await User.findOne({ $or: [{ email: contact }, { phone: contact }] });
-
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        // Generate a new OTP
-        const newOTP = generateVerificationCode();
-
-        // Cập nhật OTP và thời gian hết hạn
-        if (user.email === contact) {
-            user.emailVerificationCode = newOTP;
-        } else if (user.phone === contact) {
-            user.phoneVerificationCode = newOTP;
-        }
-
-        await user.save();
-
-        // Gửi OTP qua email hoặc SMS
-        if (user.email === contact) {
-            await Email.sendVerificationEmail(contact, newOTP);
-        } else if (user.phone === contact) {
-            await sendVerificationSMS(contact, newOTP);
-        }
-
-        return res.status(200).json({ message: "OTP resent successfully" });
-    } catch (error) {
-        console.error("Error resending OTP: ", error);
-        res.status(500).json({ message: "Server error" });
+    if (!contact) {
+      return res.status(400).json({ message: "Email or phone number is required" });
     }
+
+    // Kiểm tra người dùng có tồn tại không
+    const user = await User.findOne({ $or: [{ email: contact }, { phone: contact }] });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate a new OTP
+    const newOTP = generateVerificationCode();
+
+    // Cập nhật OTP và thời gian hết hạn
+    if (user.email === contact) {
+      user.emailVerificationCode = newOTP;
+    } else if (user.phone === contact) {
+      user.phoneVerificationCode = newOTP;
+    }
+
+    await user.save();
+
+    // Gửi OTP qua email hoặc SMS
+    if (user.email === contact) {
+      await Email.sendVerificationEmail(contact, newOTP);
+    } else if (user.phone === contact) {
+      await sendVerificationSMS(contact, newOTP);
+    }
+
+    return res.status(200).json({ message: "OTP resent successfully" });
+  } catch (error) {
+    console.error("Error resending OTP: ", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // AI Chat Function
@@ -503,6 +503,15 @@ export const subscribeEmail = async (req, res) => {
     }
 };
 
+export const getAllPsychologist = async (req, res) => {
+    try {
+        const psychologists = await User.find({ role: "psychologist" }).populate("profileImg");
+        res.status(200).json({ success: true, psychologists });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server Error", error: error.message });
+    }
+};
+
 export default {
     registerUser,
     loginUser,
@@ -517,4 +526,5 @@ export default {
     updateUser,
     getUserById,
     subscribeEmail,
+    getAllPsychologist,
 };

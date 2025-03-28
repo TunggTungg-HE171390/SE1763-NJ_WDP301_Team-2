@@ -39,3 +39,13 @@ export const sendEmail = async (credentials) => {
 export const subscribeEmail = async (credentials) => {
     return await apiClient.post("/auth/subscribe-news", credentials);
 };
+
+export const psychologistList = async () => {
+  try {
+      const response = await apiClient.get("/auth/psychologists");
+      return response.data;
+  } catch (error) {
+      console.error("Error submitting:", error);
+      throw error;
+  }
+};

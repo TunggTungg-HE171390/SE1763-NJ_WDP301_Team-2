@@ -1,5 +1,6 @@
 import express from "express";
 import availabilityController from "../controllers/availability.controller.js";
+import { AvailabilityController } from "../controllers/index.js";
 import { authenticateUser, authorizeRole } from "../middlewares/auth.middleware.js";
 
 const availabilityRouter = express.Router();
@@ -15,5 +16,7 @@ availabilityRouter.patch("/:slotId/booking", availabilityController.updateAvaila
 
 // Create a new availability slot
 availabilityRouter.post("/create", availabilityController.createIndividualSlot);
+
+availabilityRouter.get("/:psychologistId", AvailabilityController.findScheduleByPsychologistId);
 
 export default availabilityRouter;

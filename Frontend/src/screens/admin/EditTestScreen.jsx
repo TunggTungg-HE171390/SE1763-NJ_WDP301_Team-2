@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, Container } from 'react-bootstrap';
-import { Button } from "@/components/ui/button";
+import { Container } from 'react-bootstrap';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-    Card, CardContent,
-} from "@/components/ui/card";
-import { useBootstrap } from "@/hooks/useBootstrap";
+import { Card, CardContent } from "@/components/ui/card";
 import { useParams, useNavigate } from "react-router-dom";
-import { creatTest } from "../../api/Test.api";
-import { getCateNameByCateId } from "../../api/Categories.api";
-import { insertQuestionOnTest } from "../../api/Questions.api";
-
-import { Switch } from "@/components/ui/switch"
-import { FaTrash } from 'react-icons/fa';
+import { getTestById, updateTest } from "../../api/Test.api";
+import { Button } from "@/components/ui/button";
+import { getQuestionByTestId, updateQuestion, deleteQuestion, insertQuestionOnTest } from "../../api/Questions.api";
+import { useBootstrap } from "@/hooks/useBootstrap";
 import {
     Select,
     SelectContent,
@@ -22,128 +16,161 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { FaTrash } from 'react-icons/fa';
+import { Switch } from "@/components/ui/switch"
 
-export function CreateTestScreen() {
+export function EditTestScreen() {
+    const { testId } = useParams();
+    const navigate = useNavigate();
     useBootstrap();
 
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [testOutcomes, setTestOutcomes] = useState([
-        { description: '', minScore: '', maxScore: '' },
-        { description: '', minScore: '', maxScore: '' },
-        { description: '', minScore: '', maxScore: '' },
-        { description: '', minScore: '', maxScore: '' },
-        { description: '', minScore: '', maxScore: '' }
-    ]);
-
-    const { categoryId } = useParams();
+    const [testOutcomes, setTestOutcomes] = useState([]);
+    const [questionsArray, setQuestionsArray] = useState([]);
     const [cateName, setCateName] = useState('');
-    const [isEditing, setIsEditing] = useState(false);
-
-    const navigate = useNavigate();
+    const [categoryId, setCategoryId] = useState('');
+    const [deletedQuestions, setDeletedQuestions] = useState([]);
+    const [newQuestions, setNewQuestions] = useState([]);
 
     useEffect(() => {
-        const fetchCateName = async () => {
+        const fetchTestData = async () => {
             try {
-                const response = await getCateNameByCateId(categoryId);
-                setCateName(response.data);
+                const testResponse = await getTestById(testId);
+                setTitle(testResponse.title);
+                setDescription(testResponse.description);
+                setTestOutcomes(testResponse.testOutcomes);
+                setCategoryId(testResponse.categoryId);
+                setCateName(testResponse.category.categoryName);
+
+                const questionResponse = await getQuestionByTestId(testId);
+                const formattedQuestions = questionResponse.data.questions.map(q => ({
+                    questionId: q.questionId,
+                    content: q.content,
+                    answers: q.answers.map(a => ({
+                        content: a.content,
+                        point: a.point
+                    }))
+                }));
+
+                setQuestionsArray(formattedQuestions);
+                // console.log("Formatted questions:", formattedQuestions);
             } catch (error) {
                 console.error("Error fetching test data:", error);
             }
         };
 
-        fetchCateName();
-    }, [categoryId]);
+        fetchTestData();
+    }, [testId]);
 
-    // Kiểm tra và đảm bảo điểm min và max hợp lệ, không chồng lấn
-    const validateOutcomes = () => {
-        for (let i = 0; i < testOutcomes.length; i++) {
-            const outcome = testOutcomes[i];
-            const minScore = parseInt(outcome.minScore, 10);
-            const maxScore = parseInt(outcome.maxScore, 10);
+    const addQuestion = () => {
+        const newQuestion = {
+            content: "", // Câu hỏi chưa có nội dung
+            answers: [{ content: "Đáp án 1", point: 0 }] // Đảm bảo câu trả lời có đủ content và point
+        };
 
-            // Kiểm tra nếu điểm min lớn hơn hoặc bằng điểm max
-            if (minScore >= maxScore) {
-                alert("Điểm tối thiểu phải nhỏ hơn điểm tối đa.");
-                return false;
-            }
-
-            // Kiểm tra không chồng lấn phạm vi điểm
-            for (let j = 0; j < testOutcomes.length; j++) {
-                if (i !== j) {
-                    const otherOutcome = testOutcomes[j];
-                    const otherMinScore = parseInt(otherOutcome.minScore, 10);
-                    const otherMaxScore = parseInt(otherOutcome.maxScore, 10);
-
-                    if (
-                        (minScore >= otherMinScore && minScore <= otherMaxScore) ||
-                        (maxScore >= otherMinScore && maxScore <= otherMaxScore) ||
-                        (minScore <= otherMinScore && maxScore >= otherMaxScore)
-                    ) {
-                        alert("Các phạm vi điểm của các kết quả không được chồng lấn nhau.");
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
+        // Cập nhật newQuestions và questionsArray với cấu trúc đúng
+        setNewQuestions(prevNewQuestions => [...prevNewQuestions, newQuestion]);
+        setQuestionsArray(prevQuestionsArray => [...prevQuestionsArray, newQuestion]);
     };
 
-    // Cập nhật thông tin kết quả
+    const handleSaveTest = async () => {
+        try {
+            const testUpdateResponse = await updateTest(testId, title, description, testOutcomes);
+
+            console.log("questionsArray", questionsArray);
+            console.log("newQuestions", newQuestions);
+
+            if (newQuestions.length > 0) {
+                console.log("Adding new questions:", newQuestions);
+
+                const insertResponse = await insertQuestionOnTest(testId, newQuestions);
+
+                const newQuestionsWithId = insertResponse.questionIds.map((questionId, index) => ({
+                    questionId: questionId,
+                    content: newQuestions[index].content,
+                    answers: newQuestions[index].answers
+                }));
+
+                console.log("newQuestionsWithId", newQuestionsWithId);
+
+                // Cập nhật questionsArray với câu hỏi mới
+                // setQuestionsArray(prevQuestionsArray => [
+                //     ...prevQuestionsArray,
+                //     ...newQuestionsWithId  // Thêm các câu hỏi mới vào questionsArray
+                // ]);
+
+                questionsArray.push(...newQuestionsWithId);
+
+                // console.log("questionsArrayId", newQuestionsWithId.map(q => q.questionId));
+                // console.log("New questions added:", insertResponse);
+
+                console.log("questionsArrayID all ", questionsArray.map(q => q.questionId));
+            }
+
+            // Cập nhật các câu hỏi sau khi bài kiểm tra đã được cập nhật
+            const questionUpdatePromises = questionsArray
+                .filter(q => q.questionId !== undefined)
+                .map(q => updateQuestion(q.questionId, { content: q.content, answers: q.answers }));
+            await Promise.all(questionUpdatePromises);
+
+
+            console.log("questionUpdatePromises", questionUpdatePromises);
+
+            // Chờ tất cả các cập nhật câu hỏi hoàn thành
+            await Promise.all(questionUpdatePromises);
+
+            // Xóa các câu hỏi đã chọn
+            if (deletedQuestions.length > 0) {
+                const deletePromises = deletedQuestions.map(questionId =>
+                    console.log("Deleting question with ID", questionId) ||
+                    deleteQuestion(questionId)
+                );
+
+                // Chờ tất cả các xóa câu hỏi hoàn thành
+                await Promise.all(deletePromises);
+            }
+
+            console.log("newQuestions", newQuestions);
+
+            alert("Cập nhật bài kiểm tra thành công!");
+            navigate(-1);
+            // navigate(`/CategoryTestSelected`);
+        } catch (err) {
+            console.error("Error saving test:", err);
+            alert("Có lỗi xảy ra khi lưu bài kiểm tra.");
+        }
+    };
+
+    // Cập nhật kết quả bài kiểm tra
     const updateOutcome = (index, field, value) => {
         const updatedOutcomes = [...testOutcomes];
         updatedOutcomes[index][field] = value;
         setTestOutcomes(updatedOutcomes);
     };
 
-    const [questionsArray, setQuestionsArray] = useState([
-        {
-            content: "",
-            answers: [{ content: "Đáp án 1", point: 0 }],
-        },
-    ]);
-
+    // Cập nhật nội dung câu hỏi
     const updateQuestionContent = (index, value) => {
         const updatedQuestions = [...questionsArray];
-        updatedQuestions[index] = {
-            ...updatedQuestions[index],
-            content: value
-        };
-        setQuestionsArray(updatedQuestions);
-    };
-
-    // Thêm câu hỏi mới
-    const addQuestion = () => {
-        setQuestionsArray([...questionsArray, { content: "", answers: [{ content: "Đáp án 1", point: 0 }] }]);
-    };
-
-    // Xóa câu hỏi
-    const deleteQuestion = (index) => {
-        const updatedQuestions = questionsArray.filter((_, i) => i !== index);
+        updatedQuestions[index].content = value;
         setQuestionsArray(updatedQuestions);
     };
 
     // Cập nhật nội dung đáp án
     const updateAnswerContent = (questionIndex, answerIndex, value) => {
         const updatedQuestions = [...questionsArray];
-        updatedQuestions[questionIndex].answers[answerIndex] = {
-            ...updatedQuestions[questionIndex].answers[answerIndex],
-            content: value,
-        };
+        updatedQuestions[questionIndex].answers[answerIndex].content = value;
         setQuestionsArray(updatedQuestions);
     };
 
-    // Cập nhật điểm số của đáp án
+    // Cập nhật điểm số đáp án
     const updateAnswerPoint = (questionIndex, answerIndex, value) => {
         const updatedQuestions = [...questionsArray];
-        updatedQuestions[questionIndex].answers[answerIndex] = {
-            ...updatedQuestions[questionIndex].answers[answerIndex],
-            point: Number(value),
-        };
+        updatedQuestions[questionIndex].answers[answerIndex].point = Number(value);
         setQuestionsArray(updatedQuestions);
     };
 
-    // Thêm đáp án mới nhưng tối đa 6 đáp án
+    // Thêm đáp án mới
     const addAnswer = (questionIndex) => {
         const updatedQuestions = [...questionsArray];
         if (updatedQuestions[questionIndex].answers.length < 6) {
@@ -154,47 +181,23 @@ export function CreateTestScreen() {
         }
     };
 
-    // Xử lý khi lưu bài kiểm tra
-    const handleSaveTest = async () => {
-        try {
-            // Định dạng câu hỏi đúng format
-            const formattedQuestions = {
-                questions: questionsArray.map(q => ({
-                    content: q.content,
-                    answers: q.answers.map(ans => ({
-                        content: ans.content,
-                        point: ans.point
-                    }))
-                }))
-            };
+    useEffect(() => {
+        console.log("Deleted questions:", deletedQuestions);
+    }, [deletedQuestions]);
 
-            if(formattedQuestions.questions.length === 0) {
-                alert("Vui lòng nhập câu hỏi.");
-            }else if(formattedQuestions.questions.length < 10) {
-                alert("Tối thiểu 10 câu hỏi");
-            }
-            else{
-                const response = await creatTest(categoryId, title, description, testOutcomes);
-                const testId = response.test;
-    
-                console.log("Formatted Questions:", JSON.stringify(formattedQuestions, null, 2));
-                const response2 = await insertQuestionOnTest(testId, formattedQuestions);
-                console.log("Response từ insertQuestionOnTest:", response2);
-    
-                alert("Tạo bài kiểm tra thành công!");
-                // navigate(`/getTest/${categoryId}`);
-                navigate(-1);
-            }
-        } catch (err) {
-            console.error("Lỗi khi tạo bài kiểm tra hoặc chèn câu hỏi:", err);
-            alert("Có lỗi xảy ra!");
-        }
+    const deleteQuestionButton = (questionId, index) => {
+        console.log("Deleting question at index", index);
+        const updatedQuestions = questionsArray.filter((_, i) => i !== index);
+        setDeletedQuestions((prevDeletedQuestions) => [...prevDeletedQuestions, questionId]);
+        console.log("Deleted questions:", deletedQuestions);
+
+        setQuestionsArray(updatedQuestions);
     };
 
     return (
         <Container>
             <Card className="text-sm text-left mb-4" style={{ marginBottom: '30px', padding: '20px' }}>
-                <h2>Tạo bài kiểm tra</h2>
+                <h2>Chỉnh sửa bài kiểm tra</h2>
                 <CardContent className="grid gap-6">
                     <h3>Thể loại: {cateName.categoryName}</h3>
                     <Label htmlFor="title">Tiêu đề bài kiểm tra</Label>
@@ -250,25 +253,6 @@ export function CreateTestScreen() {
                     ))}
                 </CardContent>
             </Card>
-            {/* 
-            <Card className="text-sm text-left mb-4" style={{ marginBottom: '30px', padding: '20px' }}>
-                <CardContent className="grid gap-6">
-                    <h2>Thể loại: {cateName.categoryName}</h2>
-                    <Input style={{ fontSize: '30px', fontWeight: 'bold' }}
-                        type="text"
-                        placeholder="Tên bài kiểm tra"
-                        onDoubleClick={handleDoubleClick}
-                        onBlur={handleBlur}
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)} />
-                    <Input type="text"
-                        placeholder="Mô tả bài kiểm tra"
-                        onDoubleClick={handleDoubleClick}
-                        onBlur={handleBlur}
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)} />
-                </CardContent>
-            </Card> */}
 
             <Card className="text-sm text-left mb-4" style={{ marginBottom: '20px', padding: '20px' }}>
                 <h2>Câu hỏi cho bài kiểm tra</h2>
@@ -311,12 +295,16 @@ export function CreateTestScreen() {
                                     {/* Delete Button */}
                                     <FaTrash
                                         className="text-red-500 text-lg cursor-pointer"
-                                        onClick={() => deleteQuestion(questionIndex)}
+                                        onClick={() => deleteQuestionButton(question.questionId, questionIndex)}
                                     />
 
                                     {/* Required Switch */}
                                     <div className="flex items-center space-x-2">
-                                        <Switch id={`required-${questionIndex}`} />
+                                        <Switch
+                                            id={`required-${questionIndex}`}
+                                            checked={question.isRequired}
+                                            onChange={() => toggleRequired(questionIndex)}
+                                        />
                                         <Label htmlFor={`required-${questionIndex}`}>Bắt buộc</Label>
                                     </div>
                                 </div>
@@ -361,7 +349,6 @@ export function CreateTestScreen() {
                                     </Button>
                                 </div>
                             </div>
-
                         </div>
                     ))}
                 </CardContent>
@@ -369,10 +356,10 @@ export function CreateTestScreen() {
             </Card>
 
             <Button style={{ marginTop: '20px' }} onClick={handleSaveTest}>
-                Tạo bài kiểm tra
+                Lưu bài kiểm tra
             </Button>
         </Container>
     );
 }
 
-export default CreateTestScreen;
+export default EditTestScreen;
