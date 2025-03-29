@@ -1,30 +1,30 @@
 import { Users, Building2, HeartPulse, MessageSquareText } from "lucide-react";
-import { useState, useEffect } from "react";
+// import { useState, useEffect } from "react";
 
 const StatsSection = () => {
     const stats = [
         {
-            value: "1",
-            label: "Doctors",
-            subLabel: "Accompanying",
+            value: "2",
+            label: "Bác sĩ",
+            subLabel: "Đồng hành cùng",
             icon: <Users className="w-12 h-12" />,
         },
         {
             value: "0",
-            label: "Top medical facilities",
-            subLabel: "Partnering with",
+            label: "Cơ sở ý tế",
+            subLabel: "Hợp tác với",
             icon: <Building2 className="w-12 h-12" />,
         },
         {
-            value: "2",
-            label: "Customers",
-            subLabel: "Supporting",
+            value: "48",
+            label: "Khách hàng",
+            subLabel: "Đã hỗ trợ",
             icon: <HeartPulse className="w-12 h-12" />,
         },
         {
-            value: "0",
-            label: "Questions per day",
-            subLabel: "Free answers",
+            value: "354",
+            label: "Lượt làm bài tâm lý",
+            subLabel: "Đã có",
             icon: <MessageSquareText className="w-12 h-12" />,
         },
     ];
@@ -35,8 +35,7 @@ const StatsSection = () => {
                 {stats.map((stat, index) => (
                     <div
                         key={index}
-                        className="flex items-center justify-start gap-4 border-r border-gray-300 last:border-none px-4"
-                    >
+                        className="flex items-center justify-start gap-4 border-r border-gray-300 last:border-none px-4">
                         {/* Icon on the left */}
                         <div className="text-3xl text-white">{stat.icon}</div>
 

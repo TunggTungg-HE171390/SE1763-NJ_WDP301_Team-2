@@ -9,6 +9,7 @@ const psychologistRouter = express.Router();
 psychologistRouter.get("/all", psychologistController.getAllPsychologists);
 psychologistRouter.get("/get-psychologist-list", psychologistController.getPsychologistList);
 psychologistRouter.get("/get-specialization-list", psychologistController.getUniqueSpecializations);
+psychologistRouter.get("/get-psychologist/:doctorId", psychologistController.getPsychologistById);
 psychologistRouter.post("/save-appointment", psychologistController.saveAppointment);
 
 // Ensure the availability/create route is properly defined
@@ -25,27 +26,28 @@ psychologistRouter.patch("/availability/:slotId/status", availabilityController.
 psychologistRouter.get("/scheduleList/:doctorId", availabilityController.getAvailabilitiesById);
 psychologistRouter.get("/schedule/:scheduleId", availabilityController.getAvailabilityById);
 psychologistRouter.get("/appointment/:appointmentId", psychologistController.getAppointmentById);
+psychologistRouter.get("/appointment-list/", psychologistController.getAppointmentList);
 
 // Then the update routes
 psychologistRouter.put(
-  "/:id/experience",
-  // authenticateUser,  // Uncomment when ready for authentication
-  // authorizeRole(['admin', 'staff']),  // Uncomment when ready for authorization
-  psychologistController.updatePsychologistExperience
+    "/:id/experience",
+    // authenticateUser,  // Uncomment when ready for authentication
+    // authorizeRole(['admin', 'staff']),  // Uncomment when ready for authorization
+    psychologistController.updatePsychologistExperience
 );
 
 psychologistRouter.put(
-  "/:id/work-history",
-  // authenticateUser,  // Uncomment when ready for authentication
-  // authorizeRole(['admin', 'staff']),  // Uncomment when ready for authorization
-  psychologistController.updatePsychologistWorkHistory
+    "/:id/work-history",
+    // authenticateUser,  // Uncomment when ready for authentication
+    // authorizeRole(['admin', 'staff']),  // Uncomment when ready for authorization
+    psychologistController.updatePsychologistWorkHistory
 );
 
 psychologistRouter.put(
-  "/:id/profile",
-  // authenticateUser,  // Uncomment when ready for authentication
-  // authorizeRole(['admin', 'staff']),  // Uncomment when ready for authorization
-  psychologistController.updatePsychologistProfile
+    "/:id/profile",
+    // authenticateUser,  // Uncomment when ready for authentication
+    // authorizeRole(['admin', 'staff']),  // Uncomment when ready for authorization
+    psychologistController.updatePsychologistProfile
 );
 
 // Always put generic parameter routes LAST

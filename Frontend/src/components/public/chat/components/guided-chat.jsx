@@ -95,11 +95,7 @@ const GuidedChat = ({ closeChat, switchToFreedom }) => {
         if (userInput.trim() === "") return;
 
         try {
-            await API.sendEmail({
-                email: userInput,
-                subject: "Đã đăng ký nhận bản tin",
-                content: "Cảm ơn bạn đã đăng ký nhận bản tin của chúng tôi!",
-            });
+            await API.subscribeEmail({ email: userInput });
 
             setChatHistory((prev) => [
                 ...prev,
@@ -111,7 +107,10 @@ const GuidedChat = ({ closeChat, switchToFreedom }) => {
             setUserInput("");
         } catch (error) {
             console.error("Failed to send email:", error);
-            setChatHistory((prev) => [...prev, { from: "bot", text: "Ồ! Có lỗi xảy ra. Vui lòng thử lại sau." }]);
+            setChatHistory((prev) => [
+                ...prev,
+                { from: "bot", text: "Bạn đã đăng ký rồi! Vui lòng sử dụng mail khác." },
+            ]);
         }
     };
 
@@ -173,9 +172,7 @@ const GuidedChat = ({ closeChat, switchToFreedom }) => {
                     </Button>
 
                     <Input
-                        placeholder={
-                            !isEmailInputEnabled ? "Không thể nhắn tin." : "Nhập mail của bạn..."
-                        }
+                        placeholder={!isEmailInputEnabled ? "Không thể nhắn tin." : "Nhập mail của bạn..."}
                         className="flex-1"
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}

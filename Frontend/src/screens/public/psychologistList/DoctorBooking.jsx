@@ -192,7 +192,7 @@ const DoctorBooking = () => {
                                 </DialogTrigger>
                                 <DialogContent className="max-w-2xl">
                                     <DialogHeader>
-                                        <DialogTitle>Chọn bác sĩ</DialogTitle>
+                                        <DialogTitle>Chọn tư vấn viên</DialogTitle>
                                     </DialogHeader>
 
                                     <div className="space-y-6">
@@ -232,7 +232,7 @@ const DoctorBooking = () => {
                                                         checked={selectedGender === "male"}
                                                         className="border-gray-300 data-[state=checked]:bg-white data-[state=checked]:border-blue-500 data-[state=checked]:text-blue-500"
                                                     />
-                                                    <Label htmlFor="male">Bác sĩ nam</Label>
+                                                    <Label htmlFor="male">Tư vấn viên nam</Label>
                                                 </div>
                                                 <div className="flex items-center space-x-2">
                                                     <RadioGroupItem
@@ -242,7 +242,7 @@ const DoctorBooking = () => {
                                                         checked={selectedGender === "female"}
                                                         className="border-gray-300 data-[state=checked]:bg-white data-[state=checked]:border-blue-500 data-[state=checked]:text-blue-500"
                                                     />
-                                                    <Label htmlFor="female">Bác sĩ nữ</Label>
+                                                    <Label htmlFor="female">Tư vấn viên nữ</Label>
                                                 </div>
                                             </RadioGroup>
                                         </div>
@@ -260,7 +260,7 @@ const DoctorBooking = () => {
                         </div>
                     </div>
 
-                    <h2 className="font-semibold mb-8 text-xl">Chọn bác sĩ</h2>
+                    <h2 className="font-semibold mb-8 text-xl">Chọn tư vấn viên</h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {currentDoctors.map((doctor, index) => (

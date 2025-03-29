@@ -53,7 +53,7 @@ export function CategoryTestSelected() {
                 <div className="text-left">
                   <Label htmlFor="name" className="text-left text-lg">Làm quen với Tâm Giao</Label>
                   <CardDescription>
-                    Nhận sự hỗ trợ, tư vấn và thăm khám từ các bác sĩ tâm lý
+                    Nhận sự hỗ trợ, tư vấn và thăm khám từ các tư vấn viên tâm lý
                   </CardDescription>
                 </div>
               </div>

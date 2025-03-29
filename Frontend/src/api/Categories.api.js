@@ -13,7 +13,7 @@ export const getAllCategories = async () => {
 export const getTestByCateId = async (categoryId) => {
   try {
     const response = await apiClient.get(`/category/getTest/${categoryId}`);
-    return response;
+    return response.data;
   } catch (error) {
     console.error("Error fetching tests:", error);
     throw error;

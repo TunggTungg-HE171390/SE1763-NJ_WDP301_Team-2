@@ -17,7 +17,7 @@ export const resetPassword = async ({ contact, otp, newPassword }) => {
 };
 
 export const changePassword = async ({ contact, newPassword }) => {
-  return apiClient.post("/auth/change-password", { contact, newPassword });
+  return await apiClient.post("/auth/change-password", { contact, newPassword });
 };
 
 export const verifyOTP = async (credentials) => {
@@ -34,4 +34,18 @@ export const botResponse = async (credentials) => {
 
 export const sendEmail = async (credentials) => {
   return await apiClient.post("/auth/send-email", credentials);
+};
+
+export const subscribeEmail = async (credentials) => {
+    return await apiClient.post("/auth/subscribe-news", credentials);
+};
+
+export const psychologistList = async () => {
+  try {
+      const response = await apiClient.get("/auth/psychologists");
+      return response.data;
+  } catch (error) {
+      console.error("Error submitting:", error);
+      throw error;
+  }
 };
