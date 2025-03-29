@@ -3,7 +3,10 @@ import { body, validationResult } from "express-validator";
 
 const getAllBlog = async (req, res) => {
     try {
-        const blogPosts = await BlogPost.find().sort({ createdAt: -1 }).select("-comments").exec();
+        const blogPosts = await BlogPost.find({ status: "Published" })
+            .sort({ createdAt: -1 })
+            .select("-comments")
+            .exec();
 
         res.status(200).json(blogPosts);
     } catch (error) {

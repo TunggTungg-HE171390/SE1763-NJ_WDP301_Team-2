@@ -127,55 +127,55 @@ const ManageUsers = () => {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      if (newUser._id) {
-        const res = await apiClient.put(`/admin/updateaccount/${newUser._id}`, newUser);
-        if (res.status === 200) {
-          setUsers(users.map(user => user._id === newUser._id ? newUser : user));
-          setShowModal(false);
-          alert("Cập nhật tài khoản thành công!");
-        } else {
-          throw new Error('Failed to update user');
-        }
-      } else {
-        const res = await apiClient.post('/admin/addaccount', newUser);
-        if (res.status === 200) {
-          setUsers([...users, res.data.user]);
-          setShowModal(false);
-          alert("Thêm tài khoản thành công!");
-        } else {
-          throw new Error('Failed to add user');
-        }
-      }
-    } catch (error) {
-      console.error('Error adding user:', error.message);
-    }
-
     // try {
-    //   const response = await fetch(`http://localhost:${import.meta.env.VITE_PORT}/api/admin/addaccount`, {
-    //     method: 'POST',
-    //     headers: { 
-    //       'Content-Type': 'application/json',
-    //       'Authorization': `Bearer ${localStorage.getItem('token')}`,
-    //      },
-    //     body: JSON.stringify(newUser),
-    //   });
-
-    //   if (!response.ok) {
-    //     throw new Error('Failed to add user');
+    //   if (newUser._id) {
+    //     const res = await apiClient.put(`/admin/updateaccount/${newUser._id}`, newUser);
+    //     if (res.status === 200) {
+    //       setUsers(users.map(user => user._id === newUser._id ? newUser : user));
+    //       setShowModal(false);
+    //       alert("Cập nhật tài khoản thành công!");
+    //     } else {
+    //       throw new Error('Failed to update user');
+    //     }
+    //   } else {
+    //     const res = await apiClient.post('/admin/addaccount', newUser);
+    //     if (res.status === 200) {
+    //       setUsers([...users, res.data.user]);
+    //       setShowModal(false);
+    //       alert("Thêm tài khoản thành công!");
+    //     } else {
+    //       throw new Error('Failed to add user');
+    //     }
     //   }
-  
-    //   const data = await response.json();
-  
-    //   if (!response.ok) {
-    //     throw new Error(data.error || 'Failed to add user');
-    //   }
-  
-    //   setUsers([...users, data.user]);
-    //   handleClose();
     // } catch (error) {
     //   console.error('Error adding user:', error.message);
     // }
+
+    try {
+      const response = await fetch(`http://localhost:${import.meta.env.VITE_PORT}/api/admin/addaccount`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+         },
+        body: JSON.stringify(newUser),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add user');
+      }
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add user');
+      }
+  
+      setUsers([...users, data.user]);
+      handleClose();
+    } catch (error) {
+      console.error('Error adding user:', error.message);
+    }
   };
 
   const handleEdit = (user) => {

@@ -15,6 +15,8 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import moment from "moment";
+import TimeAgo from "react-timeago";
 import { BookmarkIcon, HeartIcon, MessageSquareIcon, EyeIcon, ClockIcon } from "lucide-react";
 import * as API from "@/api";
 
@@ -118,11 +120,15 @@ const BlogPostDetail = () => {
 
             setCommentContent("");
 
-            const refreshed = await API.addBlogComment(id);
-            setPost(refreshed.data);
+            // Fetch updated post data to include the new comment
+            const refreshedPost = await API.getBlogPostDetailById(id);
+            console.log("Refreshed post data:", refreshedPost.data);
+            setPost({
+                ...refreshedPost.data,
+                comments: refreshedPost.data.comments.reverse(),
+            });
         } catch (err) {
             console.error("Comment submission failed:", err);
-            // Optionally set an error message
         } finally {
             setSubmitting(false);
         }
@@ -313,7 +319,11 @@ const BlogPostDetail = () => {
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <p className="font-medium">{comment.userId.fullName}</p>
                                                         <span className="text-sm text-gray-500">
-                                                            {new Date(comment.createAt).toLocaleDateString()}
+                                                            {/* <Moment fromNow>{comment.createAt}</Moment> */}
+                                                            <td>
+                                                                <TimeAgo date={comment.createAt} />
+                                                            </td>
+                                                            {/* {new Date(comment.createAt).toLocaleDateString()} */}
                                                         </span>
                                                     </div>
                                                     <p className="text-gray-700 text-start">{comment.content}</p>

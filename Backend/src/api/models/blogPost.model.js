@@ -23,9 +23,6 @@ const CommentSchema = new Schema(
 // Main BlogPost schema
 const BlogPostSchema = new Schema(
     {
-        _id: {
-            type: mongoose.Schema.Types.ObjectId,
-        },
         title: {
             type: String,
             required: true,

@@ -14,27 +14,27 @@ export const getPsychologist = async (id) => {
         console.log(`API call: Getting psychologist with ID: ${id}`);
         // Add explicit logging to show the URL being called
         const response = await apiClient.get(`/psychologist/${id}`);
-        console.log('API response for getPsychologist:', response.data);
+        console.log("API response for getPsychologist:", response.data);
         return response.data;
     } catch (error) {
-        console.error('Error in getPsychologist API call:', error);
+        console.error("Error in getPsychologist API call:", error);
         throw error;
     }
 };
 
-export const getScheduleListByDoctorId = async (id) => {
+export const getScheduleListByDoctorIdForStaff = async (id) => {
     try {
         if (!id) {
             console.error("Invalid psychologist ID provided:", id);
             throw new Error("Psychologist ID is required");
         }
-        
+
         console.log(`Getting schedule list for psychologist ID: ${id}`);
-        
+
         // Fix the endpoint URL - remove any accidental prefixes
         const url = `/psychologist/scheduleList/${id}`;
         console.log(`Making API request to: ${url}`);
-        
+
         const response = await apiClient.get(url);
         console.log(`Schedule API response:`, response.data);
         return response.data;
@@ -42,6 +42,10 @@ export const getScheduleListByDoctorId = async (id) => {
         console.error(`Error fetching schedule for psychologist ${id}:`, error);
         throw error;
     }
+};
+
+export const getScheduleListByDoctorId = async (id) => {
+    return await apiClient.get(`psychologist/scheduleList/${id}`);
 };
 
 export const getScheduleById = async (id) => {
@@ -179,10 +183,10 @@ export const getPsychologistById = async (doctorId) => {
     try {
         console.log(`API call: Getting psychologist with ID: ${doctorId}`);
         const response = await apiClient.get(`/psychologist/${doctorId}`);
-        console.log('API response for getPsychologistById:', response.data);
+        console.log("API response for getPsychologistById:", response.data);
         return response.data;
     } catch (error) {
-        console.error('Error in getPsychologistById API call:', error);
+        console.error("Error in getPsychologistById API call:", error);
         throw error;
     }
 };

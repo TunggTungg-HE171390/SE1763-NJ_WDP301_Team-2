@@ -18,15 +18,16 @@ import {
     Stack,
     Paper,
     Alert,
-    Snackbar
+    Snackbar,
 } from "@mui/material";
+import { useAuth } from "@/hooks/useAuth";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ReplayIcon from "@mui/icons-material/Replay";
 import SaveIcon from "@mui/icons-material/Save";
 
 const CreateNewPost = () => {
     const navigate = useNavigate();
-
+    const { user } = useAuth();
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [status, setStatus] = useState("Draft");
@@ -53,7 +54,7 @@ const CreateNewPost = () => {
             return;
         }
 
-        const postData = { title, content, status, image };
+        const postData = { title, userId: user._id, content, status, image };
 
         try {
             const result = await createBlogPost(postData);
@@ -61,7 +62,7 @@ const CreateNewPost = () => {
             setAlertSeverity("success");
             setAlertOpen(true);
             console.log("Post created:", result);
-            
+
             // Optional: Clear form after successful submission
             if (result) {
                 setTimeout(() => {
@@ -96,18 +97,20 @@ const CreateNewPost = () => {
     return (
         <Container maxWidth="md" sx={{ mt: 12, mb: 4 }}>
             <Box sx={{ mb: 2 }}>
-                <Button
-                    variant="outlined"
-                    startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate("/manage-posts")}
-                >
+                <Button variant="outlined" startIcon={<ArrowBackIcon />} onClick={() => navigate("/manage-posts")}>
                     Back to Manage Posts
                 </Button>
             </Box>
 
             <Card elevation={3} sx={{ borderRadius: 2 }}>
                 <CardContent sx={{ p: 4 }}>
-                    <Typography variant="h4" component="h1" gutterBottom align="center" fontWeight="bold" sx={{ mb: 4 }}>
+                    <Typography
+                        variant="h4"
+                        component="h1"
+                        gutterBottom
+                        align="center"
+                        fontWeight="bold"
+                        sx={{ mb: 4 }}>
                         Create New Post
                     </Typography>
 
@@ -137,7 +140,7 @@ const CreateNewPost = () => {
                                     height={350}
                                 />
                                 {!content && (
-                                    <Typography variant="caption" color="error" sx={{ mt: 1, display: 'block' }}>
+                                    <Typography variant="caption" color="error" sx={{ mt: 1, display: "block" }}>
                                         Content is required
                                     </Typography>
                                 )}
@@ -151,8 +154,7 @@ const CreateNewPost = () => {
                                         id="status"
                                         value={status}
                                         label="Status"
-                                        onChange={(e) => setStatus(e.target.value)}
-                                    >
+                                        onChange={(e) => setStatus(e.target.value)}>
                                         <MenuItem value="Draft">Draft</MenuItem>
                                         <MenuItem value="Published">Published</MenuItem>
                                     </Select>
@@ -173,7 +175,7 @@ const CreateNewPost = () => {
 
                             {preview && (
                                 <Grid item xs={12}>
-                                    <Paper elevation={1} sx={{ p: 2, textAlign: 'center' }}>
+                                    <Paper elevation={1} sx={{ p: 2, textAlign: "center" }}>
                                         <img
                                             src={preview}
                                             alt="Preview"
@@ -195,8 +197,7 @@ const CreateNewPost = () => {
                                         color="secondary"
                                         startIcon={<ReplayIcon />}
                                         onClick={handleReset}
-                                        size="large"
-                                    >
+                                        size="large">
                                         Reset
                                     </Button>
                                     <Button
@@ -204,8 +205,7 @@ const CreateNewPost = () => {
                                         color="primary"
                                         type="submit"
                                         startIcon={<SaveIcon />}
-                                        size="large"
-                                    >
+                                        size="large">
                                         Create Post
                                     </Button>
                                 </Stack>
@@ -216,7 +216,7 @@ const CreateNewPost = () => {
             </Card>
 
             <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleCloseAlert}>
-                <Alert onClose={handleCloseAlert} severity={alertSeverity} sx={{ width: '100%' }}>
+                <Alert onClose={handleCloseAlert} severity={alertSeverity} sx={{ width: "100%" }}>
                     {alertMessage}
                 </Alert>
             </Snackbar>

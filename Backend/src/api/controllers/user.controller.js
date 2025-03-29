@@ -44,6 +44,7 @@ const getUserById = async (req, res, next) => {
             address: user.address || null,
             dob: user.dob || null,
             role: user.role || null,
+            phone: user.phone || null,
             profileImg: user.profileImg || null,
         };
 
@@ -57,12 +58,13 @@ const getUserById = async (req, res, next) => {
 const updateUser = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { fullName, gender, address, dob, role, profileImg } = req.body;
+        const { fullName, gender, address, dob, role, phone, profileImg } = req.body;
+        console.log("Update user data:", req.body);
 
         // Tìm và cập nhật thông tin người dùng
         const updatedUser = await User.findByIdAndUpdate(
             id,
-            { fullName, gender, address, dob, role, profileImg },
+            { fullName, gender, address, dob, role, phone, profileImg },
             { new: true, runValidators: true } // Trả về dữ liệu sau khi cập nhật, kiểm tra validate
         );
 
@@ -111,9 +113,9 @@ export const registerUser = async (req, res) => {
             $or: [{ email: contact }, { phone: contact }],
         });
 
-    if (existingUser) {
-      return res.status(400).json({ message: "This email or phone number is already in use" });
-    }
+        if (existingUser) {
+            return res.status(400).json({ message: "This email or phone number is already in use" });
+        }
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -271,44 +273,44 @@ export const verifyOTP = async (req, res) => {
 };
 
 export const resendOTP = async (req, res) => {
-  try {
-    const { contact } = req.body;
+    try {
+        const { contact } = req.body;
 
-    if (!contact) {
-      return res.status(400).json({ message: "Email or phone number is required" });
+        if (!contact) {
+            return res.status(400).json({ message: "Email or phone number is required" });
+        }
+
+        // Kiểm tra người dùng có tồn tại không
+        const user = await User.findOne({ $or: [{ email: contact }, { phone: contact }] });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Generate a new OTP
+        const newOTP = generateVerificationCode();
+
+        // Cập nhật OTP và thời gian hết hạn
+        if (user.email === contact) {
+            user.emailVerificationCode = newOTP;
+        } else if (user.phone === contact) {
+            user.phoneVerificationCode = newOTP;
+        }
+
+        await user.save();
+
+        // Gửi OTP qua email hoặc SMS
+        if (user.email === contact) {
+            await Email.sendVerificationEmail(contact, newOTP);
+        } else if (user.phone === contact) {
+            await sendVerificationSMS(contact, newOTP);
+        }
+
+        return res.status(200).json({ message: "OTP resent successfully" });
+    } catch (error) {
+        console.error("Error resending OTP: ", error);
+        res.status(500).json({ message: "Server error" });
     }
-
-    // Kiểm tra người dùng có tồn tại không
-    const user = await User.findOne({ $or: [{ email: contact }, { phone: contact }] });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Generate a new OTP
-    const newOTP = generateVerificationCode();
-
-    // Cập nhật OTP và thời gian hết hạn
-    if (user.email === contact) {
-      user.emailVerificationCode = newOTP;
-    } else if (user.phone === contact) {
-      user.phoneVerificationCode = newOTP;
-    }
-
-    await user.save();
-
-    // Gửi OTP qua email hoặc SMS
-    if (user.email === contact) {
-      await Email.sendVerificationEmail(contact, newOTP);
-    } else if (user.phone === contact) {
-      await sendVerificationSMS(contact, newOTP);
-    }
-
-    return res.status(200).json({ message: "OTP resent successfully" });
-  } catch (error) {
-    console.error("Error resending OTP: ", error);
-    res.status(500).json({ message: "Server error" });
-  }
 };
 
 // AI Chat Function
@@ -522,7 +524,6 @@ export default {
     sendEmail,
     forgotPassword,
     changePassword,
-    updateUser,
     updateUser,
     getUserById,
     subscribeEmail,
