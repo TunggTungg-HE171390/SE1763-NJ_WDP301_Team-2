@@ -43,7 +43,6 @@ import PsychologistSchedule from "./screens/staff/PsychologistSchedule";
 import EditTestScreen from "./screens/admin/EditTestScreen.jsx";
 import PaymentPage from "./screens/public/paymentAppointment/PaymentPage.jsx";
 import UserProfile from "./screens/common/userProfile/components/user-profile.jsx";
-import ViewSchedule from "./screens/psychologist/viewAppointment/viewAppointment";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ViewAppointmentList from "./screens/public/appointmentList/AppointmentManagement.jsx";
@@ -52,7 +51,6 @@ import StaticChart from "./screens/staticChart/StaticChart.jsx";
 // import dayjs from "dayjs";
 import "dayjs/locale/vi"; // Import Vietnamese locale for dayjs
 import ViewPersonalSchedule from "./screens/psychologist/viewSchedule/viewSchedule";
-import "dayjs/locale/vi"; // Import Vietnamese locale for dayjs
 import ManagePsychologists from "./screens/staff/ManagePsychologists";
 import PsychologistDetail from "./screens/staff/PsychologistDetail";
 import ManagePsychologistSchedule from "./screens/staff/ManagePsychologistSchedule";
@@ -179,12 +177,6 @@ function Layout() {
 
                         {/* Staff routes - properly protected with role-based access */}
                         <Route
-                            path="/staff/view-schedule"
-                            element={
-                                <ProtectedRoute element={<ViewSchedule userRole="staff" />} requiredRole="staff" />
-                            }
-                        />
-                        <Route
                             path="/staff/view-appointment-detail/:appointmentId"
                             element={<ProtectedRoute element={<AppointmentDetail />} requiredRole="staff" />}
                         />
@@ -204,8 +196,6 @@ function Layout() {
                             path="/staff/psychologist-detail/:id"
                             element={<ProtectedRoute element={<PsychologistDetail />} requiredRole="staff" />}
                         />
-
-                        {/* Make sure this route is properly defined */}
                         <Route
                             path="/staff/manage-psychologist-schedule/:id"
                             element={<ProtectedRoute element={<ManagePsychologistSchedule />} requiredRole="staff" />}
