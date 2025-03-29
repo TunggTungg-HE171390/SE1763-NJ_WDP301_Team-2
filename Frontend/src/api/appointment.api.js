@@ -163,23 +163,26 @@ export const updateAppointmentStatus = async (appointmentId, data) => {
     }
 };
 
-// Get all appointments (staff view)
+// Get all appointments (staff view), optionally filtered by psychologistId
 export const getAllAppointments = async (filters = {}) => {
     try {
-        console.log("Fetching all appointments with filters:", filters);
+        console.log("Fetching appointments with filters:", filters);
         if (USE_MOCK_API) {
             return await mockApi.getAllAppointments(filters);
         }
+        
         const queryParams = new URLSearchParams();
         Object.entries(filters).forEach(([key, value]) => {
             if (value !== undefined && value !== null && value !== "") {
                 queryParams.append(key, value);
             }
         });
+        
         const queryString = queryParams.toString() ? `?${queryParams.toString()}` : "";
-        return await apiClient.get(`/appointments${queryString}`);
+        const response = await apiClient.get(`/appointments${queryString}`);
+        return response;
     } catch (error) {
-        console.error(`Error fetching all appointments: ${error.message}`);
+        console.error(`Error fetching appointments: ${error.message}`);
         throw error;
     }
 };

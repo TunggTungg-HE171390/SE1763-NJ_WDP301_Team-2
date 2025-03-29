@@ -174,18 +174,12 @@ function Layout() {
                             path="/psychologist/view-appointment-detail/:appointmentId"
                             element={<ProtectedRoute element={<ViewAppointmentDetail />} requiredRole="psychologist" />}
                         />
-
-                        {/* Staff routes - properly protected with role-based access */}
-                        <Route
-                            path="/staff/view-appointment-detail/:appointmentId"
-                            element={<ProtectedRoute element={<AppointmentDetail />} requiredRole="staff" />}
-                        />
                         <Route
                             path="/staff/appointment-details/:appointmentId"
                             element={<ProtectedRoute element={<AppointmentDetail />} requiredRole="staff" />}
                         />
                         <Route
-                            path="/staff/manage-appointments"
+                            path="/staff/manage-appointments/:psychologistId?"
                             element={<ProtectedRoute element={<ManageAppointments />} requiredRole="staff" />}
                         />
                         <Route
@@ -220,6 +214,12 @@ function Layout() {
                         <Route
                             path="/staff/update-post/:postId"
                             element={<ProtectedRoute element={<UpdatePost />} requiredRole="staff" />}
+                        />
+
+                        {/* Route for staff to manage appointments for a specific psychologist */}
+                        <Route
+                            path="/staff/manage-appointments/:psychologistId"
+                            element={<ProtectedRoute element={<ManageAppointments />} requiredRole="staff" />}
                         />
 
                         {/* Public doctor routes */}

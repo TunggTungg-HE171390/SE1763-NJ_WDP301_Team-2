@@ -23,7 +23,8 @@ import {
   Edit as EditIcon, 
   Visibility as VisibilityIcon,
   Event as EventIcon,
-  Schedule as ScheduleIcon
+  Schedule as ScheduleIcon,
+  CalendarToday as CalendarTodayIcon
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { getAllPsychologists } from '../../api/psychologist.api';
@@ -220,7 +221,7 @@ const ManagePsychologists = () => {
                             </IconButton>
                             
                             {/* Add View Appointments Button */}
-                            <IconButton 
+                            {/* <IconButton 
                               component={Link}
                               to={`/staff/manage-psychologist-schedule/${psy._id}`}
                               color="success"
@@ -228,6 +229,17 @@ const ManagePsychologists = () => {
                               title="Xem lịch hẹn"
                             >
                               <EventIcon />
+                            </IconButton> */}
+
+                            {/* Add an action button to view a psychologist's appointments */}
+                            <IconButton
+                              component={Link}
+                              to={`/staff/manage-appointments/${psy._id}`}
+                              color="primary"
+                              size="small"
+                              title="Xem lịch hẹn"
+                            >
+                              <CalendarTodayIcon />
                             </IconButton>
                           </Box>
                         </TableCell>
