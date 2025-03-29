@@ -12,10 +12,11 @@ export function TestOutCome() {
     useBootstrap();
     const location = useLocation();
     const navigate = useNavigate();
-    const { testOutCome, answersArray } = location.state || {};
+    const { testOutCome, answersArray, score } = location.state || {};
 
     console.log("answers", answersArray);
     console.log("testOutCome", testOutCome);
+    console.log("score", score);
 
 
     const handleDownload = () => {
@@ -38,17 +39,32 @@ export function TestOutCome() {
                     {answersArray && Object.keys(answersArray).map((key, index) => (
                         <Card key={index} className="border p-4 shadow-md mb-4">
                             <CardContent className="text-left">
-                                <div className="mb-2"> 
+                                <div className="mb-2">
                                     <span className="font-semibold">Câu hỏi:</span>
                                     <p style={{ fontSize: "20px" }}>{answersArray[key].questionContent}</p>
                                 </div>
-                                <div className="bg-green-100 p-2 rounded"> 
-                                    <span className="font-semibold">Câu trả lời:</span> 
+                                <div className="bg-green-100 p-2 rounded">
+                                    <span className="font-semibold">Câu trả lời:</span>
                                     <p>{answersArray[key].selectedAnswer}</p>
                                 </div>
                             </CardContent>
                         </Card>
                     ))}
+
+                    <div className="flex justify-center mb-4">
+                        <div className="text-center">
+                            <div className="relative inline-block">
+                                <div className="w-32 h-32 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                                    <div className="w-28 h-28 rounded-full bg-white flex items-center justify-center">
+                                        <span className="text-4xl font-bold text-red-600">{score}</span>
+                                    </div>
+                                </div>
+                                <div className="mt-2 text-lg font-semibold text-gray-700">
+                                    Điểm số của bạn
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <CardContent style={{ fontSize: "30px" }}> {testOutCome.split(/(Kết quả tốt|Kết quả trung bình|Kết quả kém)/).map((part, index) => {
                         if (part === "Kết quả tốt" || part === "Kết quả trung bình" || part === "Kết quả kém") {

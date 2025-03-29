@@ -148,7 +148,7 @@ const ViewAppointmentDetail = () => {
             
             // Refresh daily appointments
             fetchDailyAppointments(selectedDate);
-            
+        
             setToast({
                 open: true,
                 message: 'Cuộc hẹn đã được hủy thành công',

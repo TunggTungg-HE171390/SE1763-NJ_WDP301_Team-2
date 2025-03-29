@@ -28,7 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, Settings, HelpCircle, LogOut, BarChart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth"; // Import authentication hook
 import { getCountRequestReschedule, changeBooleanIsReschedule } from "../../api/appointment.api";
-import { useBootstrap } from "@/hooks/useBootstrap";
+// import { useBootstrap } from "@/hooks/useBootstrap";
 import {
     Dialog,
     DialogContent,
@@ -69,7 +69,7 @@ export function Header() {
     const { logout } = useContext(AuthContext);
     const [isAuthenticated, setIsAuthenticated] = useState(!!user);
     const userName = user?.fullName;
-    useBootstrap();
+    // useBootstrap();
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [patientNamesData, setPatientNamesData] = useState([]);
     const [rescheduleData, setRescheduleData] = useState([]);
@@ -380,7 +380,7 @@ export function Header() {
                             </DialogContent>
                         </Dialog>
 
-                        <p className="flex items-center justify-center mt-3 mr-1 font-semibold">{user.fullName}</p>
+                        <p className="flex items-center justify-center mr-1 font-semibold">{user.fullName}</p>
                         <Avatar className="h-9 w-9">
                             <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
                         </Avatar>

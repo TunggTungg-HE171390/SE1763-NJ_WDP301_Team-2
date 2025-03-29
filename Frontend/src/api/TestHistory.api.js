@@ -9,3 +9,13 @@ export const submitTest = async (userId, testId, answers, userInfo) => {
     throw error; 
   }
 };
+
+export const getTestOutcomeDistribution = async (req, res) => {
+  try {
+    const response = await apiClient.get(`/test-history/outcome-distribution`); 
+    return response.data; 
+  } catch (error) {
+    console.error("Error submitting test:", error);
+    throw error; 
+  }
+};

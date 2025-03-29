@@ -88,10 +88,11 @@ export function TestForm() {
         .then(response => {
           console.log("API Response:", response);
           const testOutCome = response.result;
+          const score = response.score;
           console.log("testOutCome updated:", testOutCome);
           setLoading(false);
           setIsModalVisible(false);
-          navigate('/test-outcome', { state: { testOutCome, answersArray } });
+          navigate('/test-outcome', { state: { testOutCome, answersArray, score } });
         })
 
         .catch(error => {

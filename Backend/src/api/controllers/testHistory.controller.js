@@ -85,7 +85,7 @@ const submitTest = async (req, res, next) => {
       console.log("Gui mail thanh cong");
     }
 
-    // await savedTestHistory.save();
+    await savedTestHistory.save();
 
     res.json({
       userName: savedTestHistory.userId.fullName,
@@ -199,7 +199,40 @@ const commentAI = async (questionAndAnswer, testName) => {
     }
 };
 
+export const getTestOutcomeDistribution = async (req, res) => {
+    try {
+        const outcomeDistribution = await TestHistory.aggregate([
+            {
+                $project: {
+                    outcome: {
+                        $switch: {
+                            branches: [
+                                { case: { $lte: ["$score", 20] }, then: "Rất kém" },
+                                { case: { $lte: ["$score", 40] }, then: "Kém" },
+                                { case: { $lte: ["$score", 60] }, then: "Trung bình" },
+                                { case: { $lte: ["$score", 80] }, then: "Tốt" },
+                                { case: { $gte: ["$score", 81] }, then: "Rất tốt" },
+                            ],
+                            default: "Không xác định"
+                        }
+                    }
+                }
+            },
+            { $group: { _id: "$outcome", count: { $sum: 1 } } },
+            { $sort: { _id: 1 } } // Sắp xếp theo thứ tự tên
+        ]);
+
+        const labels = outcomeDistribution.map(item => item._id);
+        const data = outcomeDistribution.map(item => item.count);40
+
+        res.json({ labels, data });
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi khi lấy dữ liệu phân bố kết quả", error });
+    }
+};
+
 export default {
     getUserAnswerForQuestion,
     submitTest,
+    getTestOutcomeDistribution
 };

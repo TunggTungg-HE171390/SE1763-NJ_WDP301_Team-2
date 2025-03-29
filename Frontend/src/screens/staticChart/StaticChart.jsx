@@ -1,39 +1,51 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-
-// Dữ liệu tĩnh
-const data = [
-    { name: "Jan", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "Feb", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "Mar", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "Apr", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "May", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "Jun", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "Jul", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "Aug", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "Sep", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "Oct", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "Nov", total: Math.floor(Math.random() * 5000) + 1000 },
-    { name: "Dec", total: Math.floor(Math.random() * 5000) + 1000 },
-];
+import { getTestOutcomeDistribution } from "../../api/TestHistory.api";
 
 export function StaticChart() {
+    const [chartData, setChartData] = useState([]);
+
+    // Gọi API để lấy dữ liệu
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await getTestOutcomeDistribution();
+                const { labels, data } = response;
+
+                // Tính tổng số bản ghi
+                const totalRecords = data.reduce((sum, value) => sum + value, 0);
+
+                // Chuyển đổi dữ liệu thành định dạng với tỷ lệ phần trăm
+                const formattedData = labels.map((label, index) => ({
+                    name: label, // "Rất kém", "Kém", "Trung bình", "Tốt", "Rất tốt"
+                    percentage: totalRecords > 0 ? ((data[index] / totalRecords) * 100).toFixed(1) : 0, // Tỷ lệ phần trăm
+                }));
+                setChartData(formattedData);
+            } catch (error) {
+                console.error("Lỗi khi lấy dữ liệu biểu đồ:", error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
     return (
         <div className="container mx-auto p-6">
             <Card className="border-blue-200 shadow-md">
                 <CardHeader>
                     <CardTitle className="text-xl font-semibold text-gray-800">
-                        Doanh thu theo tháng
+                        Tỷ lệ kết quả bài test
                     </CardTitle>
                     <CardDescription className="text-sm text-gray-500">
-                        Biểu đồ hiển thị doanh thu hàng tháng trong năm 2025
+                        Biểu đồ hiển thị tỷ lệ phần trăm kết quả bài test trong năm 2025
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ResponsiveContainer width="100%" height={400}>
-                        <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                             <XAxis
                                 dataKey="name"
@@ -48,12 +60,13 @@ export function StaticChart() {
                                 fontSize={14}
                                 tickLine={false}
                                 axisLine={false}
-                                tickFormatter={(value) => `$${value.toLocaleString()}`}
+                                tickFormatter={(value) => `${value}%`} // Hiển thị phần trăm
                                 tick={{ fill: "#666" }}
+                                domain={[0, 100]} // Giới hạn trục Y từ 0-100%
                             />
                             <Tooltip
-                                formatter={(value) => `$${value.toLocaleString()}`}
-                                labelFormatter={(label) => `Tháng: ${label}`}
+                                formatter={(value) => `${value}%`} // Hiển thị phần trăm trong tooltip
+                                labelFormatter={(label) => `Kết quả: ${label}`}
                                 contentStyle={{
                                     backgroundColor: "#fff",
                                     border: "1px solid #e0e0e0",
@@ -63,8 +76,8 @@ export function StaticChart() {
                             />
                             <Legend verticalAlign="top" height={36} />
                             <Bar
-                                dataKey="total"
-                                fill="#1F45FF"
+                                dataKey="percentage" // Sử dụng percentage thay vì total
+                                fill="#1F45FF" // Giữ màu xanh dương như giao diện cũ
                                 radius={[4, 4, 0, 0]}
                                 barSize={30}
                             />

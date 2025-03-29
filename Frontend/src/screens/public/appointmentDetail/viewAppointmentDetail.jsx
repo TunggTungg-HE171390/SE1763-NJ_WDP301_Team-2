@@ -36,9 +36,9 @@ import ToastReceiver from "@/components/common/toast/toast-receiver";
 import * as API from "@/api";
 import { useAuth } from "@/hooks/useAuth";
 import PaymentInformation from "./components/paymentDetail"; // Import the PaymentInformation component
-import { cancelAppointment } from "../../../api/appointment.api";
+import {  } from "../../../api/appointment.api";
 import { getScheduleListByDoctorId } from "../../../api/psychologist.api";
-import { rescheduleAppointment } from "../../../api/appointment.api";
+import {cancelAppointmentByPatientId, rescheduleAppointmentByPatientId } from "../../../api/appointment.api";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
@@ -164,7 +164,7 @@ const ViewAppointmentDetail = () => {
         if (confirmCancel) {
             try {
                 alert("Cancel reason: " + appointmentId + " " + cancelReason);
-                const response = await cancelAppointment(appointmentId, cancelReason);
+                const response = await cancelAppointmentByPatientId(appointmentId, cancelReason);
                 console.log("Appointment canceled:", response);
                 setOpenCancel(false);
                 setLoading(true);
@@ -267,7 +267,7 @@ const ViewAppointmentDetail = () => {
             };
     
             // Gọi API với đúng định dạng
-            const response = await rescheduleAppointment(appointment._id, newAvailabilityId, rescheduleReason);
+            const response = await rescheduleAppointmentByPatientId(appointment._id, newAvailabilityId, rescheduleReason);
             console.log("Vào reschedule:", newAvailabilityId, rescheduleReason, appointmentId);
             setOpenReschedule(false);
             setLoading(true);
