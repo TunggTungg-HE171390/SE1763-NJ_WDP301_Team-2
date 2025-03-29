@@ -16,9 +16,14 @@ const MedicalProfileSchema = new Schema(
 // Psychologist schema for psychologists
 const PsychologistProfileSchema = new Schema(
     {
+        overallProfile: { type: String },
         professionalLevel: { type: String, required: true },
         educationalLevel: { type: String, required: true },
         specialization: { type: String, required: true },
+        psychologicalCategory: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "categories"
+        },
         rating: { type: Number, required: true },
         numberOfRatings: { type: Number, default: 0 },
         appointmentsAttended: { type: Number, default: 0 },
@@ -32,7 +37,6 @@ const PsychologistProfileSchema = new Schema(
 // Main User schema
 const UserSchema = new Schema(
     {
-
         email: {
             type: String,
             unique: true,
@@ -70,8 +74,8 @@ const UserSchema = new Schema(
         },
         status: {
             type: String,
-            enum: ["Active", "Inactive"],
-            default: "Active",
+            enum: ["Active", "Inactive", "Banned"],
+            default: "Inactive",
         },
         role: {
             type: String,

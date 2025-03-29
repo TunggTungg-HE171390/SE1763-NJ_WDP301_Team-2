@@ -48,15 +48,30 @@ const LoginForm = () => {
                 contact: data.contact,
                 password: data.password,
             });
-            const { token, user } = response.data;
+
+            const { token, user, redirect, contact } = response.data;
+
+            // If user is inactive, redirect to verification page
+            if (redirect) {
+                setToast({
+                    title: "Thành công!",
+                    description: "Đã gửi mã xác thực!",
+                    actionText: "Đóng",
+                    titleColor: "text-green-600",
+                    className: "text-start",
+                });
+
+                navigate("/verify", { state: { contact } });
+                return;
+            }
 
             // Save JWT to localStorage
             localStorage.setItem("token", token);
             localStorage.setItem("user", JSON.stringify(user));
 
             // Sau khi người dùng đăng nhập thành công
-            const contact = user.email || user.phone;
-            localStorage.setItem("contact", contact);
+            const userContact = user.email || user.phone;
+            localStorage.setItem("contact", userContact);
 
             // Store the toast message in session storage
             setToast({

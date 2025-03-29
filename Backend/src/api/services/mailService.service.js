@@ -1,9 +1,9 @@
 import nodemailer from 'nodemailer';
-import messages from '../constants/messages.constant.js'; 
+import messages from '../constants/messages.constant.js';
 import actions from '../actions/requestController.action.js';
-import dotenv from 'dotenv'; 
+import dotenv from 'dotenv';
 
-dotenv.config(); 
+dotenv.config();
 export default function MailService() {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -24,6 +24,15 @@ export default function MailService() {
     } else if (action === actions.SUBMIT_TEST) {
       emailText = messages.MESSAGE002(username, authCode);
       emailSubject = "Nhận kết quả đánh giá tâm lý qua bài test";
+    } else if (action === actions.RESCHEDULE_APPOINTMENT_SUCCESS) {
+      emailText = messages.MESSAGE003(username, authCode);
+      emailSubject = "Lịch hẹn của bạn đã được xác nhận";
+    } else if (action === actions.RESCHEDULE_APPOINTMENT_FAILURE) {
+      emailText = messages.MESSAGE004(username, authCode);
+      emailSubject = "Yêu cầu đổi lịch không được chấp nhận";
+    } else if (action === actions.CANCEL_APPOINTMENT) {
+      emailText = messages.MESSAGE005(username, authCode);
+      emailSubject = "Yêu cầu hủy lịch được chấp nhận";
     } else {
       emailText = messages.MESSAGE_ERROR;
       emailSubject = "ERROR: Unknown action code.";

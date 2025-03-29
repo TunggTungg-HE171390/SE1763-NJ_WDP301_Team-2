@@ -31,6 +31,8 @@ export function CreateTestScreen() {
     const [testOutcomes, setTestOutcomes] = useState([
         { description: '', minScore: '', maxScore: '' },
         { description: '', minScore: '', maxScore: '' },
+        { description: '', minScore: '', maxScore: '' },
+        { description: '', minScore: '', maxScore: '' },
         { description: '', minScore: '', maxScore: '' }
     ]);
 
@@ -168,7 +170,10 @@ export function CreateTestScreen() {
 
             if(formattedQuestions.questions.length === 0) {
                 alert("Vui lòng nhập câu hỏi.");
-            }else{
+            }else if(formattedQuestions.questions.length < 10) {
+                alert("Tối thiểu 10 câu hỏi");
+            }
+            else{
                 const response = await creatTest(categoryId, title, description, testOutcomes);
                 const testId = response.test;
     
@@ -177,7 +182,8 @@ export function CreateTestScreen() {
                 console.log("Response từ insertQuestionOnTest:", response2);
     
                 alert("Tạo bài kiểm tra thành công!");
-                navigate(`/getTest/${categoryId}`);
+                // navigate(`/getTest/${categoryId}`);
+                navigate(-1);
             }
         } catch (err) {
             console.error("Lỗi khi tạo bài kiểm tra hoặc chèn câu hỏi:", err);

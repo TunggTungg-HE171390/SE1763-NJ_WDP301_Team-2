@@ -1,90 +1,114 @@
-import mongoose from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
-const appointmentSchema = new mongoose.Schema(
-  {
+// Appointment schema
+const AppointmentSchema = new Schema({
     patientId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "users", // Assuming "User" model for patients
     },
     psychologistId: {
-      type: String,
-      required: true,
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "users", // Assuming "User" model for psychologists
     },
-    scheduledTime: {
-      date: {
-        type: Date,
+    availabilityId: {
+        type: Schema.Types.ObjectId,
         required: true,
-      },
-      startTime: {
-        type: Date,
-        required: true,
-      },
-      endTime: {
-        type: Date,
-        required: true,
-      },
+        ref: "availabilities", // Reference to the availability slot
     },
     originalSchedule: {
-      // For tracking reschedules
-      date: Date,
-      startTime: Date,
-      endTime: Date,
-    },
-    status: {
-      type: String,
-      enum: ["Pending", "Confirmed", "Completed", "Cancelled", "Rescheduled", "No-show"],
-      default: "Pending",
-    },
-    rescheduleRequest: {
-      requestedBy: {
-        type: String,
-        enum: ["patient", "psychologist", "staff"],
-      },
-      requestedTime: Date,
-      reason: String,
-      newSchedule: {
+        // For tracking reschedules
         date: Date,
         startTime: Date,
         endTime: Date,
-      },
-      status: {
-        type: String,
-        enum: ["Pending", "Approved", "Rejected"],
-        default: "Pending",
-      },
     },
-    payment: {
-      amount: Number,
-      status: {
+    status: {
         type: String,
-        enum: ["Pending", "Paid", "Refunded", "Failed"],
+        enum: ["Pending", "Confirmed", "Completed", "Cancelled", "Rescheduled", "No-show"],
         default: "Pending",
-      },
-      method: String,
-      transactionId: String,
-      paidAt: Date,
-      refundedAt: Date,
     },
-    notes: {
-      patient: String, // Notes from patient
-      psychologist: String, // Notes from psychologist
-      staff: String, // Notes from staff
+    rescheduleRequest: {
+        requestedBy: {
+            type: String,
+            enum: ["patient", "psychologist", "staff"],
+        },
+        requestedTime: Date,
+        reason: String,
+        newSchedule: {
+            date: Date,
+            startTime: Date,
+            endTime: Date,
+        },
+        status: {
+            type: String,
+            enum: ["Pending", "Approved", "Rejected"],
+            default: "Pending",
+        },
+    },
+    paymentInformation: {
+        orderCode: {
+            type: String,
+        },
+        description: {
+            type: String,
+        },
+        expiredAt: {
+            type: Number, // Unix timestamp
+        },
+        amount: {
+            type: Number,
+            default: 350000,
+        },
+        status: {
+            type: String,
+            enum: ["PENDING", "PAID", "CANCELLED", "EXPIRED"],
+            default: "PENDING",
+        },
+        checkoutUrl: {
+            type: String,
+        },
+    },
+    scheduledTime: {
+        date: {
+            type: Date,
+            required: true,
+        },
+        startTime: {
+            type: Date, //ban đầu đang là String, đổi lại thành Date
+            required: true,
+        },
+        endTime: {
+            type: Date, //ban đầu đang là String, đổi lại thành Date
+            required: true,
+        },
+    },
+    status: {
+        type: String,
+        enum: ["Pending", "Confirmed", "Completed", "Cancelled"],
+        default: "Pending", // Default status is "Pending"
+    },
+    isRescheduled: {
+        type: Boolean,
+        default: false,
+    },
+    note: {
+        type: String,
+        required: false, // The note field is optional
     },
     lastModifiedBy: {
-      userId: String,
-      role: String,
-      timestamp: {
-        type: Date,
-        default: Date.now,
-      },
+        userId: String,
+        role: String,
+        timestamp: {
+            type: Date,
+            default: Date.now,
+        },
     },
-  },
-  {
-    timestamps: true,
-  }
-);
-
-const Appointment = mongoose.model("Appointment", appointmentSchema);
+    meetingURL: {
+        type: String,
+        required: false, // The note field is optional
+    },
+});
+const Appointment = mongoose.model("Appointment", AppointmentSchema);
 
 export default Appointment;

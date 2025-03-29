@@ -44,7 +44,7 @@ IV. Install guide:
 
 - Back-end:
     npm init
-    npm i express morgan body-parser nodemon http-errors cors dotenv
+    npm i mongoose express morgan body-parser nodemon http-errors cors dotenv
     package.json:   --> "start": "nodemon server"
     <RUN>: npm start
 
