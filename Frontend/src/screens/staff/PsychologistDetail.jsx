@@ -250,7 +250,7 @@ const PsychologistDetail = () => {
                 color="info"
                 startIcon={<EventIcon />}
                 component={Link}
-                to={`/staff/view-schedule?doctor=${psychologist._id}`}
+                to={`/staff/manage-appointments/${psychologist._id}`}
                 fullWidth
               >
                 Xem lịch hẹn

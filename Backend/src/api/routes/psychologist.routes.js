@@ -23,7 +23,7 @@ psychologistRouter.post("/availability/create-slot", availabilityController.crea
 psychologistRouter.patch("/availability/:slotId/status", availabilityController.updateAvailabilityStatus);
 
 // Make sure scheduleList route is BEFORE the generic /:doctorId route
-psychologistRouter.get("/scheduleList/:doctorId", availabilityController.getAvailabilitiesById);
+psychologistRouter.get("/scheduleList/:doctorId", psychologistController.getScheduleListByDoctorId);
 psychologistRouter.get("/schedule/:scheduleId", availabilityController.getAvailabilityById);
 psychologistRouter.get("/appointment/:appointmentId", psychologistController.getAppointmentById);
 psychologistRouter.get("/appointment-list/", psychologistController.getAppointmentList);

@@ -9,11 +9,7 @@ import { generateDailySlots, generateSlotsForDateRange, filterPastSlots } from "
  */
 const createPsychologistAvailability = async (req, res) => {
     try {
-        // Remove auth check for now to simplify debugging
-        // if (req.user && req.user.role !== 'staff') {
-        //    return res.status(403).json({ message: "Only staff members can manage psychologist schedules" });
-        // }
-
+        console.log("Received request to create availability slots:", req.body);
         const { psychologistId, startDate, endDate } = req.body;
 
         if (!psychologistId || !startDate || !endDate) {
@@ -98,109 +94,26 @@ const createPsychologistAvailability = async (req, res) => {
 
 const getAvailabilitiesById = async (req, res) => {
     try {
-        const { doctorId } = req.params;
+        console.log("Getting availabilities for psychologist ID:", req.params.psychologistId);
+        const { psychologistId } = req.params;
 
-        if (!doctorId) {
-            console.log("Missing doctorId parameter");
-            return res.status(400).json({ message: "Doctor ID is required" });
+        if (!psychologistId) {
+            return res.status(400).json({ message: "Psychologist ID is required" });
         }
 
-        console.log(`Fetching availabilities for doctor ID: ${doctorId}`);
+        // Find all availability slots for this psychologist
+        const availabilitySlots = await Availability.find({ psychologistId })
+            .sort({ date: 1, startTime: 1 })
+            .lean();
 
-        // First check if there are any availabilities in the DB
-        console.log("Checking database for availabilities with doctorId:", doctorId);
-
-        // Direct string comparison query
-        let availabilities = await Availability.find({
-            psychologistId: doctorId,
-        });
-        console.log(`Found ${availabilities.length} availabilities with direct string match`);
-
-        // If no results, retrieve all availabilities and try other matching techniques
-        if (availabilities.length === 0) {
-            // Get a sample to check what's in the database
-            const allAvailabilities = await Availability.find({}).limit(10);
-
-            if (allAvailabilities.length > 0) {
-                console.log("Sample availabilities in DB:");
-                allAvailabilities.forEach((a) => {
-                    console.log({
-                        id: a._id.toString(),
-                        psychologistId:
-                            typeof a.psychologistId === "object" ? a.psychologistId.toString() : a.psychologistId,
-                        date: a.date,
-                    });
-                });
-
-                // Try retrieving by directly accessing the items we found
-                const matchingIds = allAvailabilities
-                    .filter((a) => {
-                        if (!a.psychologistId) return false;
-
-                        // Convert ObjectId to string if needed
-                        const psyId =
-                            typeof a.psychologistId === "object" ? a.psychologistId.toString() : a.psychologistId;
-
-                        return psyId === doctorId;
-                    })
-                    .map((a) => a._id);
-
-                if (matchingIds.length > 0) {
-                    console.log(`Found ${matchingIds.length} matching IDs by direct comparison`);
-                    availabilities = await Availability.find({
-                        _id: { $in: matchingIds },
-                    });
-                    console.log(`Retrieved ${availabilities.length} availabilities by ID lookup`);
-
-                    // Return these found availabilities
-                    return res.status(200).json(availabilities);
-                }
-            } else {
-                console.log("No availabilities found in the database");
-            }
-        }
-
-        // For booked slots, fetch the corresponding appointment IDs
-        if (availabilities.length > 0) {
-            // Convert availabilities to plain objects for manipulation
-            availabilities = availabilities.map((avail) => avail.toObject());
-
-            // Get all booked slots
-            const bookedSlots = availabilities.filter((avail) => avail.isBooked);
-
-            if (bookedSlots.length > 0) {
-                // For each booked slot, try to find the appointment
-                for (const slot of bookedSlots) {
-                    try {
-                        // Find appointment based on psychologistId and date/time
-                        const appointment = await Appointment.findOne({
-                            psychologistId: doctorId,
-                            "scheduledTime.date": {
-                                $gte: new Date(new Date(slot.date).setHours(0, 0, 0, 0)),
-                                $lt: new Date(new Date(slot.date).setHours(23, 59, 59, 999)),
-                            },
-                            "scheduledTime.startTime": new Date(slot.startTime),
-                        });
-
-                        if (appointment) {
-                            // Add appointmentId to the availability object
-                            const slotIndex = availabilities.findIndex((a) => a._id.toString() === slot._id.toString());
-
-                            if (slotIndex !== -1) {
-                                availabilities[slotIndex].appointmentId = appointment._id;
-                            }
-                        }
-                    } catch (err) {
-                        console.error("Error finding appointment:", err);
-                    }
-                }
-            }
-        }
-
-        return res.status(200).json(availabilities);
+        console.log(`Found ${availabilitySlots.length} availability slots`);
+        return res.status(200).json(availabilitySlots);
     } catch (error) {
         console.error("Error fetching availabilities:", error);
-        res.status(500).json({ message: "Failed to fetch availabilities", error: error.message });
+        return res.status(500).json({
+            message: "Server error when fetching availabilities",
+            error: error.message
+        });
     }
 };
 

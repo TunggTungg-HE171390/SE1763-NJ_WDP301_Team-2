@@ -6,7 +6,8 @@ import {
   IconButton, CircularProgress, Alert, Dialog, DialogTitle,
   DialogContent, DialogActions, Tabs, Tab, FormControl,
   InputLabel, Select, useTheme, useMediaQuery, InputAdornment,
-  DialogContentText, Tooltip, ToggleButtonGroup, ToggleButton
+  DialogContentText, Tooltip, ToggleButtonGroup, ToggleButton,
+  Drawer, List, ListItem, ListItemAvatar, Avatar, ListItemText, Divider, Menu, Autocomplete
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -22,7 +23,10 @@ import {
   ViewModule as ViewModuleIcon,
   Today as TodayIcon,
   NavigateBefore as PrevIcon,
-  NavigateNext as NextIcon
+  NavigateNext as NextIcon,
+  Person as PersonIcon,
+  PeopleAlt as PeopleAltIcon,
+  SwapHoriz as SwapHorizIcon
 } from '@mui/icons-material';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/components/auth/authContext';
@@ -47,6 +51,7 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import PsychologistSelector from '@/components/staff/PsychologistSelector';
 
 /**
  * ManageAppointments - For staff to manage appointments for a specific psychologist
@@ -58,7 +63,6 @@ const ManageAppointments = () => {
   const { psychologistId } = useParams(); // Get psychologistId from URL
   const navigate = useNavigate();
   const { user } = useAuth();
-  
   const [loading, setLoading] = useState(true);
   const [psychologistInfo, setPsychologistInfo] = useState(null);
   const [appointments, setAppointments] = useState([]);
@@ -78,6 +82,7 @@ const ManageAppointments = () => {
   const [viewMode, setViewMode] = useState('list'); // 'list', 'calendar', or 'week'
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [sidebarOpen, setSidebarOpen] = useState(false); // State for the sidebar
 
   // Tab status groupings
   const statusGroups = [
@@ -102,31 +107,66 @@ const ManageAppointments = () => {
     }
   }, [psychologistId, navigate]);
 
+  // Redirect to psychologist list if no psychologistId is provided
+  useEffect(() => {
+    if (!psychologistId) {
+      navigate('/staff/manage-psychologists');
+    }
+  }, [psychologistId, navigate]);
+
   // Fetch psychologist information
   useEffect(() => {
     const fetchPsychologistInfo = async () => {
       if (!psychologistId) return;
-      
       try {
         setLoading(true);
-        const response = await psychologistApi.getPsychologist(psychologistId);
-        if (response && response.data) {
-          setPsychologistInfo(response.data);
-        } else {
+        console.log("Fetching psychologist info for ID:", psychologistId);
+        
+        // First try getPsychologistById 
+        try {
+          const response = await psychologistApi.getPsychologistById(psychologistId);
+          console.log("Psychologist data from getPsychologistById:", response);
+          
+          if (response && (response.data || response.success)) {
+            // Extract data from response
+            const psychoData = response.data || response;
+            
+            // Set psychologist info
+            setPsychologistInfo(psychoData);
+            console.log("Successfully set psychologist info:", psychoData);
+            setLoading(false);
+            return; // Exit early on success
+          }
+        } catch (err) {
+          console.log("Error using getPsychologistById, trying fallback method:", err);
+          // Continue to fallback method
+        }
+        
+        // Fallback to getPsychologist
+        try {
+          const fallbackResponse = await psychologistApi.getPsychologist(psychologistId);
+          console.log("Fallback psychologist data:", fallbackResponse);
+          
+          if (fallbackResponse) {
+            setPsychologistInfo(fallbackResponse);
+            console.log("Successfully set psychologist info from fallback:", fallbackResponse);
+          } else {
+            throw new Error("Invalid response from fallback API");
+          }
+        } catch (fallbackErr) {
+          console.error("Error in fallback psychologist fetch:", fallbackErr);
           setError('Không thể tải thông tin chuyên gia tâm lý');
-          navigate('/staff/manage-psychologists');
         }
       } catch (err) {
         console.error('Error fetching psychologist info:', err);
         setError('Không thể tải thông tin chuyên gia tâm lý.');
-        navigate('/staff/manage-psychologists');
       } finally {
         setLoading(false);
       }
     };
 
     fetchPsychologistInfo();
-  }, [psychologistId, navigate]);
+  }, [psychologistId]);
 
   // Fetch appointments for the selected psychologist
   useEffect(() => {
@@ -137,17 +177,12 @@ const ManageAppointments = () => {
 
   const fetchAppointments = async () => {
     if (!psychologistId) return;
-    
     setLoading(true);
     setIsRefreshing(true);
     try {
-      // Fetch appointments for this specific psychologist
       const response = await appointmentApi.getAllAppointments({ psychologistId });
-      
       if (response && response.data) {
         let appointmentsData = [];
-        
-        // Handle different API response formats
         if (Array.isArray(response.data)) {
           appointmentsData = response.data;
         } else if (response.data.appointments) {
@@ -155,20 +190,13 @@ const ManageAppointments = () => {
         } else if (response.data.data) {
           appointmentsData = response.data.data;
         }
-        
         setAppointments(appointmentsData);
         setFilteredAppointments(appointmentsData);
-        
-        // Update counts for tabs
         statusGroups.forEach((group, index) => {
           if (index === 0) {
-            // Total count for "All" tab
             group.count = appointmentsData.length;
           } else {
-            // Count for specific status groups
-            group.count = appointmentsData.filter(app => 
-              group.statuses.includes(app.status)
-            ).length;
+            group.count = appointmentsData.filter(app => group.statuses.includes(app.status)).length;
           }
         });
       } else {
@@ -184,25 +212,23 @@ const ManageAppointments = () => {
     }
   };
 
+  const handleSelectPsychologist = (newPsychologistId) => {
+    navigate(`/staff/manage-appointments/${newPsychologistId}`);
+  };
+
   useEffect(() => {
     filterAppointments();
   }, [activeTab, statusFilter, search, appointments]);
 
   const filterAppointments = () => {
     let filtered = [...appointments];
-    
-    // Apply tab filter
     if (activeTab > 0 && statusGroups[activeTab]) {
       const allowedStatuses = statusGroups[activeTab].statuses;
       filtered = filtered.filter(appointment => allowedStatuses.includes(appointment.status));
     }
-    
-    // Apply status filter if it's not 'all'
     if (statusFilter !== 'all') {
       filtered = filtered.filter(appointment => appointment.status === statusFilter);
     }
-    
-    // Apply search filter
     if (search) {
       const searchLower = search.toLowerCase();
       filtered = filtered.filter(appointment => 
@@ -211,14 +237,12 @@ const ManageAppointments = () => {
         appointment._id.toLowerCase().includes(searchLower)
       );
     }
-    
     setFilteredAppointments(filtered);
   };
 
   const handleChangeTab = (event, newValue) => {
     setActiveTab(newValue);
     setPage(0);
-    // Reset additional filters when changing tabs
     setStatusFilter('all');
   };
 
@@ -257,7 +281,6 @@ const ManageAppointments = () => {
 
   const handleUpdateStatus = async () => {
     if (!currentAppointment || !newStatus) return;
-    
     setLoading(true);
     try {
       const response = await appointmentApi.updateAppointmentStatus(
@@ -268,14 +291,11 @@ const ManageAppointments = () => {
           staffId: user?._id || "staff-id-here"
         }
       );
-      
       if (response && response.data) {
-        // Update the local state with the updated appointment
         const updatedAppointments = appointments.map(app => 
           app._id === currentAppointment._id ? response.data : app
         );
         setAppointments(updatedAppointments);
-        
         setSuccess(`Cập nhật trạng thái thành công thành ${getStatusLabel(newStatus)}`);
         setTimeout(() => setSuccess(''), 3000);
       }
@@ -322,14 +342,12 @@ const ManageAppointments = () => {
     }
   };
 
-  // Handle view mode change
   const handleViewModeChange = (event, newViewMode) => {
     if (newViewMode !== null) {
       setViewMode(newViewMode);
     }
   };
 
-  // Handle calendar navigation
   const goToPreviousPeriod = () => {
     if (viewMode === 'week') {
       setCurrentWeekStart(subWeeks(currentWeekStart, 1));
@@ -354,11 +372,9 @@ const ManageAppointments = () => {
     }
   };
 
-  // Get appointments for a specific day (for week view)
   const getAppointmentsForDay = (day) => {
     return filteredAppointments.filter(appointment => {
       if (!appointment.scheduledTime || !appointment.scheduledTime.startTime) return false;
-      
       const appointmentDate = new Date(appointment.scheduledTime.startTime);
       return isSameDay(appointmentDate, day);
     }).sort((a, b) => {
@@ -368,7 +384,6 @@ const ManageAppointments = () => {
     });
   };
 
-  // Format events for full calendar
   const formatCalendarEvents = () => {
     return filteredAppointments.map(appointment => {
       let color;
@@ -396,7 +411,6 @@ const ManageAppointments = () => {
     });
   };
 
-  // Handle calendar event click
   const handleEventClick = (info) => {
     const appointmentId = info.event.id;
     const appointment = appointments.find(app => app._id === appointmentId);
@@ -406,36 +420,65 @@ const ManageAppointments = () => {
     }
   };
 
-  // Get displayed appointments based on pagination (only for list view)
   const displayedAppointments = filteredAppointments
     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 12, mb: 4 }}>
-      {/* Back button */}
-      <Button
-        variant="outlined"
-        startIcon={<ArrowBackIcon />}
-        component={Link}
-        to="/staff/manage-psychologists"
-        sx={{ mb: 3 }}
-      >
-        Quay lại danh sách chuyên gia
-      </Button>
-      
-      <Box sx={{ display: 'flex', flexDirection: 'column', mb: 3 }}>
-        <Typography variant="h4" component="h1" fontWeight={600} gutterBottom>
-          {psychologistInfo 
-            ? `Lịch hẹn của chuyên gia ${psychologistInfo.fullName}`
-            : 'Quản lý lịch hẹn'}
-        </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+          component={Link}
+          to="/staff/manage-psychologists"
+        >
+          Quay lại danh sách chuyên gia
+        </Button>
         
-        {psychologistInfo && (
-          <Typography variant="body1" color="text.secondary">
-            {psychologistInfo.psychologist?.psychologistProfile?.specialization || 'Chuyên gia tâm lý'}
-          </Typography>
-        )}
+        {/* Replace the old Psychologist selector with our new component */}
+        <PsychologistSelector 
+          currentPsychologistId={psychologistId}
+          onPsychologistSelect={handleSelectPsychologist}
+        />
       </Box>
+      
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
+        {psychologistInfo && psychologistInfo.profileImg && (
+          <Avatar 
+            src={psychologistInfo.profileImg} 
+            alt={psychologistInfo.fullName || "Unknown"}
+            sx={{ width: 60, height: 60, mr: 2 }}
+          />
+        )}
+        
+        <Box>
+          <Typography variant="h4" component="h1" fontWeight={600} gutterBottom>
+            {psychologistInfo 
+              ? `Lịch hẹn của ${psychologistInfo.fullName || psychologistInfo.name || "Chuyên gia"}`
+              : loading 
+                ? "Đang tải thông tin..." 
+                : "Quản lý lịch hẹn"}
+          </Typography>
+          {psychologistInfo && (
+            <Typography variant="body1" color="text.secondary">
+              {psychologistInfo.psychologist?.psychologistProfile?.specialization || 
+                psychologistInfo.specialization || 
+                'Chuyên gia tâm lý'}
+            </Typography>
+          )}
+        </Box>
+      </Box>
+      
+      {isMobile && (
+        <Paper sx={{ p: 2, mb: 3 }}>
+          {/* Replace the mobile selector with our component */}
+          <PsychologistSelector 
+            currentPsychologistId={psychologistId}
+            onPsychologistSelect={handleSelectPsychologist}
+            showMobileSelector={true}
+          />
+        </Paper>
+      )}
       
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
@@ -533,7 +576,6 @@ const ManageAppointments = () => {
           </Grid>
         </Box>
         
-        {/* Calendar navigation for calendar and week views */}
         {(viewMode === 'calendar' || viewMode === 'week') && (
           <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
             <Button startIcon={<PrevIcon />} onClick={goToPreviousPeriod}>
@@ -541,7 +583,7 @@ const ManageAppointments = () => {
             </Button>
             
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Button
+              <Button 
                 variant="outlined"
                 startIcon={<TodayIcon />}
                 onClick={goToToday}
@@ -549,7 +591,6 @@ const ManageAppointments = () => {
               >
                 Hôm nay
               </Button>
-              
               <Typography variant="subtitle1" fontWeight="medium">
                 {viewMode === 'week' 
                   ? `${format(currentWeekStart, 'dd/MM/yyyy')} - ${format(addDays(currentWeekStart, 6), 'dd/MM/yyyy')}`
@@ -569,7 +610,6 @@ const ManageAppointments = () => {
           </Box>
         ) : (
           <>
-            {/* List View */}
             {viewMode === 'list' && (
               <Box>
                 <TableContainer>
@@ -696,7 +736,6 @@ const ManageAppointments = () => {
                     </TableBody>
                   </Table>
                 </TableContainer>
-                
                 <TablePagination
                   rowsPerPageOptions={[5, 10, 25]}
                   component="div"
@@ -711,20 +750,18 @@ const ManageAppointments = () => {
               </Box>
             )}
             
-            {/* Week View */}
             {viewMode === 'week' && (
               <Box sx={{ p: 2 }}>
                 <Grid container spacing={2}>
                   {weekDays.map((day) => {
                     const dayAppointments = getAppointmentsForDay(day);
                     const isCurrentDay = isToday(day);
-                    
                     return (
                       <Grid item xs={12} md={isMobile ? 12 : 6} lg={isMobile ? 12 : 4} key={day.toString()}>
                         <Paper 
                           elevation={isCurrentDay ? 3 : 1}
-                          sx={{ 
-                            p: 2, 
+                          sx={{
+                            p: 2,
                             height: '100%',
                             border: isCurrentDay ? `1px solid ${theme.palette.primary.main}` : 'none',
                             backgroundColor: isCurrentDay ? 'rgba(33, 150, 243, 0.05)' : 'background.paper'
@@ -732,9 +769,9 @@ const ManageAppointments = () => {
                         >
                           <Typography 
                             variant="h6" 
-                            sx={{ 
-                              mb: 2, 
-                              p: 1, 
+                            sx={{
+                              mb: 2,
+                              p: 1,
                               backgroundColor: isCurrentDay ? 'primary.main' : 'grey.200',
                               color: isCurrentDay ? 'white' : 'text.primary',
                               borderRadius: 1
@@ -742,7 +779,6 @@ const ManageAppointments = () => {
                           >
                             {format(day, 'EEEE, dd/MM', { locale: vi })}
                           </Typography>
-                          
                           {dayAppointments.length > 0 ? (
                             dayAppointments.map((appointment) => (
                               <Box 
@@ -757,10 +793,10 @@ const ManageAppointments = () => {
                                   color: 'text.primary',
                                   borderLeft: '4px solid',
                                   borderColor: appointment.status === 'Confirmed' ? 'info.main' :
-                                              appointment.status === 'Completed' ? 'success.main' :
-                                              appointment.status === 'Pending' ? 'warning.main' :
-                                              appointment.status === 'Cancelled' ? 'error.main' :
-                                              'grey.500',
+                                    appointment.status === 'Completed' ? 'success.main' :
+                                    appointment.status === 'Cancelled' ? 'error.main' :
+                                    appointment.status === 'Pending' ? 'warning.main' :
+                                    'grey.500',
                                   backgroundColor: 'background.paper',
                                   borderRadius: 1,
                                   boxShadow: 1,
@@ -771,26 +807,20 @@ const ManageAppointments = () => {
                                   }
                                 }}
                               >
-                                <Grid container spacing={1}>
-                                  <Grid item xs={12}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                      <Typography variant="subtitle1" fontWeight="medium">
-                                        {format(new Date(appointment.scheduledTime.startTime), 'HH:mm')} - 
-                                        {format(new Date(appointment.scheduledTime.endTime), 'HH:mm')}
-                                      </Typography>
-                                      <Chip 
-                                        label={getStatusLabel(appointment.status)} 
-                                        color={getStatusColor(appointment.status)}
-                                        size="small"
-                                      />
-                                    </Box>
-                                  </Grid>
-                                  
+                                <Typography variant="subtitle1" fontWeight="medium">
+                                  {format(new Date(appointment.scheduledTime.startTime), 'HH:mm')} - 
+                                  {format(new Date(appointment.scheduledTime.endTime), 'HH:mm')}
+                                </Typography>
+                                <Chip 
+                                  label={getStatusLabel(appointment.status)} 
+                                  color={getStatusColor(appointment.status)}
+                                  size="small"
+                                />
+                                <Grid container spacing={1} sx={{ mt: 1 }}>
                                   <Grid item xs={12}>
                                     <Typography variant="body2">
                                       <strong>Bệnh nhân:</strong> {appointment.patient?.fullName || 'Unknown'}
                                     </Typography>
-                                    
                                     {appointment.notes?.patient && (
                                       <Typography variant="body2" color="text.secondary" sx={{ 
                                         mt: 1, 
@@ -822,7 +852,6 @@ const ManageAppointments = () => {
               </Box>
             )}
             
-            {/* Calendar View */}
             {viewMode === 'calendar' && (
               <Box sx={{ height: 650, p: 2 }}>
                 <FullCalendar
@@ -854,7 +883,6 @@ const ManageAppointments = () => {
         )}
       </Paper>
       
-      {/* Status Update Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>
           Cập nhật trạng thái cuộc hẹn

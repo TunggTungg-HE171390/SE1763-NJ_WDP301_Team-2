@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
@@ -8,7 +7,7 @@ import { vi } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { schedulePsychologistId } from "../../api/availability.api";
+import * as availabilityApi from "../../api/availability.api";
 
 // Cấu hình với date-fns thay vì moment
 const localizer = dateFnsLocalizer({
@@ -29,7 +28,7 @@ export const PsychologistSchedule = () => {
   useEffect(() => {
     const fetchPsychologistSchedule = async () => {
       try {
-        const psychologistSchedule = await schedulePsychologistId(psychologistId);
+        const psychologistSchedule = await availabilityApi.schedulePsychologistId(psychologistId);
         const formattedEvents = psychologistSchedule.map(event => {
           const { startTime, endTime } = event.scheduleTime;
 

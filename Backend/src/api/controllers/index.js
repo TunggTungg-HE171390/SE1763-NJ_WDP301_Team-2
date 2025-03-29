@@ -9,6 +9,7 @@ import TestHistoryController from "./testHistory.controller.js";
 import UserController from "./user.controller.js";
 import psychologistController from "./psychologist.controller.js";
 import AdminController from "./admin.controller.js";
+import availabilityController from './availability.controller.js';
 
 export {
     AppointmentController,
@@ -22,4 +23,5 @@ export {
     UserController,
     psychologistController,
     AdminController,
+    availabilityController,
 };

@@ -71,7 +71,9 @@ import {
 } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { getPsychologist, getScheduleListByDoctorId, createAvailabilitySlots } from '../../api/psychologist.api';
+import * as availabilityApi from '../../api/availability.api'; // Add this import
 import { useAuth } from '../../components/auth/authContext';
+import PsychologistSelector from '@/components/staff/PsychologistSelector';
 
 // Create time slots for a day (8:30 AM to 5:30 PM)
 const generateTimeSlots = () => {
@@ -148,6 +150,8 @@ const ManagePsychologistSchedule = () => {
     message: '',
     severity: 'success'
   });
+  const [availableSlots, setAvailableSlots] = useState([]); // Add this state
+  const [groupedAvailableSlots, setGroupedAvailableSlots] = useState({}); // Add this state
   
   // Check if user is staff
   const isStaff = user?.role === 'staff';
@@ -194,40 +198,44 @@ const ManagePsychologistSchedule = () => {
           throw new Error("Không thể tải thông tin chuyên gia tâm lý");
         }
         
-        // Fetch existing schedule
-        const scheduleResponse = await getScheduleListByDoctorId(id);
-        if (scheduleResponse && Array.isArray(scheduleResponse)) {
-          console.log("Existing schedules:", scheduleResponse);
-          setExistingSlots(scheduleResponse);
+        // Try multiple approaches to fetch schedule data
+        try {
+          console.log(`Attempting to fetch schedule for psychologist ID: ${id}`);
           
-          // Update selected slots based on existing data
-          const newSelectedSlots = { ...selectedSlots };
-          
-          scheduleResponse.forEach(slot => {
-            if (!slot.startTime) return;
+          // First try availability API
+          try {
+            const availabilityResponse = await availabilityApi.getAvailabilityByPsychologistId(id);
+            console.log("Availability response:", availabilityResponse);
             
-            const slotDate = new Date(slot.date || slot.startTime);
-            const dateKey = format(slotDate, 'yyyy-MM-dd');
-            const timeKey = format(new Date(slot.startTime), 'HH:mm');
-            
-            if (!newSelectedSlots[dateKey]) {
-              newSelectedSlots[dateKey] = {};
-              TIME_SLOTS.forEach(timeSlot => {
-                newSelectedSlots[dateKey][timeSlot.start] = false;
-              });
+            if (availabilityResponse && (Array.isArray(availabilityResponse) || availabilityResponse.length > 0)) {
+              console.log("Using availability API data");
+              setExistingSlots(availabilityResponse);
+              updateSelectedSlotsFromAvailability(availabilityResponse);
+              return; // Exit if we got data
             }
-            
-            // Mark slots as selected if they already exist and are not booked
-            if (!slot.isBooked) {
-              newSelectedSlots[dateKey][timeKey] = true;
-            }
-          });
+          } catch (availabilityError) {
+            console.log("Availability API failed, trying schedule API", availabilityError);
+          }
           
-          setSelectedSlots(newSelectedSlots);
+          // Fall back to schedule API
+          const scheduleResponse = await getScheduleListByDoctorId(id);
+          console.log("Schedule API response:", scheduleResponse);
+          
+          if (scheduleResponse && Array.isArray(scheduleResponse)) {
+            console.log("Using schedule API data");
+            setExistingSlots(scheduleResponse);
+            updateSelectedSlotsFromSchedules(scheduleResponse);
+          } else {
+            console.warn("No valid data from schedule API");
+            setExistingSlots([]);
+          }
+        } catch (scheduleError) {
+          console.error("All schedule fetch attempts failed:", scheduleError);
+          throw new Error("Không thể tải dữ liệu lịch làm việc. Vui lòng thử lại sau.");
         }
       } catch (err) {
         console.error("Error fetching data:", err);
-        setError("Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại sau.");
+        setError(err.message || "Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại sau.");
       } finally {
         setLoading(false);
       }
@@ -237,6 +245,126 @@ const ManagePsychologistSchedule = () => {
       fetchData();
     }
   }, [id, user, isStaff, navigate]);
+
+  // Helper functions for processing schedule data
+  const updateSelectedSlotsFromAvailability = (availabilityData) => {
+    if (!availabilityData || !Array.isArray(availabilityData)) {
+      console.warn("Invalid availability data provided:", availabilityData);
+      return;
+    }
+    
+    console.log(`Processing ${availabilityData.length} availability slots`);
+    const newSelectedSlots = { ...selectedSlots };
+    
+    availabilityData.forEach(slot => {
+      if (!slot) return;
+      
+      try {
+        // Determine the date - handle different formats
+        const slotDate = slot.date 
+          ? new Date(slot.date) 
+          : slot.startTime 
+            ? new Date(slot.startTime) 
+            : null;
+        
+        if (!slotDate) {
+          console.warn("Slot missing date information:", slot);
+          return;
+        }
+        
+        const dateKey = format(slotDate, 'yyyy-MM-dd');
+        
+        // Determine the time - handle different formats
+        let timeKey;
+        if (slot.startTime) {
+          const startTime = new Date(slot.startTime);
+          timeKey = format(startTime, 'HH:mm');
+        } else if (slot.time) {
+          timeKey = slot.time.split('-')[0].trim();
+        } else {
+          console.warn("Slot missing time information:", slot);
+          return;
+        }
+        
+        // Initialize date entry if needed
+        if (!newSelectedSlots[dateKey]) {
+          newSelectedSlots[dateKey] = {};
+          TIME_SLOTS.forEach(timeSlot => {
+            newSelectedSlots[dateKey][timeSlot.start] = false;
+          });
+        }
+        
+        // Mark slots as selected if they already exist and are not booked
+        if (!slot.isBooked) {
+          newSelectedSlots[dateKey][timeKey] = true;
+        }
+      } catch (error) {
+        console.error("Error processing slot:", slot, error);
+      }
+    });
+    
+    setSelectedSlots(newSelectedSlots);
+  };
+
+  // Fetch existing availability slots when ID changes 
+  useEffect(() => {
+    const fetchAvailabilityData = async () => {
+      if (!id) return;
+      
+      try {
+        setLoading(true);
+        setError(null);
+        
+        console.log("Fetching availability for psychologist ID:", id);
+        
+        // Use availability API directly instead of going through psychologist API
+        const response = await availabilityApi.getAvailabilityByPsychologistId(id);
+        console.log("Availability API response:", response);
+        
+        let slots = [];
+        
+        // Handle different response formats
+        if (response && response.data) {
+          slots = Array.isArray(response.data) ? response.data : [];
+        } else if (Array.isArray(response)) {
+          slots = response;
+        }
+        
+        console.log("Available slots found:", slots.length);
+        
+        // Process slots to match our calendar format
+        const processedSlots = slots.map(slot => ({
+          id: slot._id,
+          date: new Date(slot.date),
+          start: new Date(slot.startTime),
+          end: new Date(slot.endTime),
+          isBooked: slot.isBooked,
+          appointmentId: slot.appointmentId
+        }));
+        
+        // Group slots by date for easier display
+        const groupedSlots = {};
+        processedSlots.forEach(slot => {
+          const dateStr = format(slot.date, 'yyyy-MM-dd');
+          if (!groupedSlots[dateStr]) {
+            groupedSlots[dateStr] = [];
+          }
+          groupedSlots[dateStr].push(slot);
+        });
+        
+        setAvailableSlots(processedSlots);
+        setGroupedAvailableSlots(groupedSlots);
+        
+      } catch (err) {
+        console.error("Error fetching availability data:", err);
+        setError("Không thể tải dữ liệu lịch làm việc. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchAvailabilityData();
+  }, [id]);
   
   // Toggle a time slot for a specific date
   const toggleSlot = (date, time) => {
@@ -363,16 +491,36 @@ const ManagePsychologistSchedule = () => {
       
       console.log(`Creating ${slotsToCreate.length} new availability slots`);
       
-      // Call API to create the selected slots - use the unified function
-      const response = await createAvailabilitySlots(id, slotsToCreate);
-      console.log("API response:", response);
+      // Try using the availability API first
+      try {
+        const response = await availabilityApi.createCustomAvailabilitySlots(id, slotsToCreate);
+        console.log("Availability API create response:", response);
+      } catch (availabilityError) {
+        console.error("Error using availability API, trying fallback:", availabilityError);
+        
+        // Fallback to the psychologist API
+        const response = await createAvailabilitySlots(id, slotsToCreate);
+        console.log("Psychologist API create response:", response);
+      }
       
       setSuccess(`Đã tạo ${slotsToCreate.length} lịch trống thành công!`);
       
       // Refetch the schedule to get updated data
-      const scheduleResponse = await getScheduleListByDoctorId(id);
-      if (scheduleResponse && Array.isArray(scheduleResponse)) {
-        setExistingSlots(scheduleResponse);
+      try {
+        const availabilityResponse = await availabilityApi.getAvailabilityByPsychologistId(id);
+        if (availabilityResponse) {
+          let availabilityData = [];
+          
+          if (Array.isArray(availabilityResponse)) {
+            availabilityData = availabilityResponse;
+          } else if (availabilityResponse.data && Array.isArray(availabilityResponse.data)) {
+            availabilityData = availabilityResponse.data;
+          }
+          
+          setExistingSlots(availabilityData);
+        }
+      } catch (error) {
+        console.error("Error refreshing availability data:", error);
       }
       
       setTimeout(() => setSuccess(null), 3000);
@@ -446,6 +594,11 @@ const ManagePsychologistSchedule = () => {
     return format(date, 'EEE, dd/MM', { locale: vi });
   };
   
+  // Add a handler for psychologist selection
+  const handleSelectPsychologist = (newPsychologistId) => {
+    navigate(`/staff/manage-psychologist-schedule/${newPsychologistId}`);
+  };
+  
   if (loading) {
     return (
       <Container maxWidth="lg" sx={{ mt: 12, mb: 4, display: 'flex', justifyContent: 'center' }}>
@@ -475,15 +628,23 @@ const ManagePsychologistSchedule = () => {
   
   return (
     <Container maxWidth="lg" sx={{ mt: 12, mb: 4 }}>
-      <Button
-        variant="outlined"
-        startIcon={<ArrowBackIcon />}
-        component={Link}
-        to={`/staff/manage-psychologists`}
-        sx={{ mb: 3 }}
-      >
-        Quay lại 
-      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+          component={Link}
+          to={`/staff/manage-psychologists`}
+          sx={{ mb: 3 }}
+        >
+          Quay lại 
+        </Button>
+        
+        {/* Add the PsychologistSelector */}
+        <PsychologistSelector 
+          currentPsychologistId={id}
+          onPsychologistSelect={handleSelectPsychologist}
+        />
+      </Box>
       
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="vi">
         <Paper elevation={3} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
@@ -509,7 +670,7 @@ const ManagePsychologistSchedule = () => {
                 variant="outlined"
                 color="info"
                 component={Link}
-                to={`/staff/view-schedule?doctor=${id}`}
+                to={`/staff/manage-appointments/${id}`}
                 startIcon={<EventIcon />}
               >
                 Xem lịch hẹn

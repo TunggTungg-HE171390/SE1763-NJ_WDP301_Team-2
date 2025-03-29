@@ -17,6 +17,13 @@ const apiClient = axios.create({
 // Add request interceptor for debugging
 apiClient.interceptors.request.use(
     (config) => {
+        // Make sure we're not adding double /api prefixes
+        if (config.url.startsWith('/api/')) {
+            console.warn(`URL already contains /api/ prefix: ${config.url}`);
+            // Fix by removing the prefix
+            config.url = config.url.replace('/api/', '/');
+        }
+
         console.log(`API Request: ${config.method.toUpperCase()} ${config.baseURL}${config.url}`);
 
         // For GET requests, add cache busting to prevent 304

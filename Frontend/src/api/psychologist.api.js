@@ -8,20 +8,40 @@ export const getSpecializationList = async () => {
     return await apiClient.get("psychologist/get-specialization-list");
 };
 
-// Update getPsychologist to correctly fetch individual records
+// Also check the implementation of getPsychologist
 export const getPsychologist = async (id) => {
-    console.log(`Fetching psychologist data for ID: ${id}`);
     try {
-        // Use the correct endpoint from psychologist.routes.js
-        return await apiClient.get(`/psychologist/${id}`);
+        console.log(`API call: Getting psychologist with ID: ${id}`);
+        // Add explicit logging to show the URL being called
+        const response = await apiClient.get(`/psychologist/${id}`);
+        console.log('API response for getPsychologist:', response.data);
+        return response.data;
     } catch (error) {
-        console.error(`Error fetching psychologist data: ${error.message}`);
+        console.error('Error in getPsychologist API call:', error);
         throw error;
     }
 };
 
 export const getScheduleListByDoctorId = async (id) => {
-    return await apiClient.get(`psychologist/scheduleList/${id}`);
+    try {
+        if (!id) {
+            console.error("Invalid psychologist ID provided:", id);
+            throw new Error("Psychologist ID is required");
+        }
+        
+        console.log(`Getting schedule list for psychologist ID: ${id}`);
+        
+        // Fix the endpoint URL - remove any accidental prefixes
+        const url = `/psychologist/scheduleList/${id}`;
+        console.log(`Making API request to: ${url}`);
+        
+        const response = await apiClient.get(url);
+        console.log(`Schedule API response:`, response.data);
+        return response.data;
+    } catch (error) {
+        console.error(`Error fetching schedule for psychologist ${id}:`, error);
+        throw error;
+    }
 };
 
 export const getScheduleById = async (id) => {
@@ -155,6 +175,18 @@ export const createIndividualSlot = async (slot) => {
     }
 };
 
+export const getPsychologistById = async (doctorId) => {
+    try {
+        console.log(`API call: Getting psychologist with ID: ${doctorId}`);
+        const response = await apiClient.get(`/psychologist/${doctorId}`);
+        console.log('API response for getPsychologistById:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Error in getPsychologistById API call:', error);
+        throw error;
+    }
+};
+
 // Helper function to generate mock data for development
 const getMockPsychologist = (id) => {
     return {
@@ -188,6 +220,8 @@ const getMockPsychologist = (id) => {
                 date: "2023-05-15",
                 rating: 5,
                 comment: "Bác sĩ tư vấn rất tận tâm, giúp tôi vượt qua giai đoạn khó khăn.",
+                avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+                status: "active",
             },
             {
                 id: 2,
@@ -195,10 +229,10 @@ const getMockPsychologist = (id) => {
                 date: "2023-04-22",
                 rating: 4,
                 comment: "Môi trường tư vấn chuyên nghiệp, hiểu rõ vấn đề của tôi.",
+                avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+                status: "active",
             },
         ],
-        status: "active",
-        avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     };
 };
 
@@ -206,5 +240,4 @@ const API = {
     getAppointmentById,
 };
 
-// Export default and named exports
 export default API;

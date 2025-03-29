@@ -459,6 +459,34 @@ export const updatePsychologistProfile = async (req, res) => {
     }
 };
 
+export const getScheduleListByDoctorId = async (req, res) => {
+    try {
+        const { doctorId } = req.params;
+        
+        if (!doctorId) {
+            console.error("Missing psychologist ID in request params");
+            return res.status(400).json({ message: "Psychologist ID is required" });
+        }
+        
+        console.log(`Backend: Fetching schedule for psychologist ID: ${doctorId}`);
+        
+        // Find availability/schedule for this psychologist
+        const schedules = await Availability.find({ 
+            psychologistId: doctorId 
+        }).sort({ date: 1, startTime: 1 });
+        
+        console.log(`Found ${schedules.length} schedule entries for psychologist ${doctorId}`);
+        
+        return res.status(200).json(schedules);
+    } catch (error) {
+        console.error(`Error fetching psychologist schedule: ${error.message}`);
+        return res.status(500).json({ 
+            message: "Error fetching psychologist schedule", 
+            error: error.message 
+        });
+    }
+};
+
 export default {
     getPsychologistList,
     getUniqueSpecializations,
@@ -470,4 +498,5 @@ export default {
     updatePsychologistExperience,
     updatePsychologistWorkHistory,
     updatePsychologistProfile,
+    getScheduleListByDoctorId,
 };
