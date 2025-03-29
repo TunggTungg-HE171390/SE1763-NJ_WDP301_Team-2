@@ -157,17 +157,22 @@ export const saveAppointment = async (req, res) => {
                     startTime: availability.startTime,
                     endTime: availability.endTime,
                 },
+                originalSchedule: {
+                    date: availability.date,
+                    startTime: availability.startTime,
+                    endTime: availability.endTime,
+                },
                 status: "Pending",
                 isRescheduled: false,
                 notes: {
-                    patient: symptoms,  // Store initial symptoms as patient notes
+                    patient: symptoms, // Store initial symptoms as patient notes
                     psychologist: null, // Initialize psychologist notes as null
                 },
                 lastModifiedBy: {
                     userId: patientId,
                     role: "patient",
                     timestamp: new Date(),
-                }
+                },
             });
 
             // Save to database

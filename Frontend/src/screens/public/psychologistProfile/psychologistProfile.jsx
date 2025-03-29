@@ -17,7 +17,7 @@ const DoctorProfile = () => {
         const fetchPsychologist = async () => {
             try {
                 const response = await API.getPsychologist(doctorId);
-                setPsychologist(response.data.data);
+                setPsychologist(response.data);
             } catch (err) {
                 setError("Failed to load psychologist data. " + err);
             } finally {

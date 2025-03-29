@@ -54,7 +54,7 @@ const BookAppointment = () => {
             if (!psychologistId) return;
             try {
                 const response = await API.getPsychologist(psychologistId);
-                setPsychologist(response.data.data);
+                setPsychologist(response.data);
             } catch (error) {
                 console.error("Error fetching psychologist data:", error);
             }
