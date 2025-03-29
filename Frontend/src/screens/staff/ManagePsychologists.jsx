@@ -222,7 +222,7 @@ const ManagePsychologists = () => {
                             {/* Add View Appointments Button */}
                             <IconButton 
                               component={Link}
-                              to={`/staff/view-schedule?doctor=${psy._id}`}
+                              to={`/staff/manage-psychologist-schedule/${psy._id}`}
                               color="success"
                               size="small"
                               title="Xem lịch hẹn"

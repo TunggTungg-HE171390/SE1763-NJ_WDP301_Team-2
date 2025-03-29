@@ -26,7 +26,8 @@ import {
   DialogActions,
   ButtonGroup,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Snackbar
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -44,7 +45,8 @@ import {
   Info as InfoIcon,
   FilterAlt as FilterIcon,
   Save as SaveIcon,
-  Event as EventIcon
+  Event as EventIcon,
+  AccessTime as TimeIcon
 } from '@mui/icons-material';
 import { 
   format, 
@@ -141,6 +143,11 @@ const ManagePsychologistSchedule = () => {
   const [success, setSuccess] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogDate, setDialogDate] = useState(null);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
   
   // Check if user is staff
   const isStaff = user?.role === 'staff';
@@ -781,6 +788,16 @@ const ManagePsychologistSchedule = () => {
           </DialogActions>
         </Dialog>
       </LocalizationProvider>
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ ...notification, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setNotification({ ...notification, open: false })} severity={notification.severity} sx={{ width: '100%' }}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

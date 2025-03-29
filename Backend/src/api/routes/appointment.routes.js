@@ -1,5 +1,4 @@
 import express from "express";
-// import AppointmentController from "../controllers/appointment.controller.js";
 import { AppointmentController } from "../controllers/index.js";
 import appointmentController from "../controllers/appointment.controller.js";
 import { authenticateUser, authorizeRole } from "../middlewares/auth.middleware.js";
@@ -23,6 +22,9 @@ appointmentRouter.post("/count-pending-appointment", AppointmentController.check
 appointmentRouter.post("/create-meet-url", AppointmentController.createMeetUrlAPI);
 appointmentRouter.post("/appointment-details", AppointmentController.getUserAppointmentById);
 appointmentRouter.post("/create-zoom-meeting", AppointmentController.createZoomMeetingAPI);
+
+// Get appointments for the logged-in psychologist
+appointmentRouter.get("/psychologist", appointmentController.getPsychologistAppointments);
 
 // Get appointment by ID
 appointmentRouter.get("/:appointmentId", appointmentController.getAppointmentById);

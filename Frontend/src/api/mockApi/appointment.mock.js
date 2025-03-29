@@ -1,209 +1,125 @@
-// Mock Data for Appointments
-const mockAppointments = {
-  "1": {
-    id: 1,
-    patientName: "Nguyen Van A",
-    patientAge: 35,
-    patientGender: "Nam",
-    date: "2023-10-15",
-    time: "10:00 AM",
-    duration: 60,
+// Mock data for testing
+const mockAppointments = [
+  {
+    _id: "1",
+    patientId: {
+      _id: "p1",
+      fullName: "John Smith",
+      email: "john@example.com",
+      phone: "1234567890"
+    },
+    psychologistId: "psy1",
+    scheduledTime: {
+      date: new Date(Date.now() + 86400000), // Tomorrow
+      startTime: new Date(Date.now() + 86400000 + 3600000), // Tomorrow, 1 hour later
+      endTime: new Date(Date.now() + 86400000 + 7200000), // Tomorrow, 2 hours later
+    },
     status: "Confirmed",
-    reason: "Lo âu và khó ngủ",
-    notes: "Bệnh nhân báo cáo tình trạng lo âu gia tăng trong các tình huống xã hội",
-    medicalHistory: "Không có tiền sử điều trị sức khỏe tâm thần trước đây",
-    contactNumber: "+84 912 345 678",
-    email: "nguyenvana@example.com"
+    notes: {
+      patient: "I've been feeling anxious lately",
+      psychologist: "Initial consultation scheduled"
+    }
   },
-  "2": {
-    id: 2,
-    patientName: "Tran Thi B",
-    patientAge: 28,
-    patientGender: "Nữ",
-    date: "2023-10-16",
-    time: "2:30 PM",
-    duration: 60,
-    status: "Pending",
-    reason: "Triệu chứng trầm cảm",
-    notes: "Cuộc hẹn tiếp theo sau buổi tư vấn ban đầu",
-    medicalHistory: "Đang uống thuốc chống trầm cảm từ tháng 1",
-    contactNumber: "+84 987 654 321",
-    email: "tranthib@example.com"
+  {
+    _id: "2",
+    patientId: {
+      _id: "p2",
+      fullName: "Mary Johnson",
+      email: "mary@example.com",
+      phone: "0987654321"
+    },
+    psychologistId: "psy1",
+    scheduledTime: {
+      date: new Date(Date.now() - 86400000), // Yesterday
+      startTime: new Date(Date.now() - 86400000 + 3600000), // Yesterday, 1 hour later
+      endTime: new Date(Date.now() - 86400000 + 7200000), // Yesterday, 2 hours later
+    },
+    status: "Completed",
+    notes: {
+      patient: "Follow-up for depression treatment",
+      psychologist: "Patient showing improvement with current medication"
+    }
   },
-  "3": {
-    id: 3,
-    patientName: "Le Van C",
-    patientAge: 42,
-    patientGender: "Nam",
-    date: "2023-10-17",
-    time: "9:00 AM",
-    duration: 45,
+  {
+    _id: "3",
+    patientId: {
+      _id: "p3",
+      fullName: "Robert Williams",
+      email: "robert@example.com",
+      phone: "5551234567"
+    },
+    psychologistId: "psy1",
+    scheduledTime: {
+      date: new Date(Date.now() - 172800000), // 2 days ago
+      startTime: new Date(Date.now() - 172800000 + 3600000), // 2 days ago, 1 hour later
+      endTime: new Date(Date.now() - 172800000 + 7200000), // 2 days ago, 2 hours later
+    },
     status: "Cancelled",
-    reason: "Căng thẳng liên quan đến công việc",
-    notes: "Bệnh nhân gặp vấn đề về giấc ngủ, căng thẳng cao do áp lực công việc",
-    medicalHistory: "Cao huyết áp, đã điều trị tâm lý trước đây vào năm 2020",
-    cancelReason: "Bệnh nhân có việc đột xuất không thể tham dự",
-    contactNumber: "+84 909 123 456",
-    email: "levanc@example.com"
-  },
-  "4": {
-    id: 4,
-    patientName: "Pham Thi D",
-    patientAge: 19,
-    patientGender: "Nữ",
-    date: "2023-10-17", // Same date as appointment 3
-    time: "3:00 PM",
-    duration: 60,
-    status: "Rescheduled",
-    reason: "Khó khăn trong học tập và các mối quan hệ",
-    notes: "Sinh viên năm nhất đại học, gặp khó khăn trong việc thích nghi với môi trường mới",
-    medicalHistory: "Không có tiền sử vấn đề tâm lý",
-    rescheduleReason: "Trùng lịch thi",
-    contactNumber: "+84 976 888 999",
-    email: "phamthid@example.com"
-  },
-  "5": {
-    id: 5,
-    patientName: "Hoang Van E",
-    patientAge: 45,
-    patientGender: "Nam",
-    date: "2023-10-18",
-    time: "10:30 AM",
-    duration: 60,
-    status: "Confirmed",
-    reason: "Vấn đề về quan hệ gia đình",
-    notes: "Khó khăn trong mối quan hệ với con cái tuổi teen",
-    medicalHistory: "Không có",
-    contactNumber: "+84 912 345 222",
-    email: "hoangvane@example.com"
-  },
-  "6": {
-    id: 6,
-    patientName: "Nguyen Thi F",
-    patientAge: 32,
-    patientGender: "Nữ",
-    date: "2023-10-19",
-    time: "1:00 PM",
-    duration: 60,
-    status: "Confirmed",
-    reason: "Rối loạn lo âu",
-    notes: "Lo lắng quá mức về công việc và tương lai",
-    medicalHistory: "Đã từng điều trị lo âu năm 2021",
-    contactNumber: "+84 987 123 456",
-    email: "nguyenthif@example.com"
+    notes: {
+      patient: "Appointment for stress management",
+      psychologist: "Patient cancelled due to schedule conflict"
+    }
   }
+];
+
+export const getAllAppointments = async () => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return {
+    data: mockAppointments
+  };
 };
 
-// Get all appointments
-export const getAllAppointments = () => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Convert object to array
-      const appointmentsArray = Object.values(mockAppointments);
-      resolve(appointmentsArray);
-    }, 800);
-  });
+export const getAppointmentsByDate = async (date) => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Filter appointments by date
+  const dateStr = new Date(date).toDateString();
+  const filtered = mockAppointments.filter(appt => 
+    new Date(appt.scheduledTime.date).toDateString() === dateStr
+  );
+  
+  return {
+    data: filtered
+  };
 };
 
-// Get appointments by date
-export const getAppointmentsByDate = (date) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      // Filter appointments by date
-      const appointmentsArray = Object.values(mockAppointments);
-      const filteredAppointments = appointmentsArray.filter(
-        appointment => appointment.date === date
-      );
-      resolve(filteredAppointments);
-    }, 800);
-  });
+export const getAppointmentById = async (id) => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const appointment = mockAppointments.find(appt => appt._id === id);
+  if (!appointment) {
+    throw new Error("Appointment not found");
+  }
+  
+  return {
+    data: appointment
+  };
 };
 
-// Mock API functions
-export const getAppointmentById = (id) => {
-  return new Promise((resolve, reject) => {
-    // Simulate network delay
-    setTimeout(() => {
-      const appointment = mockAppointments[id];
-      if (appointment) {
-        resolve(appointment);
-      } else {
-        reject(new Error("Appointment not found"));
-      }
-    }, 800);
-  });
-};
-
-export const updateAppointmentNotes = (id, notes) => {
-  return new Promise((resolve, reject) => {
-    // Simulate network delay
-    setTimeout(() => {
-      const appointment = mockAppointments[id];
-      if (appointment) {
-        appointment.notes = notes;
-        resolve(appointment);
-      } else {
-        reject(new Error("Appointment not found"));
-      }
-    }, 800);
-  });
-};
-
-export const cancelAppointment = (id, reason) => {
-  return new Promise((resolve, reject) => {
-    // Simulate network delay
-    setTimeout(() => {
-      const appointment = mockAppointments[id];
-      if (appointment) {
-        appointment.status = "Cancelled";
-        appointment.cancelReason = reason || "";
-        resolve(appointment);
-      } else {
-        reject(new Error("Appointment not found"));
-      }
-    }, 800);
-  });
-};
-
-export const rescheduleAppointment = (id, date, time, reason) => {
-  return new Promise((resolve, reject) => {
-    // Simulate network delay
-    setTimeout(() => {
-      const appointment = mockAppointments[id];
-      if (appointment) {
-        appointment.status = "Rescheduled";
-        appointment.date = date;
-        appointment.time = time;
-        appointment.rescheduleReason = reason;
-        resolve(appointment);
-      } else {
-        reject(new Error("Appointment not found"));
-      }
-    }, 800);
-  });
-};
-
-export const confirmAppointment = (id) => {
-  return new Promise((resolve, reject) => {
-    // Simulate network delay
-    setTimeout(() => {
-      const appointment = mockAppointments[id];
-      if (appointment) {
-        appointment.status = "Confirmed";
-        resolve(appointment);
-      } else {
-        reject(new Error("Appointment not found"));
-      }
-    }, 800);
-  });
+export const updateAppointmentNotes = async (id, notes) => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  const appointmentIndex = mockAppointments.findIndex(appt => appt._id === id);
+  if (appointmentIndex === -1) {
+    throw new Error("Appointment not found");
+  }
+  
+  // Update notes
+  mockAppointments[appointmentIndex].notes.psychologist = notes;
+  
+  return {
+    data: mockAppointments[appointmentIndex],
+    message: "Notes updated successfully"
+  };
 };
 
 export default {
   getAllAppointments,
   getAppointmentsByDate,
   getAppointmentById,
-  updateAppointmentNotes,
-  cancelAppointment,
-  rescheduleAppointment,
-  confirmAppointment
+  updateAppointmentNotes
 };

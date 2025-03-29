@@ -5,15 +5,26 @@ import mockApi from "./mockApi/appointment.mock";
 const USE_MOCK_API = false;
 const appointmentAPI = true;
 
-// const appointmentAPI = {
 // Get all appointments for the logged-in psychologist
 export const getAppointments = async () => {
     try {
         if (USE_MOCK_API) {
             return await mockApi.getAllAppointments();
         }
+        // Get appointments for the currently logged-in psychologist
         const response = await apiClient.get("/appointments/psychologist");
-        return response.data;
+        
+        // Process appointments to include patient info
+        const appointments = response.data;
+        
+        // Add additional data processing if needed
+        // For example, populate patient names from separate API calls if needed
+        
+        return {
+            success: true,
+            data: appointments,
+            message: "Appointments fetched successfully"
+        };
     } catch (error) {
         console.error("Error fetching appointments:", error);
         throw error;

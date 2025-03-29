@@ -1237,6 +1237,30 @@ const cancelScheduleByPatient = async (req, res, next) => {
     }
 };
 
+/**
+ * Get appointments for the logged-in psychologist
+ */
+const getPsychologistAppointments = async (req, res) => {
+    try {
+        // Get the logged-in user's ID from the auth token
+        const psychologistId = req.user ? req.user._id : req.query.psychologistId;
+        
+        if (!psychologistId) {
+            return res.status(400).json({ message: "Psychologist ID is required" });
+        }
+        
+        // Find all appointments for this psychologist
+        const appointments = await Appointment.find({ psychologistId })
+            .populate("patientId", "fullName email phone")
+            .sort({ "scheduledTime.date": -1 });
+            
+        res.status(200).json(appointments);
+    } catch (error) {
+        console.error("Error fetching psychologist appointments:", error);
+        res.status(500).json({ message: "Failed to fetch appointments", error: error.message });
+    }
+};
+
 export default {
     createPaymentLink,
     checkPaymentStatusAPI,
@@ -1262,4 +1286,5 @@ export default {
     cancelScheduleByPatient,
     rescheduleAppointment,
     saveAppointment,
+    getPsychologistAppointments,
 };
