@@ -158,11 +158,24 @@ export const saveAppointment = async (req, res) => {
                     endTime: availability.endTime,
                 },
                 status: "Pending",
-                note: symptoms,
+                isRescheduled: false,
+                notes: {
+                    patient: symptoms,  // Store initial symptoms as patient notes
+                    psychologist: null, // Initialize psychologist notes as null
+                },
+                lastModifiedBy: {
+                    userId: patientId,
+                    role: "patient",
+                    timestamp: new Date(),
+                }
             });
 
             // Save to database
             const savedAppointment = await newAppointment.save();
+
+            // Update availability record with appointment ID
+            availability.appointmentId = savedAppointment._id;
+            await availability.save();
 
             // Set expiration time (5 minutes from now)
             const expiredAt = Math.floor(Date.now() / 1000) + 1 * 60; // Unix Timestamp

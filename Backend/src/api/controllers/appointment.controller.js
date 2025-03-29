@@ -634,6 +634,171 @@ const updateAppointmentStatus = async (req, res) => {
     }
 };
 
+export const saveAppointment = async (req, res) => {
+    upload(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({ message: "Error parsing form data", error: err });
+        }
+
+        try {
+            const { patientId, psychologistId, scheduleId, symptoms } = req.body;
+
+            if (!patientId || !psychologistId || !scheduleId || !symptoms) {
+                return res.status(400).json({ message: "Missing required fields" });
+            }
+
+            // Validate ObjectIds
+            if (
+                !mongoose.Types.ObjectId.isValid(patientId) ||
+                !mongoose.Types.ObjectId.isValid(psychologistId) ||
+                !mongoose.Types.ObjectId.isValid(scheduleId)
+            ) {
+                return res.status(400).json({ message: "Invalid ID format" });
+            }
+
+            // Fetch schedule details
+            const availability = await Availability.findById(scheduleId);
+            if (!availability) {
+                return res.status(404).json({ message: "Schedule not found" });
+            }
+
+            // Check if the schedule is already booked
+            if (availability.isBooked) {
+                return res.status(400).json({ message: "Schedule already booked" });
+            }
+
+            // 🛑 Check for appointment conflicts
+            const confirmedAppointments = await Appointment.find({
+                patientId,
+                status: "Confirmed",
+                "scheduledTime.date": availability.date, // Only check on the same date
+            });
+
+            const hasConflict = confirmedAppointments.some((appointment) => {
+                return (
+                    (availability.startTime >= appointment.scheduledTime.startTime &&
+                        availability.startTime < appointment.scheduledTime.endTime) ||
+                    (availability.endTime > appointment.scheduledTime.startTime &&
+                        availability.endTime <= appointment.scheduledTime.endTime) ||
+                    (availability.startTime <= appointment.scheduledTime.startTime &&
+                        availability.endTime >= appointment.scheduledTime.endTime)
+                );
+            });
+
+            if (hasConflict) {
+                return res.status(400).json({ message: "You already have a confirmed appointment at this time." });
+            }
+
+            // ✅ No conflicts, proceed with booking
+            availability.isBooked = true;
+            await availability.save();
+
+            const psychologist = await User.findById(psychologistId);
+            if (!psychologist) {
+                return res.status(404).json({ message: "Psychologist not found" });
+            }
+
+            const patient = await User.findById(patientId);
+            if (!patient) {
+                return res.status(404).json({ message: "Patient not found" });
+            }
+
+            // Create new appointment
+            const newAppointment = new Appointment({
+                patientId: patientId,
+                psychologistId,
+                availabilityId: availability.id,
+                scheduledTime: {
+                    date: availability.date,
+                    startTime: availability.startTime,
+                    endTime: availability.endTime,
+                },
+                status: "Pending",
+                isRescheduled: false,
+                note: symptoms,
+                notes: {
+                    patient: symptoms, // Store patient symptoms as notes
+                    psychologist: null, // Initialize psychologist notes as null
+                },
+                lastModifiedBy: {
+                    userId: patientId,
+                    role: "patient",
+                    timestamp: new Date(),
+                }
+            });
+
+            // Save to database
+            const savedAppointment = await newAppointment.save();
+
+            // Update availability with the appointment ID
+            availability.appointmentId = savedAppointment._id;
+            await availability.save();
+
+            // Set expiration time (5 minutes from now)
+            const expiredAt = Math.floor(Date.now() / 1000) + 1 * 60; // Unix Timestamp
+
+            const paymentBody = {
+                amount: 5000,
+                description: "Tu van truc tuyen",
+                items: [
+                    {
+                        name: `Buổi tư vấn với tư vấn viên ${psychologist.fullName}`,
+                        quantity: 1,
+                        price: 5000,
+                    },
+                ],
+                expiredAt,
+            };
+
+            const paymentInfo = await createPaymentLink(paymentBody);
+            savedAppointment.paymentInformation = paymentInfo;
+            await savedAppointment.save();
+
+            res.status(201).json({
+                message: "Appointment booked successfully!",
+                appointmentId: savedAppointment._id,
+                expiredAt,
+            });
+        } catch (error) {
+            console.error("Error saving appointment:", error);
+            res.status(500).json({ message: "Server error. Please try again later." });
+        }
+    });
+};
+
+export const updateNotes = async (appointmentId, notes) => {
+    try {
+        console.log(`Updating notes for appointment ID: ${appointmentId}`);
+        
+        const appointment = await Appointment.findById(appointmentId);
+        if (!appointment) {
+            throw new Error("Appointment not found");
+        }
+        
+        // Make sure notes object exists
+        if (!appointment.notes) {
+            appointment.notes = {};
+        }
+        
+        // Update psychologist notes
+        appointment.notes.psychologist = notes;
+        
+        // Update last modified info
+        appointment.lastModifiedBy = {
+            userId: "system", // This should ideally be the psychologist's ID
+            role: "psychologist",
+            timestamp: new Date(),
+        };
+        
+        await appointment.save();
+        
+        return appointment;
+    } catch (error) {
+        console.error(`Error updating notes for appointment ${appointmentId}:`, error);
+        throw error;
+    }
+};
+
 /**
  * Get all appointments with pagination and filtering
  */
@@ -1087,6 +1252,7 @@ export default {
     getAppointmentById,
     updateAppointmentStatus,
     getAllAppointments,
+    updateNotes,
     findScheduleByPsychologistId,
     getStatusRescheduleByUser,
     getAllAppointment,
@@ -1095,4 +1261,5 @@ export default {
     changeBooleanIsReschedule,
     cancelScheduleByPatient,
     rescheduleAppointment,
+    saveAppointment,
 };

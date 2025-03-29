@@ -3,15 +3,6 @@ import Appointment from "../models/appointment.model.js";
 import mongoose from "mongoose";
 import { generateDailySlots, generateSlotsForDateRange, filterPastSlots } from "../utils/scheduleGenerator.js";
 
-// const createPsychologistAvailability = async () => {
-//     const newAvailability = new Availability({
-//         psychologistId: "60d5f84f206b4f33a5e7bd9b", // Replace with actual psychologist ObjectId
-//         date: new Date("2025-02-15"), // Replace with actual date
-//         startTime: new Date("2025-02-15T09:00:00.000+07:00"), // Replace with actual start time
-//         endTime: new Date("2025-02-15T16:00:00.000+07:00"), // Replace with actual end time
-//         isBooked: false, // This slot is available
-//     });
-// }
 /**
  * Create availability slots for a psychologist based on fixed schedule
  * This function is intended to be used by staff members only
@@ -81,7 +72,8 @@ const createPsychologistAvailability = async (req, res) => {
             // Ensure all slots have isBooked = false
             newSlots = newSlots.map((slot) => ({
                 ...slot,
-                isBooked: false, // Set isBooked explicitly (removed status field)
+                isBooked: false, // Set isBooked explicitly
+                appointmentId: null // Initialize appointmentId as null
             }));
 
             const result = await Availability.insertMany(newSlots);
@@ -268,6 +260,9 @@ const updateAvailabilityStatus = async (req, res) => {
                 });
             }
             slot.appointmentId = appointmentId;
+        } else {
+            // If marking as not booked, clear the appointmentId
+            slot.appointmentId = null;
         }
 
         await slot.save();
@@ -322,7 +317,9 @@ const createIndividualSlot = async (req, res) => {
             date: new Date(date),
             startTime: slotStartTime,
             endTime: new Date(endTime),
-            isBooked: false, // Set isBooked instead of status
+            isBooked: false,
+            appointmentId: null,
+            createdBy: req.user ? req.user._id : "system"
         });
 
         await newSlot.save();
@@ -517,8 +514,6 @@ export default {
     updateAvailabilityStatus,
     createIndividualSlot,
     createMultipleAvailabilitySlots,
-    getAvailabilitySlotsByDateRange, // Add the new function to exports
-    getAvailabilitiesById,
-    getAvailabilityById,
+    getAvailabilitySlotsByDateRange,
     findScheduleByPsychologistId,
 };
